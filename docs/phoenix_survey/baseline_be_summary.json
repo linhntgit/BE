@@ -1,0 +1,51 @@
+{
+  "source_file": "Bioequivalence_Fasted.xlsx",
+  "source_sha256": "7ff667b1c6adfa89d8ce8c8a7c142a9703faddc6df12c7ff0bd258b5b45c6098",
+  "input_basis": "Only exported Ln_Observed is transformed back to PK; no predicted/model results enter the fit.",
+  "purpose": "Phoenix numerical comparison; not an EMA/FDA population approval",
+  "statistics_compared": 78,
+  "matched": 78,
+  "max_absolute_difference": 3.696507883432787e-05,
+  "tolerances": "CI percent: abs 1e-4 percentage point; other values abs 1e-5; all values rel 1e-7",
+  "endpoints": [
+    {
+      "endpoint": "cmax",
+      "n_subjects": 24,
+      "n_observations": 48,
+      "missing_observations": 0,
+      "gmr": 0.7495001006158063,
+      "ci90": [
+        0.6131113063997645,
+        0.9162290679676813
+      ],
+      "df": 22.000000081197246,
+      "decision": "FAIL"
+    },
+    {
+      "endpoint": "auc_last",
+      "n_subjects": 24,
+      "n_observations": 48,
+      "missing_observations": 0,
+      "gmr": 1.077605849149045,
+      "ci90": [
+        0.9305360651037097,
+        1.2479197848079249
+      ],
+      "df": 21.999999889248762,
+      "decision": "PASS"
+    },
+    {
+      "endpoint": "auc_inf_pred",
+      "n_subjects": 20,
+      "n_observations": 30,
+      "missing_observations": 18,
+      "gmr": 1.100079038842614,
+      "ci90": [
+        0.9432114721211974,
+        1.2830355943183325
+      ],
+      "df": 11.972857805550701,
+      "decision": "FAIL"
+    }
+  ]
+}

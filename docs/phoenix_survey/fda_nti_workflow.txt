@@ -1,0 +1,64 @@
+Phoenix UI observation | 2026-10-30 | Build 8.8.0.20523
+Project: FDA RSABE NTID Template Project_v1_0
+Scope: observed saved workflow/results; not a recomputed benchmark.
+
+										2135 tree item (selectable) FDA RSABE NTID Template Project_v1_0
+											2136 tree item (selectable) Data
+											2137 tree item (selectable) Code
+											2138 tree item (selectable) Tables
+											2139 tree item (selectable) BQL Rules
+											2140 tree item (selectable) Documents
+											2141 tree item (selectable) Shortcuts
+											2142 tree item (selectable) Workflow
+												2445 tree item (selectable) USER_INPUT_Prepare Dataset for Analysis
+													2446 tree item (selectable) USER_STEP3_Map Data for One PK Parameter
+													2447 tree item (selectable) Dataset Preparation_DO NOT MODIFY
+														2448 tree item (selectable) Merge Reference Name
+														2449 tree item (selectable) Merge Transform Flag
+														2450 tree item (selectable) Check_Step1_and_Create nseq
+														2451 tree item (selectable) Merge Design flag
+														2452 tree item (selectable) Determine Order of Formulations
+														2453 tree item (selectable) Append Worksheets
+														2454 tree item (selectable) Log_Data in Columns
+														2455 tree item (selectable) Dataset ready for analysis_allPeriods
+														2456 tree item (selectable) Dataset ready for analysis_2R_Periods
+														2457 tree item (selectable) Dataset ready for analysis_2T_Periods
+												2458 tree item (selectable) Criterion1_RSABE_DO NOT MODIFY
+													2459 tree item (selectable) Prepare Data for RSABE analysis
+														2460 tree item (selectable) Dataset ready for analysis_Rperiods
+														2461 tree item (selectable) Dataset ready for analysis_allPeriods
+														2462 tree item (selectable) Intermediate ilat
+														2463 tree item (selectable) Pointest x and boundx
+														2464 tree item (selectable) Dij complete rows
+														2465 tree item (selectable) Intermediate dlat
+														2466 tree item (selectable) Merge 1
+														2467 tree item (selectable) s2wr and dfd
+														2468 tree item (selectable) Merge 2
+													2469 tree item (selectable) Final RSABE results
+												2470 tree item (selectable) Criterion2_ABE_DO NOT MODIFY
+													2471 tree item (selectable) Dataset for ABE analysis
+													2472 tree item (selectable) Bioequivalence
+													2473 tree item (selectable) CVwr
+													2474 tree item (selectable) Merge CVwr
+													2475 tree item (selectable) Average BE Table
+												2476 tree item (selectable) Criterion3_Upper 90 CI_Limit_DO NOT MODIFY
+													2477 tree item (selectable) Calculate Within_Test
+														2478 tree item (selectable) Dataset ready for analysis_2TPeriods
+														2479 tree item (selectable) Dij Complete rows for Test
+														2480 tree item (selectable) Intermediate dlat_t
+														2481 tree item (selectable) Merge 1
+														2482 tree item (selectable) s2wt and dfd_t
+														2483 tree item (selectable) swt and CVwt RESULTS
+													2484 tree item (selectable) Calculate Ratio
+														2485 tree item (selectable) s2wr and s2wt
+														2486 tree item (selectable) Merge F_Table
+														2487 tree item (selectable) Criterion 3 Assessment
+														2488 tree item (selectable) Summary table for NTID BE
+												2489 tree item (selectable) Join Criteria for Final Table_DO NOT MODIFY
+													2490 tree item (selectable) Join Criteria 1 and 2
+													2491 tree item (selectable) Join all 3 criteria
+													2492 tree item (selectable) Put Assessment
+												2493 tree item (selectable) PrepTabulation_DO NOT MODIFY
+													2494 tree item (selectable) Subjects Excluded
+												2495 tree item (selectable) Table of Subject Exclusions
+												2496 tree item (selectable) Final Table for NTID BE

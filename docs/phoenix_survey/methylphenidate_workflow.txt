@@ -1,0 +1,47 @@
+Phoenix UI observation | 2026-10-30 | Build 8.8.0.20523
+Project: Template Methylphenidate Certara for PHX8_3_3
+Scope: observed saved workflow/results; not a recomputed benchmark.
+
+										3455 tree item (selectable) Template Methylphenidate Certara for PHX8_3_3
+											3456 tree item (selectable) Data
+											3457 tree item (selectable) Code
+											3458 tree item (selectable) Tables
+											3459 tree item (selectable) BQL Rules
+											3460 tree item (selectable) Documents
+											3461 tree item (selectable) Shortcuts
+											3462 tree item (selectable) Workflow
+												3780 tree item (selectable) USER_STEP5_Map_TimeConc_Dataset
+													3781 tree item (selectable) Input Data
+												3782 tree item (selectable) Dataset Preparation_DO NOT MODIFY
+													3783 tree item (selectable) Merge Food Flag
+													3784 tree item (selectable) Merge Reference Name
+													3785 tree item (selectable) Check_Step1_and_Create nseq
+												3786 tree item (selectable) NCA Analysis_CAN MODIFY SLOPES ONLY
+													3787 tree item (selectable) NCA_CAN MODIFY SLOPES ONLY
+													3788 tree item (selectable) Sort NCA Results_DO NOT MODIFY
+												3789 tree item (selectable) BE_DO NOT MODIFY
+													3790 tree item (selectable) Average BE_DO NOT MODIFY
+														3791 tree item (selectable) Average Bioequivalence ABE
+													3792 tree item (selectable) Individual BE_DO NOT MODIFY
+														3793 tree item (selectable) Individual Bioequivalence IBE
+												3794 tree item (selectable) Process Results_DO NOT MODIFY
+													3795 tree item (selectable) Prep Results IBE Completers
+														3796 tree item (selectable) Determine if Subject Completed a TRT
+														3797 tree item (selectable) DW identify no completed TRT
+														3798 tree item (selectable) Pivot Completers
+														3799 tree item (selectable) DW Determine Completers
+													3800 tree item (selectable) Prep Results ABE
+														3801 tree item (selectable) ABE Data Cleanup
+														3802 tree item (selectable) Count PK Parameters
+														3803 tree item (selectable) ABE Final Conclusion
+														3804 tree item (selectable) ABE Append Worksheets
+													3805 tree item (selectable) Prep Results IBE
+														3806 tree item (selectable) IBE Pivot Worksheet
+														3807 tree item (selectable) IBE Data Cleanup
+														3808 tree item (selectable) IBE Count PK Parameters
+														3809 tree item (selectable) IBE Final Conclusion
+														3810 tree item (selectable) IBE Append Worksheets
+												3811 tree item (selectable) FINAL TABLE AVERAGE BE RESULT
+												3812 tree item (selectable) FINAL TABLE INDIVIDUAL BE RESULT
+												3813 tree item (selectable) Table of Subject Completion Status
+												3814 tree item (selectable) Table of Conc_Time Profiles

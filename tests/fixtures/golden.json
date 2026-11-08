@@ -1,0 +1,23 @@
+{
+  "power": [
+    {"design":"2x2","cv":0.2,"gmr":0.95,"n1":10,"n2":10,"expected":0.834680,"tolerance":0.0000005},
+    {"design":"parallel","cv":0.35,"gmr":0.95,"n1":52,"n2":49,"expected":0.8011186,"tolerance":0.00000005},
+    {"design":"2x2","cv":0.2,"gmr":0.95,"n1":13,"n2":13,"expected":0.9176333,"tolerance":0.00000005}
+  ],
+  "power_source":"https://github.com/Detlew/PowerTOST/blob/master/README.md",
+  "abe": [
+    {"endpoint":"auc_last","gmr":0.9540753,"ci_lower":0.889436,"ci_upper":1.023412,"mse":0.02822265,"cv":0.1691883011},
+    {"endpoint":"cmax","gmr":0.9798396,"ci_lower":0.9013625,"ci_upper":1.065149,"mse":0.0399631,"cv":0.20192169}
+  ],
+  "abe_source":"https://asancpt.github.io/BE/reference/test2x2.html",
+  "abe_tolerance":0.00000051,
+  "pknca": {
+    "times":[0,1,2,3,4,5,8,12,24],
+    "concentrations":[0,2.5,3,2,1.5,1.2,1.1,0,0],
+    "auc_last":12.9965842,"cmax":3.0,"tmax":2.0,"tlast":8.0,"clast":1.1,
+    "lambda_z":0.1075592,"half_life":6.4443313,"auc_inf":23.2235095,
+    "tolerance":0.00000005,
+    "source":"https://humanpred.github.io/pknca/articles/v05-auc-calculation-with-PKNCA.html",
+    "version":"0.12.1.9002"
+  }
+}

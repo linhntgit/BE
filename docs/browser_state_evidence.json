@@ -1,0 +1,12 @@
+{
+  "scenario": "Streamlit browser state regression",
+  "checks": [
+    "CV=24.7 / GMR=.93 survive page navigation",
+    "Three real canvas edits persisted by stable sample_id in subject S0001 period 2",
+    "Actual NCA/BE snapshot uses the three corrected concentrations",
+    "Downloaded report manifest matches canonical state and calculation revision/fingerprint",
+    "Stale results are labeled and Word/PDF export disabled",
+    "Browser reload + explicit project reopen restores durable pending edits"
+  ],
+  "passed": true
+}

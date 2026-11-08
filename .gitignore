@@ -1,0 +1,17 @@
+.venv/
+.venv-clean/
+*.egg-info/
+.cache/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.pytest-*/
+.hypothesis/
+.ruff_cache/
+.mypy_cache/
+data/
+output/
+*.sqlite*
+*.beproject.zip
+scratch*.py
+

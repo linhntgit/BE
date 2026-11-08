@@ -1,0 +1,43 @@
+{
+  "schema_version": 1,
+  "updated_on": "2026-10-31",
+  "overall_status": "in_progress",
+  "active_item": "Latest 0.3.1 Word/PDF QA outputs generated; canonical renderer missing LibreOffice and Word app approval timed out; mixed model remains gated",
+  "automation": "ti-p-t-c-c-i-ti-n-be-app-sau-gi-n-o-n; ACTIVE; thread heartbeat every 30 minutes",
+  "items": {
+    "PHX-01": "implemented_tests_and_browser_visual_review_passed_final_labels_adjusted",
+    "PHX-02": "saved_Phoenix_component_audit_and_experimental_full4_60_of_60_comparable_match_plus_independent_interior_imbalance_not_qualified",
+    "PHX-03": "implemented_ui_excel_automated_checks_passed",
+    "PHX-04": "implemented_ui_excel_word_pdf_pdf_visual_checked_word_render_pending",
+    "PHX-05": "implemented_statsmodels_checks_FDA_and_EMA_MethodA_reference_only_browser_plots_verified",
+    "PHX-06": "implemented_tests_passed_browser_manual_preview_apply_verified_raw_unchanged_no_auto_run",
+    "PHX-07": "implemented_mapping_and_actual_browser_removal_stale_disabled_exports_verified_raw_unchanged",
+    "PHX-08": "implemented_read_only_snapshot_workflow_view",
+    "PHX-09": "implemented_safe_preset_actual_browser_download_upload_create_new_project_verified_no_source_data_approvals",
+    "PHX-10": "implemented_ui_excel_word_pdf_pdf_visual_checked_word_render_pending",
+    "PHX-11": "scoped_design_population_estimator_qualification_plan_written_implementation_gated",
+    "PHX-12": "separate_MR_pAUC_IBE_PBE_invitro_epics_planned_per_survey_not_implemented"
+  },
+  "checks": {
+    "pytest": "226 passed in 33.31s after final report style fix; output/phoenix-integration-tests.xml",
+    "ruff": "passed; all be_app/scripts/tests; no-cache",
+    "mypy": "passed; 26 modules",
+    "nca_fasted": "1968/1968 incl 468 paired missing",
+    "abe_fasted": "78/78",
+    "replicate_phoenix_new": "28 comparisons: 23 match; 4 NTI ABE model differences and 1 exact-vs-rounded NTI constant difference; rounded-constant replay matches. EMA missing and HVD source transform/population findings remain. docs/PHOENIX_REPLICATE_COMPARISON.md",
+    "report_pdf": "vi/en four pages each rendered with bundled Poppler and every page inspected; updated pagination, no clipped cells or orphan BE heading",
+    "report_docx": "Generated fresh vi/en with actual engine 0.3.1 export functions into output/phoenix_report_qa/current_031, synthetic n=4, common snapshot/hash manifest. Both have 8 tables, no inherited Title borders, current engine label. Bundle 26.1026.10807 canonical render attempted: FileNotFoundError LibreOffice soffice.exe not on PATH. Word launch via computer-use returned app approval timed out. Latest layout not visually qualified.",
+    "source_projects": "Basic replicate and NTI hashes verified unchanged by new audit; prior three hashes unchanged. GUI Dependencies exports, no workflow reexecution or source saves; saved build 8.3.4.295 also observed.",
+    "ui_visual": "Browser accessible after application restart. On 714px viewport inspected EMA Method A and reference-only R residual-fitted/QQ/box (six plots), correct log-model labels. Actual uploader reattach/remove makes cached PK STALE and disables preview/calculation/download. Read back QA project: raw unchanged, one override, zero runs, staged file null, mapping retained. Preset browser roundtrip also verified; latest Word rendering remains.",
+    "ui_arrow": "Captured live mixed Value-column warnings fixed with display-only string views; Excel retains typed values. AppTest asserts no Arrow fallback warning.",
+    "qa_cleanup": "Browser access works. Agent-owned QA server session 98835 stopped after visual checks; synthetic database and downloaded preset retained. No research database or Phoenix source project changed.",
+    "experimental_full4": "7 focused tests pass, including independent orthonormal error-contrast REML with linear covariance, numerical Hessian/sensitivity; 9/21 imbalance interior fixture matches covariance/SE/df/CI. Saved Phoenix audit 60/60 comparable matches, both boundary/balanced. Production disconnected; NOT QUALIFIED.",
+    "ui_upload_removal": "Fixed stage_upload(None) to clear durable staged source. AppTest proves stale cached PK results and disabled export/calculation, canonical raw/results unchanged. New preset overview AppTest proves clean new project.",
+    "lockfile": "uv --cache-dir output/uv-check-cache lock --check --offline passed; 84 packages, engine package 0.3.1",
+    "conventional_abe_gate": "FDA_REPLICATE_STANDARD / FDA_NTI / HVD sWR<0.294 return NOT EVALUABLE; I CI diagnostic only, criterion passed=None. High HVD scaling and EMA unchanged. Reviewer/Excel/forest and legacy 0.3.0 snapshot tests pass. docs/CONVENTIONAL_ABE_GATE.md",
+    "report_style": "Removed inherited blue Title border and font theme overrides from generated Word styles; explicit Arial, black title retained. OOXML regression assertions added.",
+    "ui_preset_browser": "Prepared/downloaded/imported BE_method_preset.json through actual browser file chooser and created QA project d7e2e95b-e6e1-4a25-8e45-09996ae70754. Read back disk: no raw/runs/freeze/protocol/SAP/scope/demo/manual slopes/staged source; preserves PK sheet/Ln/mapping, units false. Source raw and one override unchanged."
+  },
+  "next_action": "Wait for user to make Word available and accept Computer Use app approval, then inspect fresh current_031 reviewer_vi.docx/reviewer_en.docx using native Word; canonical renderer still lacks LibreOffice, do not claim render qualification. Mixed-model boundary/integration work remains gated. Preserve source projects and research databases.",
+  "engine_version": "0.3.1"
+}

@@ -1,0 +1,92 @@
+Phoenix UI observation | 2026-10-30 | Build 8.8.0.20523
+Project: InVitro_BE
+Scope: observed saved workflow/results; not a recomputed benchmark.
+
+										4274 tree item (selectable) InVitro_BE
+											4275 tree item (selectable) Data
+											4276 tree item (selectable) Code
+											4277 tree item (selectable) Tables
+											4278 tree item (selectable) BQL Rules
+											4279 tree item (selectable) Documents
+											4280 tree item (selectable) Shortcuts
+											4281 tree item (selectable) Workflow
+												4753 tree item (selectable) USER_Step1_MapData
+												4754 tree item (selectable) Plots & Table
+													4755 tree item (selectable) Box Plot_rawData
+													4756 tree item (selectable) Box Plot
+													4757 tree item (selectable) Descriptive Statistics raw data
+													4758 tree item (selectable) Table Des Stats data
+													4759 tree item (selectable) Table
+												4760 tree item (selectable) ABE
+													4761 tree item (selectable) Bioequivalence ABE
+													4762 tree item (selectable) Data Wizard
+												4763 tree item (selectable) Calculate Number of Batches Containers and Stages
+													4764 tree item (selectable) Calculate number of Containers
+														4765 tree item (selectable) Containers_Step1
+														4766 tree item (selectable) Containers_Step2
+														4767 tree item (selectable) Number of Containers (nr,nt)
+													4768 tree item (selectable) Calculate number of Batches
+														4769 tree item (selectable) Batches_Step1
+														4770 tree item (selectable) Batches_Step2
+														4771 tree item (selectable) Number of Batches (lr, lt)
+													4772 tree item (selectable) Calculate number of life states (m)
+														4773 tree item (selectable) m_Step1
+														4774 tree item (selectable) m_Step2
+														4775 tree item (selectable) Number of Life Stages (m)
+												4776 tree item (selectable) Calculate Variance Parameters
+													4777 tree item (selectable) Mean per Container
+													4778 tree item (selectable) Mean per Product
+													4779 tree item (selectable) Merge_InputData_MeanContainer
+													4780 tree item (selectable) Merge_MeanProduct
+													4781 tree item (selectable) Carry Mean Container for each row
+													4782 tree item (selectable) Carry Mean Product for each row
+													4783 tree item (selectable) Calculate Variances
+												4784 tree item (selectable) Eq Related Intermediate Parameters
+													4785 tree item (selectable) Sum of Variances
+													4786 tree item (selectable) Merge number of batches
+													4787 tree item (selectable) Merge number of containers
+													4788 tree item (selectable) Merge no of Life Stages
+													4789 tree item (selectable) Calculate MSBk and MSWk
+													4790 tree item (selectable) Calculate Ed and Delta_Step1
+													4791 tree item (selectable) Calculate Ed variable and Delta_Step2
+													4792 tree item (selectable) Calculate E1 and E2 Variables
+													4793 tree item (selectable) Process E1 and E2 step1
+													4794 tree item (selectable) Process E1 and E2 step 2
+													4795 tree item (selectable) Calculate E3 and E4
+													4796 tree item (selectable) Process E3 and E4 step1
+													4797 tree item (selectable) Process E3 and E4 step 2
+													4798 tree item (selectable) Process all E variables step 1
+													4799 tree item (selectable) Process all E variables step2
+													4800 tree item (selectable) Calculate Eq
+													4801 tree item (selectable) Tabulation of Intermediary Results
+														4802 tree item (selectable) Stacker ReferencedScaled
+														4803 tree item (selectable) Stacker ConstantScaled
+														4804 tree item (selectable) Table Referenced Scaled
+														4805 tree item (selectable) Table Constant Scaled
+												4806 tree item (selectable) Hq and Uq Related Inetermediate Parameters
+													4807 tree item (selectable) Descriptive Statistics
+													4808 tree item (selectable) Pivot Worksheet
+													4809 tree item (selectable) Split Worksheet
+													4810 tree item (selectable) Merge Worksheets 1
+													4811 tree item (selectable) Calculate HD df and cleanup
+													4812 tree item (selectable) Merge tcrit value
+													4813 tree item (selectable) Merge Abs_Delta
+													4814 tree item (selectable) Calculate HD
+													4815 tree item (selectable) Merge E variables
+													4816 tree item (selectable) Calculate H and U variables
+												4817 tree item (selectable) 95% Confidence Bounds
+													4818 tree item (selectable) Determine PBE
+												4819 tree item (selectable) Final BE Conclusion
+												4820 tree item (selectable) Table for submission
+													4821 tree item (selectable) Table Prep Steps
+														4822 tree item (selectable) Table
+														4823 tree item (selectable) Descriptive Statistics
+														4824 tree item (selectable) Stacker
+														4825 tree item (selectable) Pivot Worksheet
+														4826 tree item (selectable) Data Wizard
+														4827 tree item (selectable) R_D GeoMean
+														4828 tree item (selectable) R_D sigma
+														4829 tree item (selectable) Merge Worksheets
+														4830 tree item (selectable) Append Worksheets
+														4831 tree item (selectable) Final Table
+													4832 tree item (selectable) Reporter

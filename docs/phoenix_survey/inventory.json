@@ -1,0 +1,79 @@
+{
+  "source_directory": "D:\\Sync\\OneDrive - Curtin\\Asean ACTD-ACTR training\\Tap huan doanh nghiep\\NIDQC\\Shared\\Certara Phoenix Templates",
+  "survey_date": "2026-10-30",
+  "phoenix_build": "8.8.0.20523",
+  "files": [
+    {
+      "name": "Bioequivalence_2x2x2.phxproj",
+      "bytes": 785088,
+      "sha256": "03c97eb5b389f012f8759fb56240ad7e77e9b41091f3ebb81203f09e1da66ee5",
+      "archive_entries": 295,
+      "opened_in_phoenix": true,
+      "workflow_surveyed": true,
+      "new_numerical_comparison_performed": false
+    },
+    {
+      "name": "Bioequivalence_IndPop.phxproj",
+      "bytes": 252996,
+      "sha256": "ec16b13c8bc075f9b804a9113fd8682f112fb9da41a40e4f2e3a63942178a928",
+      "archive_entries": 95,
+      "opened_in_phoenix": true,
+      "workflow_surveyed": true,
+      "new_numerical_comparison_performed": false
+    },
+    {
+      "name": "Bioequivalence_replicated.phxproj",
+      "bytes": 385023,
+      "sha256": "c25091fcf0235bee8fb5496fb0e1a46ae7158b7baa2d466603a4d64b3950bd55",
+      "archive_entries": 149,
+      "opened_in_phoenix": true,
+      "workflow_surveyed": true,
+      "new_numerical_comparison_performed": false
+    },
+    {
+      "name": "EMA ABEL Project Template_PH8_3.phxproj",
+      "bytes": 3472709,
+      "sha256": "679decf3c94c31408f9b882aa69d56045400a0b53fb254f12b10c31b81de31e8",
+      "archive_entries": 921,
+      "opened_in_phoenix": true,
+      "workflow_surveyed": true,
+      "new_numerical_comparison_performed": false
+    },
+    {
+      "name": "FDA RSABE NTID Template Project_v1_0.phxproj",
+      "bytes": 5604309,
+      "sha256": "223fa7816ffa496fe0e14bcb3d0ccb7195472d9fc8e6a848ce2475f5c9759f1a",
+      "archive_entries": 1607,
+      "opened_in_phoenix": true,
+      "workflow_surveyed": true,
+      "new_numerical_comparison_performed": false
+    },
+    {
+      "name": "FDA RSABE Project template_ v8_3_3.phxproj",
+      "bytes": 3146934,
+      "sha256": "f02234eae45ec2d702f6b80a0a008b63ce671bc76894ffe1322c25910d3e5a6b",
+      "archive_entries": 877,
+      "opened_in_phoenix": true,
+      "workflow_surveyed": true,
+      "new_numerical_comparison_performed": false
+    },
+    {
+      "name": "FDA Template Methylphenidate Certara for PHX8_3_3.phxproj",
+      "bytes": 3833803,
+      "sha256": "fd50533bfabe28f0a39cd7aa9ec306d75b854c5971b9a2f5b15e0b2dfd53ec2a",
+      "archive_entries": 761,
+      "opened_in_phoenix": true,
+      "workflow_surveyed": true,
+      "new_numerical_comparison_performed": false
+    },
+    {
+      "name": "Template InVitroBE_V3.3.phxproj",
+      "bytes": 5201168,
+      "sha256": "69858d3ea22695b9984a8305e007b02153efa90c3a455ce6ac7a0583512789f7",
+      "archive_entries": 1683,
+      "opened_in_phoenix": true,
+      "workflow_surveyed": true,
+      "new_numerical_comparison_performed": false
+    }
+  ]
+}

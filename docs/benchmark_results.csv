@@ -1,0 +1,20 @@
+﻿fixture,design,jurisdiction,endpoint,expected,actual,absolute_difference,relative_difference,tolerance,source,passed
+PowerTOST_n20,2x2,EMA/FDA ABE,power,0.83468,0.8346801908569,1.908569000619309e-07,2.2865876750602734e-07,5e-07,https://github.com/Detlew/PowerTOST/blob/master/README.md,True
+PowerTOST_n101,parallel,EMA/FDA ABE,power,0.8011186,0.8011186487680644,4.876806436460157e-08,6.087496204007942e-08,5e-08,https://github.com/Detlew/PowerTOST/blob/master/README.md,True
+PowerTOST_n26,2x2,EMA/FDA ABE,power,0.9176333,0.9176333084473303,8.447330279715004e-09,9.205562047187045e-09,5e-08,https://github.com/Detlew/PowerTOST/blob/master/README.md,True
+BE_R_NCAResult4BE,2x2 unbalanced 16/17,EMA/FDA ABE,auc_last.gmr,0.9540753,0.9540753074804819,7.48048190057915e-09,7.840557134829034e-09,5.1e-07,https://asancpt.github.io/BE/reference/test2x2.html,True
+BE_R_NCAResult4BE,2x2 unbalanced 16/17,EMA/FDA ABE,auc_last.ci_lower,0.889436,0.8894359919803014,8.019698571892775e-09,9.016611169204727e-09,5.1e-07,https://asancpt.github.io/BE/reference/test2x2.html,True
+BE_R_NCAResult4BE,2x2 unbalanced 16/17,EMA/FDA ABE,auc_last.ci_upper,1.023412,1.0234122528787162,2.528787161892865e-07,2.470937571469618e-07,5.1e-07,https://asancpt.github.io/BE/reference/test2x2.html,True
+BE_R_NCAResult4BE,2x2 unbalanced 16/17,EMA/FDA ABE,auc_last.MSE,0.02822265,0.02822264905368948,9.46310519528426e-10,3.3530179466790895e-08,5e-09,https://asancpt.github.io/BE/reference/test2x2.html,True
+BE_R_NCAResult4BE,2x2 unbalanced 16/17,EMA/FDA ABE,cmax.gmr,0.9798396,0.9798395926355151,7.364484910787894e-09,7.516010692758175e-09,5.1e-07,https://asancpt.github.io/BE/reference/test2x2.html,True
+BE_R_NCAResult4BE,2x2 unbalanced 16/17,EMA/FDA ABE,cmax.ci_lower,0.9013625,0.9013624751223407,2.4877659265953866e-08,2.7600060204361583e-08,5.1e-07,https://asancpt.github.io/BE/reference/test2x2.html,True
+BE_R_NCAResult4BE,2x2 unbalanced 16/17,EMA/FDA ABE,cmax.ci_upper,1.065149,1.0651493198292075,3.198292075623499e-07,3.002671058812898e-07,5.1e-07,https://asancpt.github.io/BE/reference/test2x2.html,True
+BE_R_NCAResult4BE,2x2 unbalanced 16/17,EMA/FDA ABE,cmax.MSE,0.0399631,0.039963100045523545,4.5523543268366495e-11,1.1391394378405702e-09,5e-09,https://asancpt.github.io/BE/reference/test2x2.html,True
+PKNCA_vignette,single dose,EMA/FDA ABE,auc_last,12.9965842,12.996584236094595,3.609459575670826e-08,2.777237095629193e-09,5e-08,https://humanpred.github.io/pknca/articles/v05-auc-calculation-with-PKNCA.html,True
+PKNCA_vignette,single dose,EMA/FDA ABE,cmax,3.0,3.0,0.0,0.0,5e-08,https://humanpred.github.io/pknca/articles/v05-auc-calculation-with-PKNCA.html,True
+PKNCA_vignette,single dose,EMA/FDA ABE,tmax,2.0,2.0,0.0,0.0,5e-08,https://humanpred.github.io/pknca/articles/v05-auc-calculation-with-PKNCA.html,True
+PKNCA_vignette,single dose,EMA/FDA ABE,clast,1.1,1.1,0.0,0.0,5e-08,https://humanpred.github.io/pknca/articles/v05-auc-calculation-with-PKNCA.html,True
+PKNCA_vignette,single dose,EMA/FDA ABE,tlast,8.0,8.0,0.0,0.0,5e-08,https://humanpred.github.io/pknca/articles/v05-auc-calculation-with-PKNCA.html,True
+PKNCA_vignette_matching_terminal_policy,single dose,EMA/FDA ABE,lambda_z,0.1075592,0.10755920927250573,9.272505735458125e-09,8.620839254529716e-08,5e-08,https://humanpred.github.io/pknca/articles/v05-auc-calculation-with-PKNCA.html,True
+PKNCA_vignette_matching_terminal_policy,single dose,EMA/FDA ABE,half_life,6.4443313,6.444331315264954,1.526495374548631e-08,2.3687413068732685e-09,5e-08,https://humanpred.github.io/pknca/articles/v05-auc-calculation-with-PKNCA.html,True
+PKNCA_vignette_matching_terminal_policy,single dose,EMA/FDA ABE,auc_inf,23.2235095,23.223509549510617,4.951061782776378e-08,2.1319179957604504e-09,5e-08,https://humanpred.github.io/pknca/articles/v05-auc-calculation-with-PKNCA.html,True

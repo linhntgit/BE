@@ -1,0 +1,30 @@
+{
+  "study_id": "DEMO_BE001",
+  "title": "Dữ liệu giả lập phục vụ học thử BE",
+  "design": "2x2",
+  "rule_set_id": "EMA_IR_NONREPLICATE_M13A",
+  "protocol": "DEMO-PROT v1",
+  "sap": "DEMO-SAP v1",
+  "analyte": "parent",
+  "active_ingredient": "SYNTHETIC_API",
+  "formulation": "IR",
+  "route": "oral",
+  "single_dose": true,
+  "nti": false,
+  "special_case": false,
+  "fed_state": "fasted",
+  "dose": 1.0,
+  "dose_unit": "mg",
+  "test_product": "Test",
+  "reference_product": "Reference",
+  "test_batch": "",
+  "reference_batch": "",
+  "primary_endpoints": [
+    "auc_last",
+    "cmax"
+  ],
+  "is_demo": true,
+  "scope_reviewed": true,
+  "scope_evidence": "Synthetic IR single-dose learning example; không phải nghiên cứu thật.",
+  "operator": "local-operator"
+}

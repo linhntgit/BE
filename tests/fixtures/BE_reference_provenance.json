@@ -1,0 +1,7 @@
+{
+  "source": "https://api.github.com/repos/cran/BE/git/blobs/f1c5cc184a7e97e87742b5edd43ecaa2a6d4fe0b",
+  "source_sha256": "f075fefb48f947ca3eefb0d6eae5b80712c1495d2a37b498731d3f7443775993",
+  "expected_source": "https://asancpt.github.io/BE/reference/test2x2.html",
+  "reader": "pyreadr 0.5.8",
+  "note": "Public reference PK endpoints; not a synthetic learning study."
+}

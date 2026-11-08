@@ -1,0 +1,46 @@
+Phoenix UI observation | 2026-10-30 | Build 8.8.0.20523
+Project: FDA RSABE Project template_ v8_3_3
+Scope: observed saved workflow/results; not a recomputed benchmark.
+
+										5390 tree item (selectable) FDA RSABE Project template_ v8_3_3
+											5391 tree item (selectable) Data
+											5392 tree item (selectable) Code
+											5393 tree item (selectable) Tables
+											5394 tree item (selectable) BQL Rules
+											5395 tree item (selectable) Documents
+											5396 tree item (selectable) Shortcuts
+											5397 tree item (selectable) Workflow
+												5789 tree item (selectable) Prepare Dataset for Analysis
+													5790 tree item (selectable) 5_ Map your Data to Required Columns
+													5791 tree item (selectable) Merge Reference Name
+													5792 tree item (selectable) Merge nseq
+													5793 tree item (selectable) Merge Transform Flag
+													5794 tree item (selectable) Merge Design flag
+													5795 tree item (selectable) Determine Order of Formulations
+													5796 tree item (selectable) Append Worksheets
+													5797 tree item (selectable) Log_Data in Columns
+													5798 tree item (selectable) Dataset ready for analysis_all_R_Periods
+													5799 tree item (selectable) Dataset ready for analysis_allPeriods
+												5800 tree item (selectable) ABE
+													5801 tree item (selectable) Dataset for ABE analysis
+													5802 tree item (selectable) Bioequivalence
+													5803 tree item (selectable) CVwr
+													5804 tree item (selectable) Merge CVwr
+													5805 tree item (selectable) Average BE Table
+												5806 tree item (selectable) RSABE
+													5807 tree item (selectable) Prepare Data for RSABE analysis
+														5808 tree item (selectable) Dataset ready for analysis_Rperiods
+														5809 tree item (selectable) Dataset ready for analysis_allPeriods
+														5810 tree item (selectable) Intermediate ilat
+														5811 tree item (selectable) Pointest x and boundx
+														5812 tree item (selectable) Dij complete rows
+														5813 tree item (selectable) Intermediate dlat
+														5814 tree item (selectable) Merge 1
+														5815 tree item (selectable) s2wr and dfd
+														5816 tree item (selectable) Merge 2
+													5817 tree item (selectable) Final RSABE results
+												5818 tree item (selectable) Final Conclusion Tabulation
+													5819 tree item (selectable) Merge CVwr_Result
+													5820 tree item (selectable) Final RSABE results_Result
+													5821 tree item (selectable) Join Worksheets
+													5822 tree item (selectable) Table

@@ -1,0 +1,83 @@
+Phoenix UI observation | 2026-10-30 | Build 8.8.0.20523
+Project: EMA ABEL Project Template_PH8_3
+Scope: observed saved workflow/results; not a recomputed benchmark.
+
+Displayed table (rounded):
+1183 header item Ratio (%)
+1184 text Ratio (%)
+1185 header item ABE 90%CI Lower
+1186 text ABE 90%CI Lower
+1187 header item ABE 90%CI Upper
+1188 text ABE 90%CI Upper
+1189 header item CVwr(%)
+1190 text CV
+1191 text wr
+1192 text (%)
+1193 header item Extended_Lower_Bound
+1194 text Extended_Lower_Bound
+1195 header item Extended Upper Bound
+1196 text Extended Upper Bound
+1197 item 115.66
+1198 text 115.66
+1199 item 107.11
+1200 text 107.11
+1201 item 124.89
+1202 text 124.89
+1203 item 46.96
+1204 text 46.96
+1205 item 71.23
+1206 text 71.23
+1207 item 140.40
+1208 text 140.40
+1262 text Table Type ID: TableTemplateLabel
+1264 text (settable, string) Value: <Default>
+
+										420 tree item (selectable) EMA ABEL Project Template_PH8_3
+											421 tree item (selectable) Data
+											422 tree item (selectable) Code
+											423 tree item (selectable) Tables
+											424 tree item (selectable) BQL Rules
+											425 tree item (selectable) Documents
+											426 tree item (selectable) Shortcuts
+											427 tree item (selectable) Workflow
+												838 tree item (selectable) Prepare Dataset for Analysis
+													998 tree item (selectable) 4_ Map your Data to Required Columns
+													999 tree item (selectable) Merge Reference Name
+													1000 tree item (selectable) Merge nseq
+													1001 tree item (selectable) Merge Transform flag
+													1002 tree item (selectable) Dataset Ready for Analysis
+												839 tree item (selectable) Analysis
+													1003 tree item (selectable) Standard Average BE
+														1004 tree item (selectable) BE Method A log
+														1005 tree item (selectable) Average BE results
+														1006 tree item (selectable) Other Methods
+															1007 tree item (selectable) Method B
+																1008 tree item (selectable) BE_Method B log
+															1009 tree item (selectable) Method C
+																1010 tree item (selectable) BE_Method C log
+																1011 tree item (selectable) Calculate WithinSubject Variability_ForMethodC
+															1012 tree item (selectable) Comparison of Results
+													1013 tree item (selectable) ABEL
+														1014 tree item (selectable) Calculation Steps
+															1015 tree item (selectable) BE Method_Average Bioequivalence
+															1016 tree item (selectable) Dataset Ready for Analysis_Result
+															1017 tree item (selectable) Include Reference Obs Only
+															1018 tree item (selectable) Count Reference no_ of Administrations
+															1019 tree item (selectable) Subjects with two administrations
+															1020 tree item (selectable) Complete reference data
+															1021 tree item (selectable) LME Ref variability
+															1022 tree item (selectable) Calculate CVwr
+															1023 tree item (selectable) Join CVw and ABE results
+														1024 tree item (selectable) Final Conclusion
+														1025 tree item (selectable) Outlier Analysis
+															1026 tree item (selectable) Prep_ Steps
+																1027 tree item (selectable) Complete reference data_Result
+																1028 tree item (selectable) LME Ref variability_Residuals
+																1029 tree item (selectable) LME Ref variability_Final Variance Parameters
+																1030 tree item (selectable) Subjects by Sequence and Period
+																1031 tree item (selectable) Join _ Residuals and Nk
+																1032 tree item (selectable) Join MSE_MSintra
+															1033 tree item (selectable) Studentized residuals
+															1034 tree item (selectable) Box Plot
+															1035 tree item (selectable) QQ Plot
+															1036 tree item (selectable) Kolmogorov-Smirnov normality test

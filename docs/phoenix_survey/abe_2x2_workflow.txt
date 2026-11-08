@@ -1,0 +1,20 @@
+Phoenix UI observation | 2026-10-30 | Build 8.8.0.20523
+Project: BE excercise
+Scope: observed saved workflow/results; not a recomputed benchmark.
+
+										6233 tree item (selectable) BE excercise
+											6234 tree item (selectable) Data
+											6235 tree item (selectable) Code
+											6236 tree item (selectable) Tables
+											6237 tree item (selectable) BQL Rules
+											6238 tree item (selectable) Documents
+											6239 tree item (selectable) Shortcuts
+											6240 tree item (selectable) Workflow
+												6923 tree item (selectable) NCA
+												6924 tree item (selectable) Bioequivalence FDA
+												6925 tree item (selectable) Bioequivalence EMA
+												6926 tree item (selectable) Crossover
+												6927 tree item (selectable) XY Plot
+												6928 tree item (selectable) XY Plot 1
+												6929 tree item (selectable) Descriptive Statistics
+												6930 tree item (selectable) XY Plot 2

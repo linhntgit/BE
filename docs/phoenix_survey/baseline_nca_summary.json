@@ -1,0 +1,17 @@
+{
+  "source_file": "NCA_Fasted.xlsx",
+  "source_sha256": "0b4d2554b73bfad13907e89d685df2d692a733151748ed94a4785594372b7bc1",
+  "time_basis": "Time exported by Phoenix; actual/nominal not independently verified",
+  "zero_policy": "Exported zero retained; original BLQ/LLOQ metadata unavailable",
+  "purpose": "NCA numerical comparison only; no study BE decision",
+  "profiles": 48,
+  "samples": 720,
+  "parameters_per_profile": 41,
+  "comparisons": 1968,
+  "matched": 1968,
+  "both_missing": 468,
+  "terminal_estimated": 30,
+  "max_absolute_difference": 3.710738383233547e-10,
+  "relative_tolerance": 1e-09,
+  "absolute_tolerance": 1e-08
+}

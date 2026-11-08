@@ -1,0 +1,45 @@
+Phoenix UI observation | 2026-10-30 | Build 8.8.0.20523
+Project: Bioequivalence_replicated
+Scope: observed saved workflow/results; not a recomputed benchmark.
+
+Selected model controls and result names:
+8585 edit ID: currentCellValueEditor
+8599 tree item (selectable) Additional Output
+8600 tree item (selectable) Core Output
+8601 tree item (selectable) Output Data
+8602 tree item (selectable) Average Bioequivalence
+8603 tree item (selectable) Diagnostics
+8604 tree item (selectable) Final Fixed Parameters
+8605 tree item (selectable) Final Variance Parameters
+8606 tree item (selectable) Initial Variance Parameters
+8607 tree item (selectable) Iteration History
+8608 tree item (selectable) Least Squares Means
+8609 tree item (selectable) LSM Differences
+8610 tree item (selectable) Parameter Key
+8611 tree item (selectable) Partial Tests
+8612 tree item (selectable) Ratios Test Tablet
+8613 tree item (selectable) Residuals
+8614 tree item (selectable) Sequential Tests
+8615 tree item (selectable) User Settings
+8616 tree item (selectable) Text Output
+8617 tree item (selectable) Settings
+8619 edit (settable, string) Filter: ID: resultFilter
+8620 text Filter: ID: label1
+8647 combo box (settable, string) Reference Formulation Value: Capsule ID: referenceValue
+8648 text (settable, string) Reference Formulation Value: Capsule
+8650 text Reference Formulation ID: label6
+8652 radio button (selectable) Population/Individual ID: population
+8653 radio button (selectable) Average ID: average
+8655 radio button (selectable) Crossover ID: crossover
+8656 radio button (selectable) Parallel/Other ID: parallel
+
+										8024 tree item (selectable) Bioequivalence_replicated
+											8025 tree item (selectable) Data
+											8026 tree item (selectable) Code
+											8027 tree item (selectable) Tables
+											8028 tree item (selectable) BQL Rules
+											8029 tree item (selectable) Documents
+											8030 tree item (selectable) Shortcuts
+											8031 tree item (selectable) Workflow
+												8430 tree item (selectable) Bioequivalence
+												8431 tree item (selectable) Bioequivalence 1

@@ -1,0 +1,14 @@
+Phoenix UI observation | 2026-10-30 | Build 8.8.0.20523
+Project: Bioequivalence_replicated
+Scope: observed saved workflow/results; not a recomputed benchmark.
+
+										8024 tree item (selectable) Bioequivalence_replicated
+											8025 tree item (selectable) Data
+											8026 tree item (selectable) Code
+											8027 tree item (selectable) Tables
+											8028 tree item (selectable) BQL Rules
+											8029 tree item (selectable) Documents
+											8030 tree item (selectable) Shortcuts
+											8031 tree item (selectable) Workflow
+												8430 tree item (selectable) Bioequivalence
+												8431 tree item (selectable) Bioequivalence 1

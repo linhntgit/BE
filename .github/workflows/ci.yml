@@ -1,0 +1,50 @@
+name: Scientific verification
+on: [push, pull_request]
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with:
+          python-version: '3.12'
+      - run: uv sync --locked --extra dev
+      - run: uv run --frozen ruff check .
+      - run: uv run --frozen mypy be_app
+      - run: uv run --frozen pytest -q --junitxml=output/test-results.xml
+      - run: uv run --frozen python scripts/benchmark.py --output output/benchmark_results.csv
+      - run: uv run --frozen python scripts/implementation_manifest.py --junit output/test-results.xml --benchmark output/benchmark_results.csv --output output/implementation_manifest.json
+      - run: uv run --frozen pip-audit -r requirements.lock --require-hashes
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: validation-evidence
+          path: output/
+  browser-state:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - run: uv sync --locked
+      - run: npm install --prefix .cache/browser-tooling --no-save --package-lock=false playwright@1.62.1
+      - run: .cache/browser-tooling/node_modules/.bin/playwright install --with-deps chromium
+      - run: node scripts/browser_state_e2e.cjs
+        env:
+          NODE_PATH: ${{ github.workspace }}/.cache/browser-tooling/node_modules
+          BE_TEST_PYTHON: ${{ github.workspace }}/.venv/bin/python
+          BE_BROWSER_CHANNEL: chromium
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: browser-state-evidence
+          include-hidden-files: true
+          path: |
+            .cache/browser-state-*/proof.json
+            .cache/browser-state-*/*.png

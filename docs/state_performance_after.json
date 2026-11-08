@@ -1,0 +1,72 @@
+{
+  "small": {
+    "subjects": 12,
+    "records": 336,
+    "qc_navigation": {
+      "samples_s": [
+        3.0999945010989904e-06,
+        1.500011421740055e-06,
+        1.00000761449337e-06
+      ],
+      "median_s": 1.500011421740055e-06
+    },
+    "input_fingerprint_render": {
+      "samples_s": [
+        3.00002284348011e-07,
+        3.00002284348011e-07,
+        1.00000761449337e-07
+      ],
+      "median_s": 3.00002284348011e-07
+    },
+    "raw_preview": {
+      "samples_s": [
+        2.00001522898674e-07,
+        1.00000761449337e-07,
+        1.00000761449337e-07
+      ],
+      "median_s": 1.00000761449337e-07
+    },
+    "full_nca_calls_on_navigation": 0,
+    "qc_calls_on_three_reruns": 0,
+    "acceptance": {
+      "warm_qc_limit_s": 0.0192681900007301,
+      "passed": true,
+      "basis": "Warm data-access path <10% of measured prior full-QC path on this host; excludes browser rendering"
+    }
+  },
+  "large": {
+    "subjects": 240,
+    "records": 6720,
+    "qc_navigation": {
+      "samples_s": [
+        2.1999876480549574e-06,
+        1.300009898841381e-06,
+        7.999915396794677e-07
+      ],
+      "median_s": 1.300009898841381e-06
+    },
+    "input_fingerprint_render": {
+      "samples_s": [
+        4.999892553314567e-07,
+        1.00000761449337e-07,
+        1.00000761449337e-07
+      ],
+      "median_s": 1.00000761449337e-07
+    },
+    "raw_preview": {
+      "samples_s": [
+        3.00002284348011e-07,
+        1.00000761449337e-07,
+        9.998620953410864e-08
+      ],
+      "median_s": 1.00000761449337e-07
+    },
+    "full_nca_calls_on_navigation": 0,
+    "qc_calls_on_three_reruns": 0,
+    "acceptance": {
+      "warm_qc_limit_s": 0.37998536000086464,
+      "passed": true,
+      "basis": "Warm data-access path <10% of measured prior full-QC path on this host; excludes browser rendering"
+    }
+  }
+}
