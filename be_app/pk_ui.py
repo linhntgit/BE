@@ -13,6 +13,7 @@ import pandas as pd
 import plotly.graph_objects as go
 import streamlit as st
 
+from be_app.field_help import render_table_legend, table_column_config
 from be_app.pk_analysis import (
     CONCENTRATION_FACTORS,
     DOSE_FACTORS,

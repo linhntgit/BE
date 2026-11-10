@@ -176,3 +176,15 @@ def test_save_integrity_and_exports(tmp_path):
         con.execute("UPDATE pk_runs SET content=? WHERE run_id=?", ("{}", run_id))
     with pytest.raises(ValueError, match="SHA-256"):
         store.load(run_id)
+
+
+def test_pk_ui_tabular_renders_without_missing_helpers():
+    from be_app.pk_ui import _tabular
+
+    cfg = PKSettings(route="iv_bolus", dose=100)
+    t = np.arange(0, 20, 1)
+    frame = profile(t, predict(t, {"CL": 5, "Vc": 20}, cfg, 1))
+    snapshot = create_snapshot(frame, asdict(cfg), [analyze_nca(frame, cfg)],
+                               [fit_compartment(frame, cfg)], [], "Test snapshot")
+    _tabular(snapshot)
+
