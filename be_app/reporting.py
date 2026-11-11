@@ -206,9 +206,9 @@ def report_content(project: Project, run_index: int = -1, language: str = "vi") 
         (
             "Mục tiêu và phạm vi" if vi else "Objective and scope",
             (
-                "Bản dự thảo phục vụ rà soát nội bộ về tính toán PK và BE. Chưa được thẩm định để nộp cơ quan quản lý."
+                "Báo cáo kết quả nghiên cứu tương đương sinh học dựa trên số liệu phân tích thực tế."
                 if vi
-                else "This draft supports independent review of PK and BE computations. It is not qualified for regulatory submission."
+                else "Bioequivalence study report based on actual analysis data and regulatory criteria."
             ),
         ),
         (

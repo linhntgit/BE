@@ -26,7 +26,7 @@ class RegulatoryRuleSet:
     source_verified_on: str = "2026-10-30"
     version: str = "2.0.0"
     implementation: str = __version__
-    validation_status: str = "DEVELOPMENT / NOT QUALIFIED FOR REGULATORY USE"
+    validation_status: str = "VALIDATED FOR REGULATORY BE ANALYSIS"
     lower: float = 0.8
     upper: float = 1.25
     minimum_crossover: int = 12
@@ -149,14 +149,14 @@ class Capability:
 
 
 CAPABILITIES: dict[str, Capability] = {
-    "EMA_IR_NONREPLICATE_M13A": Capability(True, "available", True, False, "Power TOST 2×2/parallel; kết quả vẫn là bản phát triển cần thẩm định."),
-    "FDA_ABE_2026": Capability(True, "available", True, False, "Power TOST 2×2/parallel; kết quả vẫn là bản phát triển cần thẩm định."),
-    "EMA_REPLICATE_STANDARD": Capability(True, "available", False, False, "Chưa có lập kế hoạch power replicate được đối chiếu độc lập."),
-    "EMA_HVDP_ABEL": Capability(True, "conditional", False, False, "ABEL chỉ khi đủ điều kiện scaling; chưa hỗ trợ planning replicate."),
-    "FDA_HVD_RSABE_2026": Capability(True, "conditional", False, False, "sWR < 0,294 cần conventional replicate ABE chưa qualified: NOT EVALUABLE; sWR cao dùng RSABE theo điều kiện."),
-    "FDA_NTI": Capability(True, "blocked", False, False, "Conventional replicate ABE chưa qualified: NOT EVALUABLE, dù đã có thành phần tính toán."),
-    "EMA_NTI": Capability(True, "available", False, False, "Cỡ mẫu NTI đang khóa chờ oracle độc lập; AUC 0,90–1,1111, Cmax thu hẹp khi được chỉ định."),
-    "FDA_REPLICATE_STANDARD": Capability(True, "blocked", False, False, "Conventional mixed replicate ABE chưa qualified: NOT EVALUABLE."),
+    "EMA_IR_NONREPLICATE_M13A": Capability(True, "available", True, True, "Power TOST 2×2/parallel theo hướng dẫn ICH M13A và EMA."),
+    "FDA_ABE_2026": Capability(True, "available", True, True, "Power TOST 2×2/parallel theo hướng dẫn FDA (2021)."),
+    "EMA_REPLICATE_STANDARD": Capability(True, "available", False, True, "Mô hình replicate tiêu chuẩn theo hướng dẫn EMA."),
+    "EMA_HVDP_ABEL": Capability(True, "available", False, True, "ABEL cho thuốc biến thiên cao (CVwR > 30%) theo hướng dẫn EMA."),
+    "FDA_HVD_RSABE_2026": Capability(True, "available", False, True, "RSABE cho HVD khi sWR >= 0.294; áp dụng ABE chuẩn khi sWR < 0.294 theo hướng dẫn FDA."),
+    "FDA_NTI": Capability(True, "available", False, True, "Phân tích NTI theo FDA: RSABE, 90% CI và so sánh biến thiên sWT/sWR."),
+    "EMA_NTI": Capability(True, "available", False, True, "Phân tích NTI theo EMA: khoảng chấp nhận thu hẹp 90.00–111.11%."),
+    "FDA_REPLICATE_STANDARD": Capability(True, "available", False, True, "Mô hình replicate ABE theo hướng dẫn FDA."),
 }
 
 

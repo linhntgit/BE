@@ -71,7 +71,7 @@ def test_all_regulatory_profiles_have_theory_current_capability_and_sources():
         assert "thẩm định độc lập:" in status
         assert urls == rule.sources
         assert all(url.startswith("https://") for url in urls)
-    assert "NOT EVALUABLE" in " ".join(profile_help("FDA_NTI")[0])
+    assert "sWT/sWR" in " ".join(profile_help("FDA_NTI")[0])
     assert "sWR < 0,294" in " ".join(profile_help("FDA_HVD_RSABE_2026")[0])
 
 

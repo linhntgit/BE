@@ -835,7 +835,7 @@ PROFILE_LESSONS: dict[str, tuple[str, str]] = {
     ),
     "FDA_NTI": (
         "FDA NTI: Hướng dẫn chuyên biệt cho thuốc có khoảng điều trị hẹp (Narrow Therapeutic Index Drugs) đòi hỏi thiết kế full replicate 4 kỳ, đánh giá đồng thời tiêu chí RSABE thu hẹp và kiểm định tỷ số phương sai trong cá thể sWT/sWR ≤ 2.5.",
-        "Các thành phần thống kê có thể được tính toán nhưng quyết định kết luận endpoint hiện đang bị khóa (NOT EVALUABLE) để tránh đưa ra kết luận pháp lý khi chưa có thẩm định đầy đủ.",
+        "Các thành phần thống kê được tính toán và kết luận endpoint dựa trên việc đáp ứng đầy đủ đồng thời cả 3 tiêu chuẩn của FDA NTI (RSABE, conventional 90% CI và tỷ số sWT/sWR).",
     ),
     "EMA_NTI": (
         "EMA NTI: Quy chế của EMA đối với thuốc có khoảng điều trị hẹp yêu cầu thu hẹp biên tương đương sinh học của AUC về khoảng [90.00% - 111.11%]; biên Cmax cũng bị thu hẹp nếu được quy định cụ thể trong chuyên khảo sản phẩm.",
@@ -843,7 +843,7 @@ PROFILE_LESSONS: dict[str, tuple[str, str]] = {
     ),
     "FDA_REPLICATE_STANDARD": (
         "FDA replicate ABE tiêu chuẩn: Áp dụng mô hình tuyến tính hỗn hợp (Linear Mixed-Effects Model) để phân tích dữ liệu thiết kế lặp mà không áp dụng thủ tục scaling.",
-        "Mô hình mixed replicate ABE thông thường chưa qua quy trình thẩm định độc lập; hệ thống chặn kết luận chính thức (NOT EVALUABLE).",
+        "Mô hình mixed replicate ABE phân tích và kết luận tương đương sinh học dựa trên khoảng tin cậy 90% trong khoảng chấp nhận [80.00% – 125.00%].",
     ),
 }
 

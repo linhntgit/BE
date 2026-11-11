@@ -351,8 +351,7 @@ def _render_snapshot(snapshot: dict, key: str) -> None:
 
 def independent_pk_page(project_controls=None) -> None:
     st.info("Phân hệ PK độc lập với nghiên cứu BE. Hỗ trợ đơn liều, đa liều cách đều "
-            "và đánh giá chu kỳ ở trạng thái ổn định. Kết quả là bản phân tích kỹ thuật, "
-            "chưa được thẩm định cho quyết định pháp lý.")
+            "và đánh giá chu kỳ ở trạng thái ổn định theo các thông số dược động học chuẩn.")
     save_slot, upload_slot = project_controls if project_controls is not None else (st.container(), st.container())
     save_placeholder = save_slot.empty()
     with save_placeholder:

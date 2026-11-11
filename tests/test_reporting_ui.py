@@ -188,8 +188,8 @@ def test_full_asean_outline_and_hierarchical_headings(report_project, language):
         ("EMA_HVDP_ABEL", "8.5.2", "ABEL"),
         ("FDA_HVD_RSABE_2026", "8.5.2", "Howe"),
         ("EMA_NTI", "8.5.2", "0,90"),
-        ("FDA_NTI", "8.5.2", "NOT EVALUABLE"),
-        ("FDA_REPLICATE_STANDARD", "8.5.2", "NOT EVALUABLE"),
+        ("FDA_NTI", "8.5.2", "sWT/sWR"),
+        ("FDA_REPLICATE_STANDARD", "8.5.2", "replicate"),
         ("EMA_IR_NONREPLICATE_M13A", "8.5.1", "TOST"),
     ],
 )

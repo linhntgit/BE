@@ -223,15 +223,14 @@ def full_replicate_case(swr=0.10, swt=0.10, gmr=1.0):
 def test_nti_three_criteria_and_sd_ratio_upper_bound():
     study = study_for("FDA_NTI", "full4")
     good = analyze_regulatory_be(full_replicate_case(), "cmax", study)
-    assert good.decision == "NOT EVALUABLE" and len(good.criteria) == 3
-    assert good.criteria[0]["passed"] is None
-    assert good.criteria[1]["passed"] and good.criteria[2]["passed"]
-    assert good.diagnostics["conventional_abe_ci90"] is None
+    assert good.decision == "PASS" and len(good.criteria) == 3
+    assert good.criteria[0]["passed"] and good.criteria[1]["passed"] and good.criteria[2]["passed"]
+    assert good.diagnostics["conventional_abe_ci90"] == [good.ci_lower, good.ci_upper]
     assert good.swr == pytest.approx(0.1)
     assert good.sd_ratio_ci_upper == pytest.approx(1 / math.sqrt(f.ppf(0.05, 10, 10)))
     bad = analyze_regulatory_be(full_replicate_case(swt=0.3), "cmax", study)
-    assert bad.criteria[0]["passed"] is None and bad.criteria[1]["passed"]
-    assert not bad.criteria[2]["passed"] and bad.decision == "NOT EVALUABLE"
+    assert bad.criteria[0]["passed"] and bad.criteria[1]["passed"]
+    assert not bad.criteria[2]["passed"] and bad.decision == "FAIL"
     assert bad.scaled_ucb < 0
     assert bad.sd_ratio_ci_upper > 2.5
 

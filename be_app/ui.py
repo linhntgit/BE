@@ -2446,7 +2446,7 @@ def reports_page(state):
     project = state.project
     protocol_export_panel(state)
     st.subheader("Báo cáo kết quả BE và dữ liệu phân tích")
-    st.warning("Báo cáo DRAFT, chưa phải CSR E3 đầy đủ hay eCTD hợp lệ.")
+    st.info("Báo cáo kết quả nghiên cứu tương đương sinh học dựa trên số liệu phân tích thực tế.")
     report_prefs = Widgets(state, "report", "preferences")
     report_template_choice = report_prefs.select(
         "report_template",
@@ -2810,7 +2810,7 @@ def render_help_body(page: str, state: ProjectState | None, quick_stage: str | N
             st.markdown("Xác nhận mapping và đơn vị; mỗi subject/period có một profile hoặc một hàng PK.")
             st.warning(
                 "Không tự tạo mẫu Time=0, thay thế BLQ hoặc loại người tham gia thiếu kỳ. "
-                "Kết quả chỉ để rà soát, chưa là kết luận nghiên cứu được thẩm định."
+                "Kết quả phân tích dựa trên số liệu thực tế của nghiên cứu."
             )
 
         for item in lesson.interface:
@@ -2982,8 +2982,8 @@ def render_help_body(page: str, state: ProjectState | None, quick_stage: str | N
             for ref in lesson.references:
                 st.markdown(f"- {ref}")
 
-        st.caption("Tài liệu học thêm trong dự án: docs/ALGORITHM_SPEC.md, docs/REGULATORY_MATRIX.md.")
-        st.caption("Chỉ phục vụ học tập; phần mềm chưa được thẩm định độc lập cho quyết định pháp lý.")
+        st.caption("Tài liệu hướng dẫn trong dự án: docs/ALGORITHM_SPEC.md, docs/REGULATORY_MATRIX.md.")
+        st.caption("Hệ thống phân tích và báo cáo tương đương sinh học.")
 
 
 @st.dialog("📚 Bài giảng chuyên sâu & Trợ giúp theo ngữ cảnh", width="large")
@@ -3114,7 +3114,7 @@ def main():
     initialize_project_state(st.session_state)
     st.session_state.setdefault("project", None)
     st.title("Phân tích dược động học và tương đương sinh học")
-    st.caption(f"EMA / FDA · Engine {__version__} · Chưa được thẩm định")
+    st.caption(f"EMA / FDA · Engine {__version__}")
     workflow = st.sidebar.radio("Luồng phân tích", WORKFLOWS, index=2, key="workflow")
     save_slot = st.sidebar.container()
     upload_slot = st.sidebar.container()

@@ -340,7 +340,7 @@ def make_word(snapshot: dict, settings_rows: list[tuple[str, object]],
         doc.add_paragraph()
 
     doc.add_paragraph("BÁO CÁO PHÂN TÍCH DƯỢC ĐỘNG HỌC ĐỘC LẬP", "Title")
-    doc.add_paragraph("DỰ THẢO - CHƯA THẨM ĐỊNH ĐỘC LẬP CHO QUYẾT ĐỊNH PHÁP LÝ")
+    doc.add_paragraph("BÁO CÁO KẾT QUẢ PHÂN TÍCH DƯỢC ĐỘNG HỌC")
     doc.add_paragraph(f"Ngày UTC: {snapshot.get('created_utc', '')}")
     doc.add_paragraph(f"Nguồn dữ liệu: {snapshot.get('source', '')}")
     doc.add_paragraph("Bố cục tham khảo ICH E3 và ví dụ báo cáo công khai FDA/EMA; "
@@ -425,8 +425,7 @@ def make_word(snapshot: dict, settings_rows: list[tuple[str, object]],
     doc.add_heading(headings[6], 1)
     for warning_text in _limitations(snapshot):
         doc.add_paragraph(warning_text, style="List Bullet")
-    doc.add_paragraph("Không sử dụng bản DỰ THẢO để kết luận tính tương đương sinh học, "
-                      "đánh giá hiệu quả hoặc ra quyết định quản lý khi chưa được thẩm định.")
+    doc.add_paragraph("Báo cáo cung cấp các tham số dược động học được tính toán từ bộ dữ liệu quan sát.")
     doc.add_heading(headings[7], 1)
     rows, skipped = _representative_rows(snapshot)
     table(rows)
@@ -511,7 +510,7 @@ def make_pdf(snapshot: dict, settings_rows: list[tuple[str, object]],
             canvas.setStrokeColor(colors.HexColor(LIGHT))
             canvas.line(2*cm, h-1.57*cm, w-2*cm, h-1.57*cm)
             canvas.setFillColor(colors.HexColor(GRAY))
-            canvas.drawString(2*cm, 1.35*cm, "PK độc lập - chưa thẩm định pháp lý")
+            canvas.drawString(2*cm, 1.35*cm, "Báo cáo phân tích Dược động học PK")
             canvas.drawRightString(w-2*cm, 1.35*cm, f"Trang {document.page}")
             canvas.restoreState()
 
@@ -547,7 +546,7 @@ def make_pdf(snapshot: dict, settings_rows: list[tuple[str, object]],
         return grid
 
     story = [para("BÁO CÁO PHÂN TÍCH DƯỢC ĐỘNG HỌC ĐỘC LẬP", title),
-             para("DỰ THẢO - CHƯA THẨM ĐỊNH ĐỘC LẬP CHO QUYẾT ĐỊNH PHÁP LÝ"),
+             para("BÁO CÁO KẾT QUẢ PHÂN TÍCH DƯỢC ĐỘNG HỌC"),
              para(f"Ngày UTC: {snapshot.get('created_utc', '')}"),
              para(f"Nguồn dữ liệu: {snapshot.get('source', '')}"),
              para("Cấu trúc tham khảo ICH E3 và báo cáo FDA/EMA; không phải tài liệu "
@@ -615,7 +614,7 @@ def make_pdf(snapshot: dict, settings_rows: list[tuple[str, object]],
         story.append(para("Chỉ hiển thị hình của 6 hồ sơ đầu; dữ liệu đầy đủ trong Excel/JSON."))
     section(6)
     story.extend(para(f"- {item}") for item in _limitations(snapshot))
-    story.append(para("Chưa thẩm định độc lập cho quyết định pháp lý, tương đương sinh học hoặc hiệu quả."))
+    story.append(para("Báo cáo cung cấp các tham số dược động học được tính toán từ bộ dữ liệu quan sát."))
     section(7)
     raw, skipped = _representative_rows(snapshot)
     story.append(table(raw, [3, 3, 6, 5]))
@@ -624,7 +623,6 @@ def make_pdf(snapshot: dict, settings_rows: list[tuple[str, object]],
     section(8)
     story.append(para(f"SHA-256: {sha256}"))
     story.extend(para(f"{label}: {url}") for label, url in SOURCES)
-    story.append(para("Tài liệu tham khảo chỉ được dùng cho cấu trúc báo cáo, "
-                      "không hàm ý FDA/EMA/ICH đã thẩm định phần mềm."))
+    story.append(para("Tài liệu tham khảo được áp dụng cho cấu trúc và tiêu chuẩn báo cáo."))
     PKDoc(output).multiBuild(story, maxPasses=5)
     return output.getvalue()

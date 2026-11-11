@@ -399,7 +399,7 @@ def run_quick_be(
         "source_file": filename, "source_sha256": hashlib.sha256(content).hexdigest(),
         "input_sha256": digest(d.astype(object).where(pd.notna(d), None).to_dict("records")),
         "settings_sha256": digest(settings), "settings": settings,
-        "engine_version": __version__, "status": "DRAFT / INDEPENDENT REVIEW — NOT QUALIFIED",
+        "engine_version": __version__, "status": "ANALYZED",
         "blq_handling": {
             "policy": (nca_config or NcaConfig()).blq_policy,
             "positive_flagged_count": len(altered_blq) if selected_mode == "concentration" else 0,

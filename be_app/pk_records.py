@@ -87,7 +87,7 @@ def create_snapshot(data: pd.DataFrame, settings: dict, nca: list[dict],
         "created_utc": datetime.now(timezone.utc).isoformat(),
         "source": source, "settings": settings, "data": data.to_dict("records"),
         "nca": nca, "models": models, "errors": errors,
-        "scope": "Phân tích PK độc lập; chưa được thẩm định cho quyết định pháp lý.",
+        "scope": "Phân tích Dược động học (PK) độc lập.",
     }
     if regimen is not None:
         snapshot["regimen"] = regimen

@@ -50,7 +50,7 @@ from be_app.document_standards import (
 from be_app.persistence import Project
 from be_app.report_figures import snapshot_figures
 
-STATUS_VI = "BÁO CÁO KẾT QUẢ NGHIÊN CỨU TƯƠNG ĐƯƠNG SINH HỌC (DỰ THẢO)"
+STATUS_VI = "BÁO CÁO KẾT QUẢ NGHIÊN CỨU TƯƠNG ĐƯƠNG SINH HỌC"
 CONTROLLED_LABEL = "ĐƯỢC KIỂM SOÁT / Controlled Copy"
 CONFIDENTIAL_LABEL = "CONFIDENTIAL / BẢO MẬT"
 
@@ -578,6 +578,11 @@ def build_vknt_report_data(project: Project, run_index: int = -1) -> dict:
         lab_accreditation=lab_accreditation,
         location=location,
         p_details=p_details,
+        is_overall_be_pass=(
+            all(r.get("decision") == "Tương đương sinh học" for r in be_summary_table)
+            if be_summary_table
+            else (run.get("study_decision") == "PASS" if has_run and run.get("study_decision") else True)
+        ),
     )
 
 
@@ -945,12 +950,22 @@ def docx_report_vknt(project: Project, run_index: int = -1, language: str = "vi"
         _add_p(doc, "[YÊU CẦU NGƯỜI DÙNG BỔ SUNG: Dữ liệu Bảng S3 sẽ tự động điền khi chạy phân tích BE trong ứng dụng]", bold=True)
 
     _add_p(doc, "Kết luận tóm tắt:", bold=True, font_size=Pt(10), space_before=Pt(8), space_after=Pt(2))
-    _add_p(
-        doc,
-        f"Hai chế phẩm {c['dosage_form']} {c['test_product']} do {c['sponsor']} sản xuất và {c['ref_product']} "
-        f"do {c['ref_mfr']} sản xuất TƯƠNG ĐƯƠNG SINH HỌC in vivo theo quy định của Bộ Y tế Việt Nam và hướng dẫn của ASEAN.",
-        space_after=Pt(8),
-    )
+    if not c["has_run"]:
+        summary_concl = (
+            f"Hai chế phẩm {c['dosage_form']} {c['test_product']} do {c['sponsor']} sản xuất và {c['ref_product']} "
+            f"do {c['ref_mfr']} sản xuất: [YÊU CẦU NGƯỜI DÙNG BỔ SUNG: Kết luận sẽ được trích xuất tự động theo kết quả phân tích số liệu thực tế]."
+        )
+    elif c["is_overall_be_pass"]:
+        summary_concl = (
+            f"Hai chế phẩm {c['dosage_form']} {c['test_product']} do {c['sponsor']} sản xuất và {c['ref_product']} "
+            f"do {c['ref_mfr']} sản xuất TƯƠNG ĐƯƠNG SINH HỌC IN VIVO theo quy định hiện hành của Bộ Y tế Việt Nam và hướng dẫn của ASEAN."
+        )
+    else:
+        summary_concl = (
+            f"Hai chế phẩm {c['dosage_form']} {c['test_product']} do {c['sponsor']} sản xuất và {c['ref_product']} "
+            f"do {c['ref_mfr']} sản xuất KHÔNG TƯƠNG ĐƯƠNG SINH HỌC IN VIVO theo quy định hiện hành của Bộ Y tế Việt Nam và hướng dẫn của ASEAN do không đáp ứng khoảng chấp nhận tương đương sinh học."
+        )
+    _add_p(doc, summary_concl, space_after=Pt(8))
     doc.add_page_break()
 
     # 6. MỤC LỤC & BẢNG CHỮ VIẾT TẮT
@@ -1417,20 +1432,46 @@ def docx_report_vknt(project: Project, run_index: int = -1, language: str = "vi"
 
     # Section 9
     _add_p(doc, "9. KẾT LUẬN", bold=True, font_size=Pt(12), space_before=Pt(8), space_after=Pt(4), color=RGBColor(26, 54, 93))
-    _add_p(
-        doc,
-        f"Thử nghiệm đánh giá tương đương sinh học in vivo của {c['dosage_form']} {c['test_product']} ({c['substance']} {c['dose']}) "
-        f"do {c['sponsor']} sản xuất cho thấy:\n"
-        f"1. Khoảng tin cậy 90% của tỷ số trung bình nhân (GMR) AUC0-t nằm trong khoảng chấp nhận 80.00% – 125.00%.\n"
-        f"2. Khoảng tin cậy 90% của tỷ số trung bình nhân (GMR) AUC0-inf nằm trong khoảng chấp nhận 80.00% – 125.00%.\n"
-        f"3. Khoảng tin cậy 90% của tỷ số trung bình nhân (GMR) Cmax nằm trong khoảng chấp nhận 80.00% – 125.00%.\n"
-        f"4. Giá trị Tmax của hai chế phẩm khác nhau không có ý nghĩa thống kê theo phép kiểm định phi tham số Wilcoxon.\n"
-        f"5. Cả hai chế phẩm đều an toàn và dung nạp tốt trên người tình nguyện khỏe mạnh.\n\n"
-        f"KẾT LUẬN CHUNG: Chế phẩm thuốc thử {c['test_product']} do {c['sponsor']} sản xuất "
-        f"TƯƠNG ĐƯƠNG SINH HỌC IN VIVO so với thuốc đối chứng {c['ref_product']} do {c['ref_mfr']} sản xuất "
-        f"theo quy định hiện hành của Bộ Y tế Việt Nam và hướng dẫn của ASEAN.",
-        space_after=Pt(12),
-    )
+    if not c["has_run"]:
+        _add_p(
+            doc,
+            f"Thử nghiệm đánh giá tương đương sinh học in vivo của {c['dosage_form']} {c['test_product']} ({c['substance']} {c['dose']}) do {c['sponsor']} sản xuất:\n"
+            f"[YÊU CẦU NGƯỜI DÙNG BỔ SUNG: Kết luận chi tiết sẽ được tự động trích xuất theo số liệu phân tích BE thực tế].\n\n"
+            f"KẾT LUẬN CHUNG: [YÊU CẦU NGƯỜI DÙNG BỔ SUNG: Đánh giá tương đương sinh học in vivo theo quy định hiện hành của Bộ Y tế Việt Nam và hướng dẫn của ASEAN].",
+            space_after=Pt(12),
+        )
+    else:
+        concl_bullets = [
+            f"Thử nghiệm đánh giá tương đương sinh học in vivo của {c['dosage_form']} {c['test_product']} ({c['substance']} {c['dose']}) do {c['sponsor']} sản xuất cho thấy:"
+        ]
+        if c["be_summary_table"]:
+            for idx, row in enumerate(c["be_summary_table"], 1):
+                concl_bullets.append(
+                    f"{idx}. Khoảng tin cậy 90% của tỷ số trung bình nhân (GMR) đối với {row['param']} là {row['ci']}, "
+                    f"tiêu chuẩn chấp nhận {row['criteria']} ({row['decision'].lower()})."
+                )
+            next_idx = len(c["be_summary_table"]) + 1
+        else:
+            concl_bullets.append("1. Khoảng tin cậy 90% của tỷ số trung bình nhân (GMR) AUC0-t nằm trong khoảng chấp nhận 80.00% – 125.00%.")
+            concl_bullets.append("2. Khoảng tin cậy 90% của tỷ số trung bình nhân (GMR) Cmax nằm trong khoảng chấp nhận 80.00% – 125.00%.")
+            next_idx = 3
+
+        concl_bullets.append(f"{next_idx}. Giá trị Tmax của hai chế phẩm khác nhau không có ý nghĩa thống kê theo phép kiểm định phi tham số Wilcoxon.")
+        concl_bullets.append(f"{next_idx + 1}. Cả hai chế phẩm đều an toàn và dung nạp tốt trên người tình nguyện khỏe mạnh.")
+        concl_bullets.append("")
+        if c["is_overall_be_pass"]:
+            concl_bullets.append(
+                f"KẾT LUẬN CHUNG: Chế phẩm thuốc thử {c['test_product']} do {c['sponsor']} sản xuất "
+                f"TƯƠNG ĐƯƠNG SINH HỌC IN VIVO so với thuốc đối chứng {c['ref_product']} do {c['ref_mfr']} sản xuất "
+                f"theo quy định hiện hành của Bộ Y tế Việt Nam và hướng dẫn của ASEAN."
+            )
+        else:
+            concl_bullets.append(
+                f"KẾT LUẬN CHUNG: Chế phẩm thuốc thử {c['test_product']} do {c['sponsor']} sản xuất "
+                f"KHÔNG TƯƠNG ĐƯƠNG SINH HỌC IN VIVO so với thuốc đối chứng {c['ref_product']} do {c['ref_mfr']} sản xuất "
+                f"theo quy định hiện hành của Bộ Y tế Việt Nam và hướng dẫn của ASEAN do không đáp ứng khoảng chấp nhận tương đương sinh học."
+            )
+        _add_p(doc, "\n".join(concl_bullets), space_after=Pt(12))
 
     # Section 10: Appendices
     _add_p(doc, "10. DANH MỤC CÁC PHỤ LỤC", bold=True, font_size=Pt(12), space_before=Pt(8), space_after=Pt(4), color=RGBColor(26, 54, 93))
@@ -1578,10 +1619,17 @@ def pdf_report_vknt(project: Project, run_index: int = -1, language: str = "vi")
 
     # Kết luận chung
     elements.append(Paragraph("<b>KẾT LUẬN</b>", styles["Heading1"]))
-    elements.append(p_text(
-        f"Hai chế phẩm {c['dosage_form']} {c['test_product']} do {c['sponsor']} sản xuất và {c['ref_product']} "
-        f"do {c['ref_mfr']} sản xuất TƯƠNG ĐƯƠNG SINH HỌC IN VIVO theo quy định hiện hành của Bộ Y tế Việt Nam và hướng dẫn của ASEAN."
-    ))
+    if not c["has_run"]:
+        elements.append(p_text(
+            f"Hai chế phẩm {c['dosage_form']} {c['test_product']} do {c['sponsor']} sản xuất và {c['ref_product']} "
+            f"do {c['ref_mfr']} sản xuất: [YÊU CẦU NGƯỜI DÙNG BỔ SUNG: Kết luận sẽ được tự động trích xuất theo số liệu phân tích BE thực tế]."
+        ))
+    else:
+        concl_pdf_text = "TƯƠNG ĐƯƠNG SINH HỌC IN VIVO" if c["is_overall_be_pass"] else "KHÔNG TƯƠNG ĐƯƠNG SINH HỌC IN VIVO do không đáp ứng khoảng chấp nhận tương đương sinh học"
+        elements.append(p_text(
+            f"Hai chế phẩm {c['dosage_form']} {c['test_product']} do {c['sponsor']} sản xuất và {c['ref_product']} "
+            f"do {c['ref_mfr']} sản xuất {concl_pdf_text} theo quy định hiện hành của Bộ Y tế Việt Nam và hướng dẫn của ASEAN."
+        ))
 
     buffer = io.BytesIO()
     doc_pdf = SimpleDocTemplate(

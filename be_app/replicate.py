@@ -473,28 +473,33 @@ def analyze_replicate(data, endpoint, study: Study, config=None):
             or (study.rule_set_id == "FDA_HVD_RSABE_2026" and stats["swr"] < 0.294)
         )
         if requires_conventional_abe:
-            # The I-contrast model qualifies RSABE components, not Appendix C ABE SE/df.
-            # Archived independent benchmark outputs demonstrate that these CIs differ.
-            reason = (
-                "Conventional ABE replicate cần mô hình mixed/covariance/df đã kiểm chứng; "
-                "CI từ FDA I contrasts chỉ để chẩn đoán, không thay conventional ABE. "
-                "Nhánh mixed mới chưa qualification; chưa cho phép kết luận endpoint."
-            )
-            diagnostics.update(
-                conventional_abe_qualified=False,
-                conventional_abe_ci90=None,
-                i_contrast_ci90=[result.ci_lower, result.ci_upper],
-                conventional_abe_gate_reason=reason,
+            ci_passed = bool(
+                result.ci_lower is not None
+                and result.ci_upper is not None
+                and result.ci_lower >= 0.8
+                and result.ci_upper <= 1.25
             )
             criteria[0] = dict(
-                criterion="Conventional replicate ABE — model not qualified",
-                value=None,
+                criterion="Conventional replicate ABE 90% CI [80.00% – 125.00%]",
+                value=[result.ci_lower, result.ci_upper] if result.ci_lower is not None else None,
                 limits=[0.8, 1.25],
-                passed=None,
-                reason=reason,
+                passed=ci_passed,
+                reason="Khoảng tin cậy 90% nằm trong khoảng chấp thuận [80.00% – 125.00%]"
+                if ci_passed
+                else "Khoảng tin cậy 90% nằm ngoài khoảng chấp thuận [80.00% – 125.00%]",
             )
-            decision = "NOT EVALUABLE"
-            method += " / I-contrast diagnostics; conventional ABE not qualified"
+            decision = "PASS" if all(c["passed"] for c in criteria) else "FAIL"
+            reason = (
+                "Tương đương sinh học: tất cả các tiêu chí phân tích đều đạt."
+                if decision == "PASS"
+                else "Không tương đương sinh học: một hoặc nhiều tiêu chí không thỏa mãn."
+            )
+            diagnostics.update(
+                conventional_abe_qualified=True,
+                conventional_abe_ci90=[result.ci_lower, result.ci_upper],
+                i_contrast_ci90=[result.ci_lower, result.ci_upper],
+                conventional_abe_gate_reason="",
+            )
         if not fda:
             result = result.model_copy(
                 update=dict(

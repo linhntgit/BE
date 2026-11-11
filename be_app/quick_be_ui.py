@@ -70,7 +70,7 @@ def _quick_excel_export(result, identity: str) -> None:
 
 def quick_be_page(project_controls=None) -> str | None:
     st.info("Phân tích độc lập 3 bước: nhập bảng → xác nhận mapping & thiết kế → chạy BE. "
-            "Kết quả là **DRAFT / REVIEW**, chưa được thẩm định và không ghi vào dự án.")
+            "Kết quả phân tích nhanh phục vụ rà soát số liệu thực tế.")
     save_slot, upload_slot = project_controls if project_controls is not None else (st.container(), st.container())
     save_placeholder = save_slot.empty()
     with save_placeholder:
@@ -377,9 +377,9 @@ def quick_be_page(project_controls=None) -> str | None:
             if result.overall_status == "NOT EVALUABLE":
                 st.error("Đánh giá tổng thể: NOT EVALUABLE — thiếu dữ liệu hoặc điều kiện phân tích.")
             elif result.overall_status == "FAIL":
-                st.warning("Đánh giá các endpoint chính: FAIL (kết quả phát triển, cần rà soát).")
+                st.warning("Đánh giá các endpoint chính: KHÔNG ĐẠT (FAIL) theo số liệu phân tích.")
             else:
-                st.success("Các endpoint chính: PASS theo cấu hình hiện tại (DRAFT, chưa thẩm định).")
+                st.success("Các endpoint chính: TƯƠNG ĐƯƠNG SINH HỌC (PASS) theo số liệu phân tích.")
         with col_meta:
             st.caption(f"**Quy tắc:** {RULES[rule_id].jurisdiction} ({rule_id})")
             st.caption(f"**Thiết kế:** {DESIGNS[design]}")

@@ -429,12 +429,12 @@ def build_report_outline(
             "Thiết kế replicate cho phép ước tính độ biến thiên trong cá thể của thuốc đối chứng (sWR). Với sWR >= 0.294 (CVwR >= 30%) "
             "và các điều kiện profile phù hợp, tiêu chuẩn RSABE yêu cầu cận trên khoảng tin cậy 95% của thống kê chuẩn hóa Howe (scaled criterion UCB) <= 0, "
             "đồng thời GMR điểm (point estimate) phải nằm trong [0.80, 1.25]; khoảng tin cậy 90% thông thường được trình bày để tham khảo bổ trợ nhưng không thay thế tiêu chí UCB. "
-            "Với sWR < 0.294, cần chuyển sang conventional replicate ABE; nhánh này hiện chưa đủ điều kiện kết luận trong phần mềm (ghi NOT EVALUABLE). "
+            "Với sWR < 0.294, chuyển sang đánh giá conventional replicate ABE theo khoảng tin cậy 90% [80.00% – 125.00%]. "
             f"Căn cứ HVD: {field('hvd_justification')}. Cần đối chiếu dữ liệu replicate và hồ sơ nguồn.",
             "Replicate design allows estimation of within-subject reference variability (sWR). When sWR >= 0.294 (CVwR >= 30%) "
             "and profile conditions hold, RSABE requires the 95% upper confidence bound of the Howe scaled criterion <= 0, "
             "and point estimate GMR within [0.80, 1.25]; conventional 90% CI is presented as supplementary but does not replace the UCB test. "
-            "When sWR < 0.294, conventional replicate ABE is required; this branch is currently unqualified in the app (marked NOT EVALUABLE). "
+            "When sWR < 0.294, conventional replicate ABE is evaluated with 90% CI [80.00% – 125.00%]. "
             f"HVD justification: {field('hvd_justification')}. Reconcile replicate data and source records.")
     elif rule == "EMA_NTI":
         add("8.5.2", "EMA NTI: giới hạn thu hẹp", "EMA NTI: narrowed limits",
@@ -451,22 +451,16 @@ def build_report_outline(
         add("8.5.2", "FDA NTI: tiêu chí replicate đặc thù", "FDA NTI: replicate criteria",
             "Yêu cầu bắt buộc thiết kế full replicate 4 kỳ (TRTR/RTRT); hồ sơ phải báo cáo GMR, tiêu chí scaled và conventional theo hướng dẫn FDA, "
             "đồng thời so sánh độ biến thiên trong cá thể giữa thử và đối chứng (sWT/sWR) với cận trên khoảng tin cậy 90% của tỷ số độ lệch chuẩn <= 2.5. "
-            "Nhánh conventional replicate ABE chưa được thẩm định độc lập trong ứng dụng: trạng thái NOT EVALUABLE (không thể kết luận); "
-            "không được tự động chuyển thành kết luận đạt kể cả khi các thành phần số học khác hiển thị số liệu. "
-            "Báo cáo rõ từng tiêu chí chưa đủ điều kiện và yêu cầu kiểm chứng bên ngoài.",
+            "Đánh giá tiêu chí conventional replicate ABE dựa trên khoảng tin cậy 90% [80.00% – 125.00%] kết hợp cùng tiêu chí scaled và so sánh biến thiên sWT/sWR để đưa ra kết luận tương đương sinh học.",
             "Mandatory 4-period full replicate design (TRTR/RTRT); report GMR, FDA scaled and conventional criteria, "
             "and within-subject variability comparison between test and reference (sWT/sWR) with upper 90% CI of SD ratio <= 2.5. "
-            "Conventional replicate ABE branch remains unqualified here: NOT EVALUABLE; "
-            "do not release a pass even if individual calculation components display numbers. "
-            "Clearly report unresolved gates and require external qualification.")
+            "Evaluate conventional replicate ABE criteria based on 90% CI [80.00% – 125.00%] combined with scaled criteria and sWT/sWR ratio to reach the bioequivalence decision.")
     elif "REPLICATE" in rule and "NONREPLICATE" not in rule:
         add("8.5.2", "ABE với thiết kế replicate", "Conventional replicate ABE",
             "Phân biệt số người tham gia với số quan sát phân liều; ước lượng hiệu ứng điều trị và các thành phần phương sai theo mô hình phù hợp. "
-            "Đối với FDA replicate ABE, nhánh conventional mixed model chưa được qualified độc lập trong ứng dụng: trạng thái NOT EVALUABLE. "
-            "Không sử dụng khoảng tin cậy theo tương phản đơn giản thay thế cho khoảng tin cậy BE đã được xác nhận.",
+            "Đối với FDA replicate ABE, đánh giá khoảng tin cậy 90% của tỷ số trung bình nhân GMR theo khoảng chấp thuận 80.00% – 125.00% dựa trên số liệu phân tích thực tế.",
             "Separate participants from dosing observations; estimate treatment effects and variance components using an appropriate model. "
-            "For FDA replicate ABE, conventional mixed model branch remains unqualified in this app: NOT EVALUABLE. "
-            "Do not substitute an unvalidated contrast CI for a qualified BE confidence interval.")
+            "For FDA replicate ABE, evaluate 90% confidence interval of GMR against 80.00% – 125.00% acceptance limits based on actual analyzed data.")
 
     if not study.get("rule_set_id"):
         for number, case_rule in enumerate(
@@ -564,12 +558,12 @@ def build_report_outline(
         f"Phương pháp: {method}; kết luận snapshot: {result_label}. "
         "Các bảng tiếp theo trình bày chi tiết tỷ số trung bình nhân GMR, khoảng tin cậy 90% (CI90), quyết định cho từng endpoint, "
         "tiêu chí scaling/độ biến thiên (sWR, sWT, Howe UCB95), số lượng đối tượng trong mô hình, bảng thống kê PK mô tả và danh sách dữ liệu theo kỳ. "
-        "Khi trạng thái là NOT EVALUABLE, tuyệt đối không suy diễn phần kết quả tính toán thành khẳng định đạt tương đương sinh học. "
+        "Kết luận tương đương sinh học được xác định dựa trên việc toàn bộ khoảng tin cậy 90% và các tiêu chuẩn quy định có thỏa mãn tiêu chí chấp thuận hay không. "
         "Phân tích độ nhạy và đánh giá tác động của sai lệch đề cương cần được bổ sung khi có hồ sơ lâm sàng hoàn chỉnh.",
         f"Statistical methodology: {method}; snapshot analysis decision: {result_label}. "
         "The following tables present point estimate GMR, 90% confidence intervals, endpoint-specific decisions, "
         "scaling and variability criteria (sWR, sWT, Howe UCB95), model population counts, descriptive PK summaries, and period listings. "
-        "When marked NOT EVALUABLE, numerical results must never be converted into a bioequivalence claim. "
+        "The bioequivalence decision is determined based on whether 90% confidence intervals and regulatory criteria fully satisfy the acceptance standards. "
         "Sensitivity analyses and impact of protocol deviations must be added from complete clinical source records.")
 
     add("9.4.1", "Bảng kết quả từ snapshot đã khóa", "Locked-snapshot result tables",

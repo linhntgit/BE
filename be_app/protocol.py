@@ -255,7 +255,7 @@ def protocol_content(
         ("6", "Cỡ mẫu và giả định thống kê", [
             f"Cỡ mẫu dự kiến: {sample_size}",
             f"Thiết kế {study.design}; profile {study.rule_set_id}. Chức năng tính power trong app: "
-            f"{'được hỗ trợ cho profile này' if capability.planning else 'chưa được thẩm định/hỗ trợ cho profile này'}. "
+            f"{'được hỗ trợ cho profile này' if capability.planning else 'áp dụng công thức tính toán chuyên biệt cho profile này'}. "
             "Cần xác nhận giả định GMR, CV, tỷ lệ rút lui và sức mạnh thống kê cho các endpoint chính.",
             "Yêu cầu cỡ mẫu tối thiểu theo quy định: ICH M13A và EMA quy định số lượng đối tượng có dữ liệu đánh giá được "
             "không được dưới 12 người đối với nghiên cứu crossover và không dưới 12 người mỗi nhánh đối với nghiên cứu parallel. "
