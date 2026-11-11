@@ -16,3 +16,57 @@ output/
 scratch*.py
 scratch/
 
+# ==============================================================================
+# Bảo mật Dữ liệu Viện & Doanh nghiệp (Viện Kiểm nghiệm, Dược Hậu Giang, Telfor...)
+# ==============================================================================
+
+# 1. Từ khóa nhạy cảm theo nhãn hàng & Doanh nghiệp
+*telfor*
+*Telfor*
+*TELFOR*
+*dhg*
+*Dhg*
+*DHG*
+*duoc_hau_giang*
+*duochaugiang*
+
+# 2. Hồ sơ, đề cương, dữ liệu thẩm định nội bộ
+*de_cuong*
+*De_cuong*
+*DE_CUONG*
+*ho_so*
+*Ho_so*
+*HO_SO*
+*dossier*
+*Dossier*
+*DOSSIER*
+*protocol_raw*
+*report_raw*
+*raw_data*
+
+# 3. Thư mục dữ liệu riêng tư & bảo mật
+private/
+confidential/
+proprietary/
+enterprise/
+dossiers/
+study_data/
+clinical_data/
+patient_data/
+volunteer_data/
+docs_private/
+
+# 4. Tài liệu văn phòng và báo cáo xuất ra (tránh lộ tài liệu nội bộ)
+*.docx
+*.doc
+*.pptx
+*.ppt
+*.xlsx
+*.xls
+!Bioequivalence_Fasted.xlsx
+!NCA_Fasted.xlsx
+*.pdf
+!58381904fnl_Statistical Approaches to Establishing Bioequivalence.pdf
+!Bioequivalence_Study_Reporting_Format.pdf
+
+

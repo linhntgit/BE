@@ -272,7 +272,7 @@ def build_vknt_protocol_content(
     ref_reg = _field("", "Số đăng ký lưu hành thuốc đối chứng", "Ví dụ: VD-28324-17")
 
     # Pharmacological details
-    is_fexo = "fexofenadin" in active_ing.lower() or "telfor" in test_prod.lower()
+    is_fexo = "fexofenadin" in active_ing.lower()
 
     return {
         "study_id": study_id,

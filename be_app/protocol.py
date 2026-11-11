@@ -360,7 +360,7 @@ def docx_protocol(
     valid_plan: dict | None = None,
     template: str = "legacy",
 ) -> bytes:
-    if template in ("standard", "vknt", "vknt_tt91", "telfor", "telfor_60", "vn_moh", "standard_vn"):
+    if template in ("standard", "vknt", "vknt_tt91", "vn_moh", "standard_vn"):
         return docx_protocol_vknt(project, details, valid_plan=valid_plan)
     content = protocol_content(project, details, valid_plan=valid_plan)
     doc = Document()
@@ -515,7 +515,7 @@ def pdf_protocol(
     valid_plan: dict | None = None,
     template: str = "legacy",
 ) -> bytes:
-    if template in ("standard", "vknt", "vknt_tt91", "telfor", "telfor_60", "vn_moh", "standard_vn"):
+    if template in ("standard", "vknt", "vknt_tt91", "vn_moh", "standard_vn"):
         return pdf_protocol_vknt(project, details, valid_plan=valid_plan)
     content = protocol_content(project, details, valid_plan=valid_plan)
     font = _register_pdf_font()
@@ -592,7 +592,7 @@ def pdf_protocol(
 
 def blank_protocol_template(template: str = "legacy") -> bytes:
     """Return a blank protocol Word template with standard placeholders and guidelines."""
-    if template in ("standard", "vknt", "vknt_tt91", "telfor", "telfor_60", "vn_moh", "standard_vn"):
+    if template in ("standard", "vknt", "vknt_tt91", "vn_moh", "standard_vn"):
         return blank_protocol_vknt()
     from be_app.domain import Study
     return docx_protocol(Project(study=Study(study_id="BLANK-PROTOCOL", title="ĐỀ CƯƠNG NGHIÊN CỨU BE")))

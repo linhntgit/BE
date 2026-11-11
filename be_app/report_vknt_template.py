@@ -221,7 +221,7 @@ def build_vknt_report_data(project: Project, run_index: int = -1) -> dict:
     p_details = getattr(study, "protocol_details", {}) or {}
 
     # Basic metadata
-    substance = _field(getattr(study, "active_ingredient", None), "Tên hoạt chất", "Ví dụ: Cefixim, Telfor...")
+    substance = _field(getattr(study, "active_ingredient", None), "Tên hoạt chất", "Ví dụ: Cefixim, Paracetamol...")
     dose = _field(getattr(study, "dose", None), "Hàm lượng", "Ví dụ: 100 mg, 60 mg...")
     dose_unit = getattr(study, "dose_unit", "mg") or "mg"
     dosage_form = _field(getattr(study, "test_dosage_form", None) or getattr(study, "formulation", None), "Dạng bào chế", "Ví dụ: Bột pha hỗn dịch uống, Viên nén bao phim...")
