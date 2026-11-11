@@ -345,6 +345,20 @@ def test_nine_compartmental_models_are_comprehensive_and_valid():
 
     assert found_combinations == {(r, c) for r in expected_routes for c in expected_cpts}
 
+    iv_bolus_three = next(doc for doc in MODEL_DOCS.values()
+                          if (doc.route, doc.compartments) == ("iv_bolus", 3))
+    iv_infusion_three = next(doc for doc in MODEL_DOCS.values()
+                             if (doc.route, doc.compartments) == ("iv_infusion", 3))
+    oral_three = next(doc for doc in MODEL_DOCS.values()
+                      if (doc.route, doc.compartments) == ("oral", 3))
+    assert "ngoại suy" in iv_bolus_three.notes
+    assert "không phải điểm đo" in iv_bolus_three.parameters
+    assert "\\mathbf{1}" in iv_infusion_three.ode_latex
+    assert "\\delta" not in iv_infusion_three.ode_latex
+    assert "7 tham số" in oral_three.theory
+    assert "thời gian trễ" in oral_three.theory
+    assert "3 ngăn" in " ".join(PK_STANDALONE_LESSON.interface)
+
     # 2. Check all 9 individual SVG diagrams compile to valid XML
     for route, c in found_combinations:
         svg_xml = get_diagram_compartment(route, c)

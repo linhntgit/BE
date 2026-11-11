@@ -1,4 +1,4 @@
-"""One- and two-compartment concentration models and constrained nonlinear fitting.
+"""One-, two-, and three-compartment concentration models and nonlinear fitting.
 
 Oral parameters are apparent (CL/F, V/F, Q/F). All models use ng/mL,
 mg-equivalent dose converted to ng, and compartment volumes in litres.
@@ -20,15 +20,59 @@ if TYPE_CHECKING:
 
 
 def parameter_names(route: str, compartments: int) -> tuple[str, ...]:
-    if compartments not in (1, 2):
-        raise ValueError("Chỉ hỗ trợ mô hình 1 hoặc 2 ngăn.")
+    if compartments not in (1, 2, 3):
+        raise ValueError("Chỉ hỗ trợ mô hình 1, 2 hoặc 3 ngăn.")
     apparent = route == "oral"
     names = ["CL/F", "V/F"] if apparent else ["CL", "Vc"]
     if compartments == 2:
         names += ["Q/F", "Vp/F"] if apparent else ["Q", "Vp"]
+    elif compartments == 3:
+        names += ["Q2/F", "Vp2/F", "Q3/F", "Vp3/F"] if apparent else ["Q2", "Vp2", "Q3", "Vp3"]
     if apparent:
         names.append("ka")
     return tuple(names)
+
+
+def _three_compartment_spectrum(cl: float, vc: float, q2: float, vp2: float,
+                                q3: float, vp3: float) -> tuple[np.ndarray, np.ndarray]:
+    """Positive decay rates and central impulse weights of a mammillary model.
+
+    The amount transfer matrix is similar to a symmetric matrix (volumes
+    provide the similarity transform). Its eigenvectors therefore give
+    nonnegative central coefficients, even for nearly coincident rates.
+    """
+    decay = np.array([
+        [(cl + q2 + q3) / vc, -q2 / math.sqrt(vc * vp2), -q3 / math.sqrt(vc * vp3)],
+        [-q2 / math.sqrt(vc * vp2), q2 / vp2, 0.0],
+        [-q3 / math.sqrt(vc * vp3), 0.0, q3 / vp3],
+    ])
+    rates, vectors = np.linalg.eigh(decay)
+    if not np.isfinite(rates).all() or rates[0] <= 0:
+        raise ValueError("Các tốc độ suy giảm 3 ngăn không xác định được ổn định.")
+    indices = np.argsort(rates)[::-1]  # alpha > beta > gamma
+    fractions = np.square(vectors[0, indices])
+    fractions /= fractions.sum()
+    return rates[indices], fractions
+
+
+def _three_compartment_derived(parameters: dict[str, float], route: str) -> dict[str, float]:
+    """Microconstants, steady-state volume and macro-rate half-lives."""
+    apparent = route == "oral"
+    names = parameter_names(route, 3)
+    cl, vc, q2, vp2, q3, vp3 = (parameters[name] for name in names[:6])
+    rates, _ = _three_compartment_spectrum(cl, vc, q2, vp2, q3, vp3)
+    derived = {
+        "Vss/F (L)" if apparent else "Vss (L)": vc + vp2 + vp3,
+        "k10 (1/giờ)": cl / vc,
+        "k12 (1/giờ)": q2 / vc,
+        "k21 (1/giờ)": q2 / vp2,
+        "k13 (1/giờ)": q3 / vc,
+        "k31 (1/giờ)": q3 / vp3,
+    }
+    for label, rate in zip(("α", "β", "γ"), rates, strict=True):
+        derived[f"{label} (1/giờ)"] = float(rate)
+        derived[f"t½,{label} (giờ)"] = float(math.log(2) / rate)
+    return derived
 
 
 def _kernel(t: np.ndarray, rate: float, route: str, infusion_h: float | None,
@@ -70,7 +114,7 @@ def predict(t: np.ndarray | list[float], parameters: dict[str, float],
     ka = parameters.get("ka")
     if compartments == 1:
         rates, fractions = [cl / vc], [1.0]
-    else:
+    elif compartments == 2:
         q, vp = (parameters[k] for k in names[2:4])
         k10, k12, k21 = cl / vc, q / vc, q / vp
         discriminant = (k10 + k12 + k21) ** 2 - 4 * k10 * k21
@@ -81,6 +125,9 @@ def predict(t: np.ndarray | list[float], parameters: dict[str, float],
             raise ValueError("Hai hằng số lai không phân biệt được.")
         fraction_a = (alpha - k21) / (alpha - beta)
         rates, fractions = [alpha, beta], [fraction_a, 1 - fraction_a]
+    else:
+        q2, vp2, q3, vp3 = (parameters[k] for k in names[2:6])
+        rates, fractions = _three_compartment_spectrum(cl, vc, q2, vp2, q3, vp3)
     amount_ng = settings.dose * DOSE_FACTORS[settings.dose_unit]
     conc = np.zeros_like(times, dtype=float)
     for rate, fraction in zip(rates, fractions, strict=True):
@@ -145,6 +192,8 @@ def fit_compartment(frame: pd.DataFrame, settings: PKSettings, *, compartments: 
     start_values = [cl_guess, v_guess]
     if compartments == 2:
         start_values += [cl_guess, v_guess * 2]
+    elif compartments == 3:
+        start_values += [cl_guess * 2, v_guess * 1.5, cl_guess / 2, v_guess * 4]
     if settings.route == "oral":
         start_values.append(2 / typical_t)
     lower = np.array([1e-10] * p, dtype=float)
@@ -162,13 +211,16 @@ def fit_compartment(frame: pd.DataFrame, settings: PKSettings, *, compartments: 
             else:
                 from be_app.pk_multiple import predict_multiple
                 pred = predict_multiple(t, values, settings, compartments, regimen)
-        except (ValueError, OverflowError, FloatingPointError):
+        except (ValueError, OverflowError, FloatingPointError, np.linalg.LinAlgError):
             return np.full(n, 1e30)
         return (pred - y) / denominators
 
     rng = np.random.default_rng(20261102)
     best = None
-    for index in range(max(1, min(starts, 25))):
+    # Three-compartment fitting has additional local minima and equivalent
+    # peripheral-label permutations; use more deterministic initializations.
+    number_starts = max(starts, 16) if compartments == 3 else starts
+    for index in range(max(1, min(number_starts, 25))):
         attempt = base if index == 0 else np.clip(base + rng.normal(0, 1.4, p), low_log + .01, high_log - .01)
         fit = least_squares(errors, attempt, bounds=(low_log, high_log), max_nfev=2500,
                             x_scale="jac", ftol=1e-9, xtol=1e-9, gtol=1e-9)
@@ -177,6 +229,15 @@ def fit_compartment(frame: pd.DataFrame, settings: PKSettings, *, compartments: 
     if best is None or not best.success:
         raise ValueError("Bộ tối ưu chưa hội tụ; cần kiểm tra dữ liệu và mô hình.")
     params = dict(zip(names, np.exp(best.x).tolist(), strict=True))
+    if compartments == 3:
+        # The two peripheral compartments are exchangeable. Display the one
+        # with faster return (k21) as compartment 2 for reproducible labels.
+        suffix = "/F" if settings.route == "oral" else ""
+        q2, vp2 = params[f"Q2{suffix}"], params[f"Vp2{suffix}"]
+        q3, vp3 = params[f"Q3{suffix}"], params[f"Vp3{suffix}"]
+        if q2 / vp2 < q3 / vp3:
+            params.update({f"Q2{suffix}": q3, f"Vp2{suffix}": vp3,
+                           f"Q3{suffix}": q2, f"Vp3{suffix}": vp2})
     # In a single-compartment Bateman curve, swapping ka and k leaves the
     # concentration profile unchanged after a corresponding V/F adjustment.
     # Use the fast-absorption branch for a stable display, and disclose the
@@ -212,6 +273,14 @@ def fit_compartment(frame: pd.DataFrame, settings: PKSettings, *, compartments: 
         warnings.append("Đã khớp theo chồng chất tuyến tính các liều bằng nhau; mô hình không xét phi tuyến hoặc thay đổi liều.")
     if rank < p or condition > 1e8:
         warnings.append("Tham số có nguy cơ không định danh (Jacobian thiếu hạng hoặc điều kiện kém).")
+    if compartments == 3:
+        if n < 15:
+            warnings.append("Mô hình 3 ngăn có ít hơn 15 mẫu định lượng; cần kiểm tra đủ các pha sớm, giữa và muộn.")
+        suffix = "/F" if settings.route == "oral" else ""
+        k21 = params[f"Q2{suffix}"] / params[f"Vp2{suffix}"]
+        k31 = params[f"Q3{suffix}"] / params[f"Vp3{suffix}"]
+        if abs(k21 - k31) / max(k21, k31) < 0.05:
+            warnings.append("Hai ngăn ngoại vi có tốc độ quay về gần nhau; khó phân biệt mô hình 3 ngăn với 2 ngăn.")
     if np.any(best.x - low_log < .02) or np.any(high_log - best.x < .02):
         warnings.append("Có tham số chạm gần biên tối ưu; cần rà soát dữ liệu và mô hình.")
     if weighting != "equal":
@@ -224,7 +293,10 @@ def fit_compartment(frame: pd.DataFrame, settings: PKSettings, *, compartments: 
     return {
         "profile_id": str(data.profile_id.iloc[0]), "route": settings.route,
         "compartments": compartments, "weighting": weighting, "n": n, "p": p,
-        "parameters": params, "rmse_ng_ml": math.sqrt(rss / n),
+        "parameters": params,
+        "derived_parameters": (_three_compartment_derived(params, settings.route)
+                               if compartments == 3 else {}),
+        "rmse_ng_ml": math.sqrt(rss / n),
         "rss": rss, "weighted_rss": weighted_rss, "aic": aic,
         "aicc": aicc, "bic": ll_term + p * math.log(n),
         "r2": float(1 - rss / np.sum((y - y.mean()) ** 2)) if np.ptp(y) else None,

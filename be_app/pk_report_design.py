@@ -404,6 +404,7 @@ def make_word(snapshot: dict, settings_rows: list[tuple[str, object]],
             doc.add_heading(f"5.{idx} Hồ sơ {model['profile_id']} - {model['compartments']} ngăn", 2)
             table([["Tham số / kiểm định", "Giá trị"],
                    *[[str(k), shown(v)] for k, v in model.get("parameters", {}).items()],
+                   *[[str(k), shown(v)] for k, v in model.get("derived_parameters", {}).items()],
                    ["Hội tụ", shown(model.get("converged"))],
                    ["Điều kiện Jacobian", shown(model.get("jacobian_condition"))]])
     else:
@@ -593,6 +594,7 @@ def make_pdf(snapshot: dict, settings_rows: list[tuple[str, object]],
             story.append(para(f"Hồ sơ {model['profile_id']} - {model['compartments']} ngăn", h2))
             story.append(table([["Tham số / kiểm định", "Giá trị"],
                                 *[[str(k), shown(v)] for k, v in model.get("parameters", {}).items()],
+                                *[[str(k), shown(v)] for k, v in model.get("derived_parameters", {}).items()],
                                 ["Hội tụ", shown(model.get("converged"))],
                                 ["Điều kiện Jacobian", shown(model.get("jacobian_condition"))]], [8, 9]))
     else:

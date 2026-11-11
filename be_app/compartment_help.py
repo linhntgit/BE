@@ -165,7 +165,7 @@ MODEL_DOCS: dict[str, CompartmentModelDoc] = {
         solution_latex=r"C(t) = A \cdot e^{-\alpha t} + B \cdot e^{-\beta t} + C \cdot e^{-\gamma t}, \qquad C_0 = A + B + C = \frac{D}{V_1}",
         parameters=(
             "- $C(t)$: Nồng độ thuốc trong ngăn trung tâm tại thời điểm $t$ ($\\text{mg/L}$).\n"
-            "- $A, B, C$: Hệ số vĩ mô dương tương ứng 3 pha động học ($\\text{mg/L}$), tổng bằng $C_0 = D/V_1$.\n"
+            "- $A, B, C$: Hệ số vĩ mô dương tương ứng 3 pha động học ($\\text{mg/L}$), tổng bằng $C(0^+) = D/V_1$ (giá trị ngoại suy ngay sau tiêm, không phải điểm đo tại $t=0$).\n"
             "- $\\alpha > \\beta > \\gamma > 0$: Ba hằng số phân rã vĩ mô ($\\text{h}^{-1}$) là nghiệm của phương trình đặc trưng bậc 3.\n"
             "- $V_1, V_2, V_3$: Thể tích ngăn trung tâm ($V_1$), ngăn nông ($V_2 = V_1 \\frac{k_{12}}{k_{21}}$) và ngăn sâu ($V_3 = V_1 \\frac{k_{13}}{k_{31}}$).\n"
             "- $V_{ss}$: Thể tích trạng thái ổn định ($V_{ss} = V_1 + V_2 + V_3$, đơn vị L).\n"
@@ -180,7 +180,7 @@ MODEL_DOCS: dict[str, CompartmentModelDoc] = {
             "- **Diễn giải lâm sàng:** Bệnh nhân hết đau và hồi tỉnh chỉ sau 15–30 phút không phải do thuốc bị chuyển hóa hết, mà do thuốc tái phân bố cực nhanh từ não ($V_1$) sang mô cơ ($V_2$) và mô mỡ ($V_3$). Tuy nhiên, tổng lượng thuốc trong cơ thể vẫn còn rất lớn và đào thải rất chậm với $t_{1/2,\\gamma} = 12.5\\text{ h}$."
         ),
         notes=(
-            "- **Cảnh báo quá khớp (Overfitting):** Mô hình 3 ngăn đòi hỏi tối thiểu 12–15 mẫu nồng độ trải rộng từ 2 phút đến 48–72 giờ. Nếu thiếu mẫu ở pha muộn, thuật toán hồi quy phi tuyến sẽ thất bại hoặc cho ra ma trận thông tin Fisher suy biến (Singular Matrix)."
+            "- **Cảnh báo quá khớp:** Mô hình 3 ngăn có 6 tham số IV ($CL,V_c,Q_2,V_{p2},Q_3,V_{p3}$), cần mẫu trải đủ pha sớm, giữa và muộn. Ít hơn 15 mẫu, Jacobian thiếu hạng hoặc điều kiện kém là dấu hiệu tham số khó định danh. $C(0^+)$ được ngoại suy từ đường cong, không ghi thành phép đo tại $t=0$."
         ),
     ),
     "4. Truyền tĩnh mạch liên tục (IV Infusion) — 1 Ngăn": CompartmentModelDoc(
@@ -239,9 +239,9 @@ MODEL_DOCS: dict[str, CompartmentModelDoc] = {
         ),
         ode_latex=(
             r"\begin{aligned} "
-            r"\frac{dX_1(t)}{dt} &= R_0 \cdot \delta(t) - (k_{10} + k_{12}) X_1 + k_{21} X_2 \\ "
+            r"\frac{dX_1(t)}{dt} &= R_0 \mathbf{1}_{[0,T_{\mathrm{inf}}]}(t) - (k_{10} + k_{12}) X_1 + k_{21} X_2 \\ "
             r"\frac{dX_2(t)}{dt} &= k_{12} X_1 - k_{21} X_2 "
-            r"\end{aligned} \quad (\delta(t) = 1 \text{ khi } t \le T_{\text{inf}}, 0 \text{ khi } t > T_{\text{inf}})"
+            r"\end{aligned} \quad X_1(0)=X_2(0)=0"
         ),
         solution_latex=(
             r"C(t) = \begin{cases} "
@@ -280,7 +280,7 @@ MODEL_DOCS: dict[str, CompartmentModelDoc] = {
         ),
         ode_latex=(
             r"\begin{aligned} "
-            r"\frac{dX_1}{dt} &= R_0 \cdot \delta(t) - (k_{10} + k_{12} + k_{13}) X_1 + k_{21} X_2 + k_{31} X_3 \\ "
+            r"\frac{dX_1}{dt} &= R_0 \mathbf{1}_{[0,T_{\mathrm{inf}}]}(t) - (k_{10} + k_{12} + k_{13}) X_1 + k_{21} X_2 + k_{31} X_3 \\ "
             r"\frac{dX_2}{dt} &= k_{12} X_1 - k_{21} X_2, \qquad \frac{dX_3}{dt} = k_{13} X_1 - k_{31} X_3 "
             r"\end{aligned}"
         ),
@@ -292,8 +292,9 @@ MODEL_DOCS: dict[str, CompartmentModelDoc] = {
         ),
         parameters=(
             "- $\\lambda_i \\in \\{\\alpha, \\beta, \\gamma\\}$: Nghiệm phân rã của hệ thống 3 ngăn ($\\text{h}^{-1}$).\n"
-            "- $L_i$: Các trọng số tương ứng từ phân tích biến đổi Laplace.\n"
-            "- $CL = k_{10} V_1$, $V_{ss} = V_1 + V_2 + V_3$."
+            "- $R_0=D/T_{\\text{inf}}$ (mg/h); $X_1(0)=X_2(0)=X_3(0)=0$ nếu chỉ truyền một liều, không có liều nạp.\n"
+            "- $L_i=(R_0/V_c)w_i$ với $w_i$ là trọng số phổ của ngăn trung tâm, $\\sum_i w_i=1$; hằng số $L_i$ có đơn vị nồng độ/thời gian.\n"
+            "- 6 tham số ước lượng: $CL,V_c,Q_2,V_{p2},Q_3,V_{p3}$; $CL = k_{10} V_c$, $V_{ss} = V_c + V_{p2} + V_{p3}$."
         ),
         example=(
             "**Gây mê Propofol:** Truyền duy trì nồng độ đích với liều nạp $150\\text{ mg}$ và tốc độ truyền duy trì $R_0 = 600\\text{ mg/h}$: $CL = 1.8\\text{ L/min} = 108\\text{ L/h}, V_1 = 16\\text{ L}, V_2 = 30\\text{ L}, V_3 = 200\\text{ L}$ ($V_{ss} = 246\\text{ L}$).\n"
@@ -301,7 +302,7 @@ MODEL_DOCS: dict[str, CompartmentModelDoc] = {
             "- Nếu truyền kéo dài 8 giờ trong phòng ICU: CSHT tăng lên gần $40\\text{ phút}$ do thuốc từ ngăn 3 giải phóng ngược trở lại máu kéo dài thời gian thức tỉnh."
         ),
         notes=(
-            "- **Ứng dụng:** Điều khiển bơm tiêm điện tự động TCI trong phẫu thuật để duy trì độ mê ổn định mà không gây quá liều tích lũy."
+            "- **Phạm vi:** Bộ khớp hiện tại mô phỏng một lần truyền với tốc độ cố định $R_0=D/T_{\\text{inf}}$ (và chồng chất liều tuyến tính khi chọn đa liều). Ví dụ TCI có liều nạp và tốc độ biến đổi cần mô hình truyền riêng."
         ),
     ),
     "7. Đường uống (Oral) — 1 Ngăn (Bateman)": CompartmentModelDoc(
@@ -310,37 +311,36 @@ MODEL_DOCS: dict[str, CompartmentModelDoc] = {
         route="oral",
         compartments=1,
         theory=(
-            "**Khái niệm & Nguyên lý:** Thuốc được đưa vào ống tiêu hóa, sau đó hấp thu qua niêm mạc ruột vào ngăn trung tâm theo động học bậc 1 với hằng số $k_a$ (kèm thời gian trễ $T_{\\text{lag}}$). Phân bố tức thời vào ngăn duy nhất $V_1$ và thải trừ bậc 1 với $k_{el}$.\n\n"
+            "**Khái niệm & Nguyên lý:** Thuốc được đưa vào ống tiêu hóa, sau đó hấp thu qua niêm mạc ruột vào ngăn trung tâm theo động học bậc 1 với hằng số $k_a$. Phân bố tức thời vào ngăn duy nhất $V_1$ và thải trừ bậc 1 với $k_{el}$. Bộ khớp hiện tại không ước lượng thời gian trễ hấp thu.\n\n"
             "**Hiện tượng tráo đổi nghiệm (Flip-flop Kinetics):**\n"
             "- Bình thường: Tốc độ hấp thu nhanh hơn nhiều so với tốc độ thải trừ ($k_a \\gg k_{el}$).\n"
             "- Hiện tượng Flip-flop ($k_a \\ll k_{el}$): Gặp ở viên phóng thích kéo dài (ER/MR) hoặc hoạt chất rất kém tan; khi đó độ dốc pha cuối biểu kiến trên đồ thị bán logarit phản ánh hằng số hấp thu $k_a$ chứ KHÔNG PHẢI $k_{el}$."
         ),
         ode_latex=(
             r"\begin{aligned} "
-            r"\frac{dX_a(t)}{dt} &= -k_a X_a(t), \quad X_a(T_{\text{lag}}) = F \cdot D \\ "
-            r"\frac{dX_1(t)}{dt} &= k_a X_a(t) - k_{el} X_1(t), \quad X_1(T_{\text{lag}}) = 0 "
+            r"\frac{dX_a(t)}{dt} &= -k_a X_a(t), \quad X_a(0) = F \cdot D \\ "
+            r"\frac{dX_1(t)}{dt} &= k_a X_a(t) - k_{el} X_1(t), \quad X_1(0) = 0 "
             r"\end{aligned}"
         ),
-        solution_latex=r"C(t) = \frac{F \cdot D \cdot k_a}{V_1 (k_a - k_{el})} \left( e^{-k_{el}(t - T_{\text{lag}})} - e^{-k_a (t - T_{\text{lag}})} \right) \quad (t \ge T_{\text{lag}})",
+        solution_latex=r"C(t) = \frac{F \cdot D \cdot k_a}{V_1 (k_a - k_{el})} \left( e^{-k_{el}t} - e^{-k_a t} \right) \quad (t \ge 0)",
         parameters=(
             "- $C(t)$: Nồng độ thuốc tại thời điểm $t$ ($\\text{mg/L}$).\n"
             "- $F$: Sinh khả dụng tuyệt đối đường uống ($0 < F \\le 1$); khi không có số liệu IV, tham số ước tính dưới dạng biểu kiến $V_1/F$ và $CL/F$.\n"
             "- $k_a$: Hằng số tốc độ hấp thu bậc 1 ($\\text{h}^{-1}$).\n"
             "- $k_{el}$: Hằng số tốc độ đào thải bậc 1 ($\\text{h}^{-1}$, $k_{el} = CL/V_1$).\n"
-            "- $T_{\\text{lag}}$: Thời gian trễ sinh dược học trước khi bắt đầu hấp thu ($\\text{h}$).\n"
-            "- $T_{\\max} = T_{\\text{lag}} + \\frac{\\ln(k_a / k_{el})}{k_a - k_{el}}$; $C_{\\max} = \\frac{F \\cdot D}{V_1} \\left( \\frac{k_a}{k_{el}} \\right)^{\\frac{k_{el}}{k_{el} - k_a}}$."
+            "- $T_{\\max} = \\frac{\\ln(k_a / k_{el})}{k_a - k_{el}}$; $C_{\\max} = C(T_{\\max})$. Thời gian trễ hấp thu không được ước lượng trong phiên bản này."
         ),
         example=(
             "**Paracetamol viên nén 500 mg:**\n"
-            "- Tham số: $F = 0.88$, $k_a = 1.80\\text{ h}^{-1}$, $k_{el} = 0.280\\text{ h}^{-1}$, $V_1/F = 50.0\\text{ L}$, $T_{\\text{lag}} = 0.15\\text{ h}$.\n"
-            "- $T_{\\max} = 0.15 + \\frac{\\ln(1.80 / 0.280)}{1.80 - 0.280} = 0.15 + \\frac{1.8608}{1.520} = 1.37\\text{ giờ}$.\n"
-            "- $C_{\\max} \\approx 6.82\\text{ mg/L}$.\n"
+            "- Tham số minh họa: $k_a = 1.80\\text{ h}^{-1}$, $k_{el} = 0.280\\text{ h}^{-1}$, $V_1/F = 50.0\\text{ L}$; giả định không có thời gian trễ hấp thu.\n"
+            "- $T_{\\max} = \\frac{\\ln(1.80 / 0.280)}{1.80 - 0.280} = \\frac{1.8608}{1.520} = 1.22\\text{ giờ}$.\n"
+            "- $C_{\\max} \\approx 7.10\\text{ mg/L}$.\n"
             "- $CL/F = 0.280 \\times 50.0 = 14.0\\text{ L/h}$.\n"
             "- $t_{1/2} = 0.693 / 0.280 = 2.48\\text{ giờ}$.\n"
             "- $AUC_{0-\\infty} = 500 / 14.0 = 35.71\\text{ mg}\\cdot\\text{h/L}$."
         ),
         notes=(
-            "- **Đồ thị đặc trưng:** Đi lên từ 0 sau $T_{\\text{lag}}$, đạt cực đại nhẵn tại $T_{\\max}$, sau đó suy giảm tiệm cận đường thẳng trên thang bán logarit."
+            "- **Đồ thị đặc trưng:** Đi lên từ 0 khi hấp thu bắt đầu tại $t=0$, đạt cực đại nhẵn tại $T_{\\max}$, sau đó suy giảm tiệm cận đường thẳng trên thang bán logarit."
         ),
     ),
     "8. Đường uống (Oral) — 2 Ngăn": CompartmentModelDoc(
@@ -355,15 +355,15 @@ MODEL_DOCS: dict[str, CompartmentModelDoc] = {
         ),
         ode_latex=(
             r"\begin{aligned} "
-            r"\frac{dX_a}{dt} &= -k_a X_a, \quad X_a(T_{\text{lag}}) = F \cdot D \\ "
+            r"\frac{dX_a}{dt} &= -k_a X_a, \quad X_a(0) = F \cdot D \\ "
             r"\frac{dX_1}{dt} &= k_a X_a - (k_{10} + k_{12}) X_1 + k_{21} X_2 \\ "
             r"\frac{dX_2}{dt} &= k_{12} X_1 - k_{21} X_2 "
             r"\end{aligned}"
         ),
-        solution_latex=r"C(t) = A \cdot e^{-\alpha(t - T_{\text{lag}})} + B \cdot e^{-\beta(t - T_{\text{lag}})} - (A + B) e^{-k_a(t - T_{\text{lag}})}",
+        solution_latex=r"C(t) = A \cdot e^{-\alpha t} + B \cdot e^{-\beta t} - (A + B) e^{-k_a t}",
         parameters=(
-            "- $A, B$: Hệ số vĩ mô dương của pha $\\alpha$ và $\\beta$ ($\\text{mg/L}$).\n"
-            "- $-(A+B)$: Hệ số pha hấp thu $k_a$, bảo đảm $C(T_{\\text{lag}}) = 0$.\n"
+            "- $A, B$: Hệ số vĩ mô của pha $\\alpha$ và $\\beta$ ($\\text{mg/L}$); dấu của từng hệ số phụ thuộc tương quan giữa $k_a$ và các tốc độ phân rã.\n"
+            "- $-(A+B)$: Hệ số pha hấp thu $k_a$, bảo đảm $C(0) = 0$; mô hình không khớp thời gian trễ hấp thu.\n"
             "- $V_1/F, V_2/F, V_{ss}/F, CL/F, Q/F$: Các thể tích và độ thanh thải biểu kiến sau đường uống."
         ),
         example=(
@@ -382,8 +382,8 @@ MODEL_DOCS: dict[str, CompartmentModelDoc] = {
         route="oral",
         compartments=3,
         theory=(
-            "**Khái niệm & Nguyên lý:** Thuốc hấp thu từ ruột vào ngăn trung tâm, liên thông với ngăn nông và ngăn sâu. Mô hình phức tạp nhất trong dược động học cổ điển tuyến tính.\n\n"
-            "**Đặc điểm ADME:** Nghiệm gồm 4 hàm mũ (1 hàm hấp thu âm và 3 hàm phân bố/thải trừ dương). Thể tích phân bố biểu kiến $V_{ss}/F$ cực lớn do tích lũy mô sâu.\n\n"
+            "**Khái niệm & Nguyên lý:** Thuốc hấp thu bậc nhất từ ruột vào ngăn trung tâm, liên thông với ngăn nông và ngăn sâu. Bộ khớp dùng 7 tham số biểu kiến $CL/F,V_c/F,Q_2/F,V_{p2}/F,Q_3/F,V_{p3}/F,k_a$; không khớp thời gian trễ hấp thu.\n\n"
+            "**Đặc điểm ADME:** Nghiệm gồm 4 hàm mũ (3 tốc độ phân bố/thải trừ và 1 tốc độ hấp thu); hệ số từng hàm mũ có thể mang dấu khác nhau khi hấp thu chậm. Thể tích phân bố biểu kiến $V_{ss}/F$ có thể lớn khi thuốc tích lũy ở mô sâu.\n\n"
             "**Điều kiện áp dụng:** Thuốc thân dầu cao, tích lũy sâu trong tế bào và mô mỡ. Ví dụ: Azithromycin, amiodarone, chloroquine."
         ),
         ode_latex=(
@@ -395,7 +395,7 @@ MODEL_DOCS: dict[str, CompartmentModelDoc] = {
         ),
         solution_latex=r"C(t) = A \cdot e^{-\alpha t} + B \cdot e^{-\beta t} + C \cdot e^{-\gamma t} - (A + B + C) \cdot e^{-k_a t}",
         parameters=(
-            "- $A, B, C$: Hệ số vĩ mô dương ($\\text{mg/L}$); hệ số hấp thu bằng $-(A+B+C)$ để thỏa mãn $C(0) = 0$.\n"
+            "- $A, B, C$: Hệ số vĩ mô ($\\text{mg/L}$); dấu của chúng phụ thuộc $k_a$ so với $\\alpha,\\beta,\\gamma$. Hệ số pha hấp thu bằng $-(A+B+C)$ để thỏa mãn $C(0) = 0$.\n"
             "- $\\alpha, \\beta, \\gamma$: Hằng số tốc độ 3 pha động học ($\\text{h}^{-1}$).\n"
             "- $V_{ss}/F = \\frac{V_1}{F} [1 + \\frac{k_{12}}{k_{21}} + \\frac{k_{13}}{k_{31}}]$, đơn vị L.\n"
             "- $t_{1/2,\\gamma} = \\frac{\\ln 2}{\\gamma}$ (thời gian bán thải pha cuối thực tế)."
@@ -407,7 +407,7 @@ MODEL_DOCS: dict[str, CompartmentModelDoc] = {
             "- Thuốc duy trì nồng độ kháng khuẩn trong mô phổi nhiều ngày sau khi kết thúc đợt điều trị 3 ngày."
         ),
         notes=(
-            "- **Tiêu chuẩn chấp nhận:** Mô hình có 7 tham số. Chỉ chấp nhận mô hình 3 ngăn khi $\\Delta AICc \\ge 10$ so với mô hình 2 ngăn và $\\%RSE$ của mọi tham số $< 30-50\\%$."
+            "- **Đánh giá độ tin cậy:** So sánh AICc/BIC khi các mô hình khớp trên cùng dữ liệu và trọng số, kiểm tra phần dư, độ phủ ba pha, hạng và điều kiện Jacobian cùng các cảnh báo tham số sát biên. AICc tính từ phần dư có trọng số chỉ mang tính chẩn đoán; phiên bản hiện tại chưa tính %RSE và không áp dụng ngưỡng ΔAICc cứng."
         ),
     ),
 }

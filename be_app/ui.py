@@ -47,7 +47,7 @@ from be_app.persistence import Project, ProjectStore, export_archive, import_arc
 from be_app.pk_import import PK_ALIASES, PKImportConfig, import_pk, workbook_sheets
 from be_app.pk_ui import independent_pk_page
 from be_app.presets import export_preset, from_project, import_preset, new_project
-from be_app.protocol import PROTOCOL_FIELDS, docx_protocol, pdf_protocol
+from be_app.protocol import PROTOCOL_FIELDS, blank_protocol_template, docx_protocol, pdf_protocol
 from be_app.quick_be_ui import quick_be_page
 from be_app.regulations import RULES, capability_for, planning_limits, scope_blockers
 from be_app.replicate import analyze_regulatory_be
@@ -2355,6 +2355,24 @@ def protocol_export_panel(state: ProjectState) -> None:
             "Các ghi chú bên dưới được lưu cùng dự án và có thể chỉnh sửa khi quay lại."
         )
         fields = Widgets(state, "protocol")
+        template_choice = fields.select(
+            "protocol_template",
+            "Mẫu đề cương nghiên cứu",
+            ["standard", "legacy"],
+            format_func=lambda x: (
+                "Mẫu chuẩn"
+                if x in ("standard", "vknt_tt91")
+                else "Mẫu tóm tắt quy định ICH M13A / FDA / EMA (15 phần)"
+            ),
+        )
+        proto_tpl_stem = "Mau_chuan" if template_choice in ("standard", "vknt_tt91") else "Mau_tom_tat"
+        st.download_button(
+            "Tải mẫu đề cương Word trống (chưa cần dữ liệu)",
+            blank_protocol_template(template_choice),
+            f"BE_Protocol_Template_{proto_tpl_stem}.docx",
+            mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+            on_click="ignore",
+        )
         details = {}
         first, second = st.columns(2, gap="medium", wrap=True)
         for index, (field, label) in enumerate(PROTOCOL_FIELDS):
@@ -2389,12 +2407,13 @@ def protocol_export_panel(state: ProjectState) -> None:
             "study": project.study.model_dump(mode="json"),
             "details": details,
             "valid_plan": valid_plan,
+            "template": template_choice,
         })
         key = ("protocol_exports", fingerprint)
         if st.button("Tạo đề cương Word và PDF", key="generate_be_protocol"):
             try:
-                word = docx_protocol(project, details, valid_plan=valid_plan)
-                pdf = pdf_protocol(project, details, valid_plan=valid_plan)
+                word = docx_protocol(project, details, valid_plan=valid_plan, template=template_choice)
+                pdf = pdf_protocol(project, details, valid_plan=valid_plan, template=template_choice)
             except (ValueError, OSError, RuntimeError) as exc:
                 st.error(f"Không thể tạo đề cương: {exc}")
             else:
@@ -2428,16 +2447,29 @@ def reports_page(state):
     protocol_export_panel(state)
     st.subheader("Báo cáo kết quả BE và dữ liệu phân tích")
     st.warning("Báo cáo DRAFT, chưa phải CSR E3 đầy đủ hay eCTD hợp lệ.")
-    language = Widgets(state, "report", "preferences").select(
+    report_prefs = Widgets(state, "report", "preferences")
+    report_template_choice = report_prefs.select(
+        "report_template",
+        "Mẫu báo cáo kết quả nghiên cứu",
+        ["standard", "legacy"],
+        format_func=lambda x: (
+            "Mẫu chuẩn"
+            if x in ("standard", "vknt_tt91")
+            else "Mẫu tóm tắt ASEAN / ICH E3 (Bản song ngữ)"
+        ),
+    )
+    language = report_prefs.select(
         "language",
         "Ngôn ngữ báo cáo",
         ["vi", "en"],
         format_func=lambda x: "Tiếng Việt nội bộ" if x == "vi" else "Tiếng Anh hồ sơ dự thảo",
     )
+    rep_tpl_stem = "Mau_chuan" if report_template_choice in ("standard", "vknt_tt91") else "Mau_tom_tat"
     st.download_button(
         "Tải mẫu Word đầy đủ (chưa cần phân tích)",
-        blank_report_template(language),
-        f"BE_report_template_{language}.docx",
+        blank_report_template(language, template=report_template_choice),
+        f"BE_Report_Template_{rep_tpl_stem}_{language}.docx",
+        mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
         on_click="ignore",
     )
     if st.button("Chuẩn bị archive dự án"):
@@ -2472,8 +2504,10 @@ def reports_page(state):
             if st.form_submit_button("Ghi nhận rà soát snapshot"):
                 save_project(project.record_review(run["snapshot_hash"], reviewer, evidence, outcome))
     if st.button("Tạo Word và PDF dự thảo", disabled=stale):
-        word, pdf = docx_report(project, language=language), pdf_report(project, language=language)
-        stem = f"{len(project.runs)}_{language}_{len(project.artifacts)}"
+        word = docx_report(project, language=language, template=report_template_choice)
+        pdf = pdf_report(project, language=language, template=report_template_choice)
+        tag = "standard" if report_template_choice in ("standard", "vknt_tt91") else "summary"
+        stem = f"{len(project.runs)}_{tag}_{language}_{len(project.artifacts)}"
         save_project(
             project.attach_artifact(f"CSR_{stem}.docx", word).attach_artifact(f"CSR_{stem}.pdf", pdf)
         )

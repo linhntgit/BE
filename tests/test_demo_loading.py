@@ -102,6 +102,11 @@ def test_demo_pk_case_is_staged_source_not_result(case):
     assert not frame.empty and {"profile_id", "time_h", "concentration", "blq"} <= set(frame)
     assert settings["pk_dose_mode"] in {"single", "multiple", "steady_state"}
     assert (frame.time_h.duplicated().any()) == (case == "duplicate")
+    if case == "iv":
+        # IV bolus C(0+) is an extrapolated model value, not an observed sample.
+        assert frame.time_h.min() == 0.25
+        assert not frame.time_h.eq(0).any()
+        assert frame.concentration.gt(0).all()
 
 
 def test_full_be_demo_stages_study_and_raw_without_auto_import_or_analysis(tmp_path, monkeypatch):
@@ -161,6 +166,8 @@ def test_demo_buttons_quick_and_independent_pk_fill_existing_editors(tmp_path, m
     assert not app.exception
     assert app.session_state.pk_route == "iv_bolus"
     assert len(app.session_state.pk_manual_data) > 5
+    assert app.session_state.pk_manual_data.time_h.min() == 0.25
+    assert not app.session_state.pk_manual_data.time_h.eq(0).any()
     assert any({"time_h", "concentration"} <= set(table.value.columns)
                and len(table.value) > 5 for table in app.dataframe)
     assert not app.session_state.get("pk_current_snapshot")

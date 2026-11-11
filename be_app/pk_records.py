@@ -152,7 +152,8 @@ def _display_models(snapshot: dict) -> pd.DataFrame:
          "Trọng số": "Không trọng số" if model["weighting"] == "equal" else model["weighting"],
          "RMSE (ng/mL)": model["rmse_ng_ml"],
          "AICc": model["aicc"], "BIC": model["bic"],
-         **model["parameters"], "Cảnh báo": "; ".join(model["warnings"])}
+         **model["parameters"], **model.get("derived_parameters", {}),
+         "Cảnh báo": "; ".join(model["warnings"])}
         for model in snapshot["models"]
     ])
 

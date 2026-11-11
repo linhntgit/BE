@@ -9,6 +9,7 @@ from dataclasses import asdict
 import numpy as np
 import pandas as pd
 import pytest
+from scipy.linalg import expm
 
 from be_app.pk_analysis import PKSettings, analyze_nca, read_concentrations
 from be_app.pk_models import fit_compartment, predict
@@ -138,6 +139,96 @@ def test_fit_recovers_synthetic_models(route, compartments, parameters, duration
     assert fit["aicc"] is not None
     for name, expected in parameters.items():
         assert fit["parameters"][name] == pytest.approx(expected, rel=.06)
+
+
+@pytest.mark.parametrize("route,duration", [
+    ("iv_bolus", None), ("iv_infusion", 1.5), ("oral", None),
+])
+def test_three_compartment_predictions_match_independent_matrix_solution(route, duration):
+    """A separate amount-space matrix exponential validates all three routes."""
+    params = {"CL": 5.0, "Vc": 12.0, "Q2": 8.0, "Vp2": 17.0,
+              "Q3": 2.5, "Vp3": 80.0}
+    if route == "oral":
+        params = {"CL/F": params["CL"], "V/F": params["Vc"],
+                  "Q2/F": params["Q2"], "Vp2/F": params["Vp2"],
+                  "Q3/F": params["Q3"], "Vp3/F": params["Vp3"], "ka": 1.3}
+    cfg = PKSettings(route=route, dose=100, infusion_duration_h=duration)
+    k10, k12, k21, k13, k31 = 5 / 12, 8 / 12, 8 / 17, 2.5 / 12, 2.5 / 80
+    amount_matrix = np.array([
+        [-(k10 + k12 + k13), k21, k31],
+        [k12, -k21, 0],
+        [k13, 0, -k31],
+    ])
+    times = np.array([0, .03, .25, 1, 1.5, 2.7, 8, 30, 100])
+    expected = []
+    for time in times:
+        if route == "iv_bolus":
+            central_amount = (expm(amount_matrix * time) @ np.array([100., 0, 0]))[0]
+        elif route == "iv_infusion":
+            augmented = np.zeros((4, 4))
+            augmented[:3, :3] = amount_matrix
+            augmented[0, 3] = 100 / duration
+            infusion_state = (expm(augmented * min(time, duration))
+                              @ np.array([0., 0, 0, 1]))[:3]
+            central_amount = (expm(amount_matrix * max(0, time - duration))
+                              @ infusion_state)[0]
+        else:
+            oral_matrix = np.zeros((4, 4))
+            oral_matrix[:3, :3] = amount_matrix
+            oral_matrix[0, 3] = params["ka"]
+            oral_matrix[3, 3] = -params["ka"]
+            central_amount = (expm(oral_matrix * time)
+                              @ np.array([0., 0, 0, 100.]))[0]
+        expected.append(central_amount / 12 * 1000)  # mg/L -> ng/mL
+    np.testing.assert_allclose(predict(times, params, cfg, 3), expected,
+                               rtol=1e-10, atol=1e-8)
+
+
+@pytest.mark.parametrize("route,duration", [
+    ("iv_bolus", None), ("iv_infusion", 1.5), ("oral", None),
+])
+def test_three_compartment_fit_recovers_parameters_and_derived_quantities(route, duration):
+    iv_params = {"CL": 5., "Vc": 12., "Q2": 8., "Vp2": 17., "Q3": 2.5, "Vp3": 80.}
+    params = iv_params if route != "oral" else {
+        "CL/F": 5., "V/F": 12., "Q2/F": 8., "Vp2/F": 17.,
+        "Q3/F": 2.5, "Vp3/F": 80., "ka": 1.3,
+    }
+    cfg = PKSettings(route=route, dose=100, infusion_duration_h=duration)
+    times = np.geomspace(.05, 150, 30)  # No fictitious t=0 IV concentration.
+    values = predict(times, params, cfg, 3)
+    fitted = fit_compartment(profile(times, values), cfg, compartments=3, starts=16)
+    assert fitted["converged"]
+    assert fitted["n"] == 30
+    assert fitted["p"] == len(params)
+    assert fitted["rmse_ng_ml"] < 1e-3
+    assert fitted["aicc"] is not None
+    for name, target in params.items():
+        assert fitted["parameters"][name] == pytest.approx(target, rel=.04)
+    derived = fitted["derived_parameters"]
+    assert derived["Vss/F (L)" if route == "oral" else "Vss (L)"] == pytest.approx(109.)
+    assert derived["k10 (1/giờ)"] == pytest.approx(5 / 12, rel=.04)
+    assert derived["k21 (1/giờ)"] > derived["k31 (1/giờ)"]
+    assert derived["α (1/giờ)"] > derived["β (1/giờ)"] > derived["γ (1/giờ)"] > 0
+    assert derived["t½,γ (giờ)"] > derived["t½,β (giờ)"] > derived["t½,α (giờ)"]
+    if route == "oral":
+        assert any("biểu kiến" in warning for warning in fitted["warnings"])
+
+
+def test_three_compartment_derived_parameters_are_exported():
+    params = {"CL": 5., "Vc": 12., "Q2": 8., "Vp2": 17., "Q3": 2.5, "Vp3": 80.}
+    cfg = PKSettings(route="iv_bolus", dose=100.)
+    times = np.geomspace(.05, 150, 30)
+    frame = profile(times, predict(times, params, cfg, 3))
+    fitted = fit_compartment(frame, cfg, compartments=3)
+    snapshot = create_snapshot(frame, asdict(cfg), [], [fitted], [], "Kiểm thử mô hình 3 ngăn")
+    cols = pd.read_excel(io.BytesIO(excel_report(snapshot)), sheet_name="Mo_hinh").columns
+    assert "Vss (L)" in cols
+    assert "k21 (1/giờ)" in cols
+    assert "t½,γ (giờ)" in cols
+    with zipfile.ZipFile(io.BytesIO(word_report(snapshot))) as archive:
+        document_xml = archive.read("word/document.xml").decode("utf-8")
+        assert "Vss (L)" in document_xml
+    assert pdf_report(snapshot).startswith(b"%PDF")
 
 
 def test_blq_is_excluded_from_fit_not_treated_as_measured_zero():

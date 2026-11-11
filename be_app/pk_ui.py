@@ -211,8 +211,8 @@ def _settings() -> tuple[PKSettings, tuple[int, ...], str, bool, PKRegimen | Non
     with c2:
         terminal_r2 = st.slider("Adjusted R² tối thiểu pha cuối", min_value=0.0,
                                 max_value=1.0, value=0.8, step=.05, key="pk_terminal_r2", help="Ngưỡng hệ số xác định hiệu chỉnh (Adjusted R²) tối thiểu để chấp nhận pha đào thải cuối λz.")
-    modes = st.multiselect("Phương pháp", ["NCA", "1 ngăn", "2 ngăn"], default=["NCA", "1 ngăn"],
-                           key="pk_methods", help="Phương pháp phân tích PK: Dược động học không phân ngăn (NCA) hoặc Khớp mô hình ngăn (1-ngăn, 2-ngăn).")
+    modes = st.multiselect("Phương pháp", ["NCA", "1 ngăn", "2 ngăn", "3 ngăn"], default=["NCA", "1 ngăn"],
+                           key="pk_methods", help="Phân tích phi ngăn (NCA) hoặc khớp mô hình 1, 2, 3 ngăn. Mô hình 3 ngăn cần mẫu trải đủ ba pha và có thể không định danh được nếu dữ liệu quá thưa.")
     weight_labels = {"equal": "Không trọng số", "1/C": "1/C", "1/C²": "1/C²"}
     weighting = cast(str, st.selectbox("Trọng số khớp mô hình", ["equal", "1/C", "1/C²"],
                                       format_func=lambda v: weight_labels[str(v)], key="pk_weighting", help="Sơ đồ gán trọng số sai số khi khớp phi tuyến: Không trọng số (equal), 1/C hoặc 1/C²."))
@@ -225,7 +225,7 @@ def _settings() -> tuple[PKSettings, tuple[int, ...], str, bool, PKRegimen | Non
     if regimen is not None and dose is None:
         st.info("Chưa khai báo liều: vẫn có thể tính NCA trong khoảng liều, "
                 "nhưng không thể tính CLss/CL/Fss hoặc khớp mô hình ngăn.")
-    return config, tuple(n for n in (1, 2) if f"{n} ngăn" in modes), weighting, "NCA" in modes, regimen
+    return config, tuple(n for n in (1, 2, 3) if f"{n} ngăn" in modes), weighting, "NCA" in modes, regimen
 
 
 def _tabular(snapshot: dict) -> None:
@@ -244,7 +244,8 @@ def _tabular(snapshot: dict) -> None:
                          "Trọng số": "Không trọng số" if model["weighting"] == "equal"
                          else model["weighting"], "RMSE (ng/mL)": model["rmse_ng_ml"],
                          "AICc": model["aicc"], "BIC": model["bic"],
-                         "Điều kiện Jacobian": model["jacobian_condition"], **model["parameters"]})
+                         "Điều kiện Jacobian": model["jacobian_condition"], **model["parameters"],
+                         **model.get("derived_parameters", {})})
         df_models = pd.DataFrame(rows)
         st.dataframe(df_models, hide_index=True, width="stretch", column_config=table_column_config(df_models.columns))
         render_table_legend(df_models.columns, title="ℹ️ Chú thích tiêu đề cột & tiêu chí mô hình PK")
@@ -393,13 +394,13 @@ def independent_pk_page(project_controls=None) -> None:
                 if "pk_route" in widgets and widgets["pk_route"] not in ("oral", "iv_bolus", "iv_infusion"):
                     raise ValueError("Đường dùng trong project không hợp lệ.")
                 if "pk_methods" in widgets and (not isinstance(widgets["pk_methods"], list) or
-                    any(item not in ("NCA", "1 ngăn", "2 ngăn") for item in widgets["pk_methods"])):
+                    any(item not in ("NCA", "1 ngăn", "2 ngăn", "3 ngăn") for item in widgets["pk_methods"])):
                     raise ValueError("Phương pháp phân tích trong project không hợp lệ.")
                 choices = payload.get("analysis_choices")
                 if choices is not None and (not isinstance(choices, dict) or
                     set(choices) != {"modes", "run_nca", "weighting"} or
                     not isinstance(choices["modes"], list) or
-                    any(type(n) is not int or n not in (1, 2) for n in choices["modes"]) or
+                    any(type(n) is not int or n not in (1, 2, 3) for n in choices["modes"]) or
                     type(choices["run_nca"]) is not bool or
                     choices["weighting"] not in ("equal", "1/C", "1/C²")):
                     raise ValueError("Cấu hình phân tích trong project không hợp lệ.")

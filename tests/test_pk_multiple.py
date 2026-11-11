@@ -44,6 +44,10 @@ def test_steady_state_iv_bolus_one_compartment_exact_benchmarks():
     ("iv_bolus", 2, {"CL": 5, "Vc": 15, "Q": 6, "Vp": 30}, None),
     ("iv_infusion", 2, {"CL": 5, "Vc": 15, "Q": 6, "Vp": 30}, 2.0),
     ("oral", 2, {"CL/F": 5, "V/F": 15, "Q/F": 6, "Vp/F": 30, "ka": 1.3}, None),
+    ("iv_bolus", 3, {"CL": 5, "Vc": 12, "Q2": 8, "Vp2": 17, "Q3": 2.5, "Vp3": 80}, None),
+    ("iv_infusion", 3, {"CL": 5, "Vc": 12, "Q2": 8, "Vp2": 17, "Q3": 2.5, "Vp3": 80}, 2.0),
+    ("oral", 3, {"CL/F": 5, "V/F": 12, "Q2/F": 8, "Vp2/F": 17,
+                 "Q3/F": 2.5, "Vp3/F": 80, "ka": 1.3}, None),
 ])
 def test_superposition_matches_sum_of_single_doses(route, compartments, params, duration):
     cfg = PKSettings(route=route, dose=100, infusion_duration_h=duration)

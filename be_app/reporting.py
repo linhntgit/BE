@@ -30,6 +30,7 @@ from be_app.nca_reporting import nca_workbook
 from be_app.report_figures import illustrative_figures, snapshot_figures
 from be_app.report_tables import report_tables
 from be_app.report_template import build_report_outline
+from be_app.report_vknt_template import blank_report_vknt, docx_report_vknt, pdf_report_vknt
 from be_app.state import report_manifest
 
 STATUS = "DRAFT / NOT REGULATORY-READY"
@@ -357,8 +358,10 @@ def _append_docx_figures(doc, figures, language: str, *, template: bool) -> None
             span.font.size = Pt(8)
 
 
-def blank_report_template(language: str = "vi") -> bytes:
+def blank_report_template(language: str = "vi", template: str = "legacy") -> bytes:
     """Editable report structure; contains no results, signatures or invented source evidence."""
+    if template in ("standard", "vknt", "vknt_tt91", "cefixim", "cefixim_100", "standard_vn", "vn_moh"):
+        return blank_report_vknt(language=language)
     if language not in ("vi", "en"):
         raise ValueError("Ngôn ngữ báo cáo phải là vi hoặc en.")
     outline = build_report_outline({}, {}, {}, language)
@@ -447,7 +450,11 @@ def blank_report_template(language: str = "vi") -> bytes:
     return buffer.getvalue()
 
 
-def docx_report(project: Project, run_index: int = -1, language: str = "vi") -> bytes:
+def docx_report(
+    project: Project, run_index: int = -1, language: str = "vi", template: str = "legacy"
+) -> bytes:
+    if template in ("standard", "vknt", "vknt_tt91", "cefixim", "cefixim_100", "standard_vn", "vn_moh"):
+        return docx_report_vknt(project, run_index=run_index, language=language)
     content = report_content(project, run_index, language)
     run = content["run"]
     display_status = _display_status(language)
@@ -580,7 +587,11 @@ def _register_pdf_font() -> str:
     raise ValueError("Thiếu font Unicode Arial/DejaVuSans để xuất PDF tiếng Việt.")
 
 
-def pdf_report(project: Project, run_index: int = -1, language: str = "vi") -> bytes:
+def pdf_report(
+    project: Project, run_index: int = -1, language: str = "vi", template: str = "legacy"
+) -> bytes:
+    if template in ("standard", "vknt", "vknt_tt91", "cefixim", "cefixim_100", "standard_vn", "vn_moh"):
+        return pdf_report_vknt(project, run_index=run_index, language=language)
     content = report_content(project, run_index, language)
     run = content["run"]
     display_status = _display_status(language)

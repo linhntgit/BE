@@ -61,7 +61,7 @@ ENDPOINT_CASES = {
 
 PK_CASES = {
     "oral": Scenario("Đơn liều uống", "Mô hình hấp thu/thải trừ một ngăn với nhiều thời điểm.", "Áp dụng bảng, chọn đường uống rồi chạy PK."),
-    "iv": Scenario("Đơn liều IV bolus", "Đường cong thải trừ IV; quan sát C0 và pha cuối.", "Chọn đường IV bolus trước khi chạy."),
+    "iv": Scenario("Đơn liều IV bolus", "Đường cong thải trừ IV; không đo C(0+) tại t=0.", "Chọn IV bolus; có thể dùng ngoại suy C0 từ các mẫu sớm."),
     "multiple": Scenario("Đa liều (10 liều, τ=12h)", "Quan sát chu kỳ sau liều cuối.", "Xác nhận chế độ đa liều và thời gian tính từ liều cuối."),
     "steady": Scenario("Steady-state giả định (10 liều)", "Học AUCτ, các điều kiện CLss; chưa có bằng chứng đạt steady-state.", "Tự xác nhận bằng chứng steady-state nếu có."),
     "blq": Scenario("Có nồng độ BLQ", "Quan sát xử lý BLQ rõ ràng.", "Áp dụng bảng và đọc QC/giới hạn NCA."),
@@ -197,6 +197,9 @@ def pk_frame(case: str) -> tuple[pd.DataFrame, dict]:
         raise ValueError("Kịch bản PK không tồn tại.")
     multiple = case in {"multiple", "steady"}
     times = np.linspace(0, 12, 25) if multiple else np.array([0, .25, .5, 1, 1.5, 2, 3, 4, 6, 8, 12, 16, 24])
+    if case == "iv":
+        # C(0+) is a modeled/extrapolated quantity, never a measured sample.
+        times = times[times > 0]
     if case == "sparse":
         times = np.array([0, .25, .5, 1, 2, 3, 4])
     if multiple:
