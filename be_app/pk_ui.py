@@ -156,15 +156,26 @@ def _settings() -> tuple[PKSettings, tuple[int, ...], str, bool, PKRegimen | Non
         with r1:
             tau = st.number_input("Khoảng cách giữa hai liều τ (giờ)", min_value=0.001,
                                   value=12.0, step=1.0, key="pk_tau", help="Khoảng thời gian dùng thuốc lặp lại (Dosing interval, tau) trong phác đồ đa liều.")
-            time_basis = st.radio("Mốc thời gian của bảng Cplasma",
-                                  ["last_dose", "first_dose"],
-                                  format_func=lambda v: "Giờ sau liều cuối (0 đến τ)" if v == "last_dose"
-                                  else "Giờ từ liều đầu (toàn lịch)", key="pk_time_basis")
+            time_basis = st.radio(
+                "Mốc thời gian của bảng Cplasma",
+                ["last_dose", "first_dose"],
+                format_func=lambda v: "Giờ sau liều cuối (0 đến τ)" if v == "last_dose" else "Giờ từ liều đầu (toàn lịch)",
+                key="pk_time_basis",
+                help="Khai báo đúng gốc thời gian của bảng nồng độ để đồng bộ khoảng liều cuối [0, τ] với phác đồ đa liều.",
+            )
         with r2:
             number_doses = st.number_input("Tổng số liều đã dùng", min_value=2, max_value=1000,
                                            value=5, step=1, key="pk_number_doses", help="Tổng số lần đưa thuốc thực tế trước thời điểm lấy mẫu đánh giá dược động học.")
-            confirmed = st.checkbox("Tôi đã xác nhận đạt trạng thái ổn định bằng bằng chứng phù hợp",
-                                    value=False, key="pk_ss_confirm") if dose_mode == "steady_state" else False
+            confirmed = (
+                st.checkbox(
+                    "Tôi đã xác nhận đạt trạng thái ổn định bằng bằng chứng phù hợp",
+                    value=False,
+                    key="pk_ss_confirm",
+                    help="Chỉ xác nhận khi có bằng chứng nồng độ đáy Ctrough ổn định (thường sau ≥ 4–5×t½) để cho phép tính CLss.",
+                )
+                if dose_mode == "steady_state"
+                else False
+            )
         regimen = PKRegimen(mode=cast(Literal["multiple", "steady_state"], dose_mode),
                             tau_h=float(tau), number_doses=int(number_doses),
                             time_basis=cast(Literal["first_dose", "last_dose"], time_basis),
@@ -177,7 +188,12 @@ def _settings() -> tuple[PKSettings, tuple[int, ...], str, bool, PKRegimen | Non
                                     format_func=lambda v: route_labels[str(v)], key="pk_route", help="Đường dùng thuốc: Uống (Oral), Tiêm tĩnh mạch nhanh (IV bolus) hoặc Truyền tĩnh mạch (IV infusion)."))
     left, mid, right = st.columns(3)
     with left:
-        concentration_unit = st.selectbox("Đơn vị nồng độ đầu vào", list(CONCENTRATION_FACTORS), key="pk_concentration_unit")
+        concentration_unit = st.selectbox(
+            "Đơn vị nồng độ đầu vào",
+            list(CONCENTRATION_FACTORS),
+            key="pk_concentration_unit",
+            help="Đơn vị đo của cột Cplasma đầu vào; phần mềm tự quy đổi chuẩn về ng/mL trước khi tính PK.",
+        )
     with mid:
         has_dose = st.checkbox("Có thông tin liều mỗi lần" if regimen is not None
                                else "Có thông tin liều dùng", value=regimen is not None, key="pk_has_dose")
@@ -186,9 +202,25 @@ def _settings() -> tuple[PKSettings, tuple[int, ...], str, bool, PKRegimen | Non
                                help="Liều mỗi lần dùng" if regimen is not None else "Liều đơn",
                                key="pk_dose") if has_dose else None
     with right:
-        dose_unit = st.selectbox("Đơn vị liều", list(DOSE_FACTORS), index=2, key="pk_dose_unit")
-    infusion = st.number_input("Thời gian truyền (giờ)", min_value=0.000001, value=1.0,
-                               step=.25, key="pk_infusion") if route == "iv_infusion" else None
+        dose_unit = st.selectbox(
+            "Đơn vị liều",
+            list(DOSE_FACTORS),
+            index=2,
+            key="pk_dose_unit",
+            help="Đơn vị liều dùng; cần khai báo chính xác để quy đổi thể tích (L) và độ thanh thải (L/h).",
+        )
+    infusion = (
+        st.number_input(
+            "Thời gian truyền (giờ)",
+            min_value=0.000001,
+            value=1.0,
+            step=.25,
+            key="pk_infusion",
+            help="Thời gian truyền tĩnh mạch Tinf (giờ); dùng tính tốc độ truyền bậc 0 R0 = Dose/Tinf và hiệu chỉnh MRT - Tinf/2.",
+        )
+        if route == "iv_infusion"
+        else None
+    )
     zero_options = ["measured_only"]
     if regimen is None:
         if route == "iv_bolus":
@@ -249,8 +281,11 @@ def _tabular(snapshot: dict) -> None:
         df_models = pd.DataFrame(rows)
         st.dataframe(df_models, hide_index=True, width="stretch", column_config=table_column_config(df_models.columns))
         render_table_legend(df_models.columns, title="ℹ️ Chú thích tiêu đề cột & tiêu chí mô hình PK")
-        st.caption("So sánh AICc chỉ trong cùng hồ sơ, tập mẫu và cách trọng số. "
-                   "Với trọng số 1/C, 1/C² các tiêu chí thông tin chỉ mang tính gợi ý.")
+        st.caption(
+            "So sánh AICc chỉ có giá trị trong cùng hồ sơ, cùng tập mẫu và cùng trọng số. "
+            "Với trọng số 1/C, 1/C² các tiêu chí thông tin chỉ mang tính gợi ý chẩn đoán. "
+            "Lưu ý: Đường uống cố định Tlag = 0 và bảng kết quả chưa báo cáo %RSE; hãy kiểm tra đồ thị phần dư và Điều kiện Jacobian."
+        )
     else:
         st.caption("Không có mô hình khớp thành công.")
     if snapshot["errors"]:

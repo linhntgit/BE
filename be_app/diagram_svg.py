@@ -69,31 +69,68 @@ def get_diagram_0() -> str:
 # Lesson 1: Sample Size & Protocol Design
 # -----------------------------------------------------------------------------
 def get_diagram_1() -> str:
-    content = """  <text x="380" y="26" text-anchor="middle" font-family="system-ui, sans-serif" font-size="13" font-weight="700" fill="#0f172a">Thuật toán Ước tính Cỡ mẫu Phân bố t Không tâm (Owen's Q / Diletti)</text>
-  <g transform="translate(15, 45)">
-    <rect x="0" y="0" width="155" height="65" rx="8" fill="#eff6ff" stroke="#3b82f6" stroke-width="1.5"/>
-    <text x="77" y="25" text-anchor="middle" font-family="system-ui, sans-serif" font-size="11" font-weight="700" fill="#1e40af">CV_intra (%)</text>
-    <text x="77" y="48" text-anchor="middle" font-family="system-ui, sans-serif" font-size="10" fill="#3b82f6">Từ pilot / y văn</text>
+    content = """  <text x="380" y="22" text-anchor="middle" font-family="system-ui, sans-serif" font-size="13" font-weight="700" fill="#0f172a">Sơ đồ Thiết kế Nghiên cứu (2×2 · Song song · Replicate) &amp; Tính Cỡ mẫu (`design.py`)</text>
+  <g transform="translate(15, 34)">
+    <rect x="0" y="0" width="730" height="108" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.2"/>
+    <text x="12" y="18" font-family="system-ui, sans-serif" font-size="10.5" font-weight="700" fill="#1e293b">1. Kiến trúc 4 Thiết kế Nghiên cứu hỗ trợ trong BE_app:</text>
 
-    <line x1="155" y1="32" x2="185" y2="32" stroke="#2563eb" stroke-width="2" marker-end="url(#arrow)"/>
+    <!-- 2x2 Crossover -->
+    <rect x="12" y="26" width="166" height="72" rx="6" fill="#eff6ff" stroke="#3b82f6" stroke-width="1.2"/>
+    <text x="95" y="42" text-anchor="middle" font-family="system-ui, sans-serif" font-size="10" font-weight="700" fill="#1e40af">2×2 Chéo đôi (TR / RT)</text>
+    <text x="95" y="58" text-anchor="middle" font-family="system-ui, sans-serif" font-size="9" fill="#1d4ed8">Chuỗi 1: T → [Rửa giải] → R</text>
+    <text x="95" y="72" text-anchor="middle" font-family="system-ui, sans-serif" font-size="9" fill="#1d4ed8">Chuỗi 2: R → [Rửa giải] → T</text>
+    <text x="95" y="88" text-anchor="middle" font-family="system-ui, sans-serif" font-size="8.5" fill="#475569">Tách CV nội cá thể (CV_W)</text>
 
-    <rect x="185" y="0" width="165" height="65" rx="8" fill="#fef3c7" stroke="#d97706" stroke-width="1.5"/>
-    <text x="267" y="25" text-anchor="middle" font-family="system-ui, sans-serif" font-size="11" font-weight="700" fill="#92400e">Phương sai logarit</text>
-    <text x="267" y="48" text-anchor="middle" font-family="system-ui, sans-serif" font-size="10" font-weight="600" fill="#b45309">s² = ln(CV² + 1)</text>
+    <!-- Parallel -->
+    <rect x="190" y="26" width="166" height="72" rx="6" fill="#f0fdf4" stroke="#16a34a" stroke-width="1.2"/>
+    <text x="273" y="42" text-anchor="middle" font-family="system-ui, sans-serif" font-size="10" font-weight="700" fill="#166534">Song song (Parallel: T | R)</text>
+    <text x="273" y="58" text-anchor="middle" font-family="system-ui, sans-serif" font-size="9" fill="#15803d">Nhóm 1: Chỉ dùng thuốc T</text>
+    <text x="273" y="72" text-anchor="middle" font-family="system-ui, sans-serif" font-size="9" fill="#15803d">Nhóm 2: Chỉ dùng thuốc R</text>
+    <text x="273" y="88" text-anchor="middle" font-family="system-ui, sans-serif" font-size="8.5" fill="#475569">Dùng phương sai gộp (CV_total)</text>
 
-    <line x1="350" y1="32" x2="380" y2="32" stroke="#2563eb" stroke-width="2" marker-end="url(#arrow)"/>
+    <!-- Partial 3-way Replicate -->
+    <rect x="368" y="26" width="172" height="72" rx="6" fill="#faf5ff" stroke="#9333ea" stroke-width="1.2"/>
+    <text x="454" y="42" text-anchor="middle" font-family="system-ui, sans-serif" font-size="10" font-weight="700" fill="#6b21a8">Lặp 3 kỳ (`partial3`)</text>
+    <text x="454" y="58" text-anchor="middle" font-family="system-ui, sans-serif" font-size="9" fill="#7e22ce">TRR / RTR / RRT (3 chuỗi)</text>
+    <text x="454" y="72" text-anchor="middle" font-family="system-ui, sans-serif" font-size="9" fill="#7e22ce">Ước lượng riêng s_wR của R</text>
+    <text x="454" y="88" text-anchor="middle" font-family="system-ui, sans-serif" font-size="8.5" fill="#475569">Dùng cho HVDP / HVD</text>
 
-    <rect x="380" y="0" width="180" height="65" rx="8" fill="#f3e8ff" stroke="#9333ea" stroke-width="1.5"/>
-    <text x="470" y="25" text-anchor="middle" font-family="system-ui, sans-serif" font-size="11" font-weight="700" fill="#6b21a8">Tích phân Non-central t</text>
-    <text x="470" y="48" text-anchor="middle" font-family="system-ui, sans-serif" font-size="10" fill="#7e22ce">Power ≥ 80% (α=0.05)</text>
+    <!-- Full 4-way Replicate -->
+    <rect x="552" y="26" width="166" height="72" rx="6" fill="#fffbeb" stroke="#d97706" stroke-width="1.2"/>
+    <text x="635" y="42" text-anchor="middle" font-family="system-ui, sans-serif" font-size="10" font-weight="700" fill="#92400e">Lặp 4 kỳ (`full4`)</text>
+    <text x="635" y="58" text-anchor="middle" font-family="system-ui, sans-serif" font-size="9" fill="#b45309">TRTR / RTRT (2 chuỗi)</text>
+    <text x="635" y="72" text-anchor="middle" font-family="system-ui, sans-serif" font-size="9" fill="#b45309">Ước lượng cả s_wR &amp; s_wT</text>
+    <text x="635" y="88" text-anchor="middle" font-family="system-ui, sans-serif" font-size="8.5" fill="#475569">Bắt buộc cho US FDA NTI</text>
+  </g>
 
-    <line x1="560" y1="32" x2="590" y2="32" stroke="#2563eb" stroke-width="2" marker-end="url(#arrow)"/>
+  <g transform="translate(15, 154)">
+    <text x="12" y="14" font-family="system-ui, sans-serif" font-size="10.5" font-weight="700" fill="#1e293b">2. Quy trình Tính Cỡ mẫu &amp; Lực thống kê Chính xác (`design.tost_power`, mở cho 2×2 &amp; Song song):</text>
+    <g transform="translate(0, 24)">
+      <rect x="0" y="0" width="162" height="62" rx="8" fill="#eff6ff" stroke="#3b82f6" stroke-width="1.5"/>
+      <text x="81" y="24" text-anchor="middle" font-family="system-ui, sans-serif" font-size="10.5" font-weight="700" fill="#1e40af">Đầu vào CV (%)</text>
+      <text x="81" y="45" text-anchor="middle" font-family="system-ui, sans-serif" font-size="9.5" fill="#3b82f6">CV_W (2×2) | CV_total (Parallel)</text>
 
-    <rect x="590" y="0" width="140" height="65" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5"/>
-    <text x="660" y="25" text-anchor="middle" font-family="system-ui, sans-serif" font-size="11" font-weight="700" fill="#166534">N_evaluable</text>
-    <text x="660" y="48" text-anchor="middle" font-family="system-ui, sans-serif" font-size="10" fill="#15803d">Bù Dropout → N tuyển</text>
+      <line x1="162" y1="31" x2="188" y2="31" stroke="#2563eb" stroke-width="2" marker-end="url(#arrow)"/>
+
+      <rect x="190" y="0" width="160" height="62" rx="8" fill="#fef3c7" stroke="#d97706" stroke-width="1.5"/>
+      <text x="270" y="24" text-anchor="middle" font-family="system-ui, sans-serif" font-size="10.5" font-weight="700" fill="#92400e">Phương sai logarit</text>
+      <text x="270" y="45" text-anchor="middle" font-family="system-ui, sans-serif" font-size="9.5" font-weight="600" fill="#b45309">σ² = ln(CV² + 1)</text>
+
+      <line x1="350" y1="31" x2="376" y2="31" stroke="#2563eb" stroke-width="2" marker-end="url(#arrow)"/>
+
+      <rect x="378" y="0" width="182" height="62" rx="8" fill="#f3e8ff" stroke="#9333ea" stroke-width="1.5"/>
+      <text x="469" y="24" text-anchor="middle" font-family="system-ui, sans-serif" font-size="10.5" font-weight="700" fill="#6b21a8">Tích phân χ² &amp; Chuẩn kép</text>
+      <text x="469" y="45" text-anchor="middle" font-family="system-ui, sans-serif" font-size="9.5" fill="#7e22ce">Power ≥ 80% (α = 0.05)</text>
+
+      <line x1="560" y1="31" x2="586" y2="31" stroke="#2563eb" stroke-width="2" marker-end="url(#arrow)"/>
+
+      <rect x="588" y="0" width="142" height="62" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5"/>
+      <text x="659" y="24" text-anchor="middle" font-family="system-ui, sans-serif" font-size="10.5" font-weight="700" fill="#166534">N hoàn thành</text>
+      <text x="659" y="45" text-anchor="middle" font-family="system-ui, sans-serif" font-size="9.5" fill="#15803d">Bù Dropout → N tuyển</text>
+    </g>
+    <text x="365" y="102" text-anchor="middle" font-family="system-ui, sans-serif" font-size="9" font-style="italic" fill="#64748b">Lưu ý: Thiết kế replicate (partial3 / full4) chưa mở bộ ước tính cỡ mẫu tự động trong BE_app.</text>
   </g>"""
-    return _svg_wrapper(760, 135, content)
+    return _svg_wrapper(760, 272, content)
 
 
 # -----------------------------------------------------------------------------
@@ -108,11 +145,13 @@ def get_diagram_2() -> str:
     <text x="685" y="145" font-family="system-ui, sans-serif" font-size="11" font-weight="600" fill="#334155">Thời gian (t)</text>
     <text x="35" y="10" text-anchor="end" font-family="system-ui, sans-serif" font-size="11" font-weight="600" fill="#334155">Nồng độ (C)</text>
 
-    <!-- Curve Area fill -->
-    <path d="M 40 140 Q 90 20 180 30 T 360 115 T 520 135 L 520 140 Z" fill="#dbeafe" opacity="0.6"/>
+    <!-- Curve Area fill (AUC 0-t and extrapolated tail t-inf) -->
+    <path d="M 40 140 Q 90 20 180 30 T 360 115 T 520 135 L 520 140 Z" fill="#dbeafe" opacity="0.65"/>
+    <path d="M 520 135 Q 570 138 640 140 L 520 140 Z" fill="#fed7aa" opacity="0.8"/>
 
-    <!-- PK Curve line -->
+    <!-- PK Curve line (observed + extrapolated dashed tail) -->
     <path d="M 40 140 Q 90 20 180 30 T 360 115 T 520 135" fill="none" stroke="#2563eb" stroke-width="2.5"/>
+    <path d="M 520 135 Q 570 138 640 140" fill="none" stroke="#ea580c" stroke-width="2" stroke-dasharray="4,3"/>
 
     <!-- LLOQ dashed line -->
     <line x1="40" y1="135" x2="550" y2="135" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="4,4"/>
@@ -138,8 +177,9 @@ def get_diagram_2() -> str:
     <circle cx="470" cy="132" r="3.5" fill="#1e40af"/>
     <circle cx="520" cy="135" r="4" fill="#16a34a"/>
 
-    <text x="520" y="155" text-anchor="middle" font-family="system-ui, sans-serif" font-size="10" font-weight="600" fill="#166534">t_last ≥ 3·t½</text>
-    <text x="280" y="100" font-family="system-ui, sans-serif" font-size="11" font-weight="700" fill="#1e40af">AUC(0-t)</text>
+    <text x="520" y="155" text-anchor="middle" font-family="system-ui, sans-serif" font-size="10" font-weight="600" fill="#166534">t_last (AUC₀₋ₜ ≥ 80% AUC₀₋∞)</text>
+    <text x="602" y="155" text-anchor="middle" font-family="system-ui, sans-serif" font-size="9" font-weight="600" fill="#c2410c">Ngoại suy ≤ 20%</text>
+    <text x="280" y="100" font-family="system-ui, sans-serif" font-size="11" font-weight="700" fill="#1e40af">AUC(0–t)</text>
 
     <!-- Phase Annotations -->
     <text x="100" y="125" font-family="system-ui, sans-serif" font-size="9" fill="#2563eb">≥3 điểm hấp thu</text>
@@ -236,8 +276,8 @@ def get_diagram_5() -> str:
   <g transform="translate(30, 40)">
     <!-- Left: Linear Trapezoid (Absorption) -->
     <g transform="translate(0, 0)">
-      <rect width="330" height="150" fill="#f8fafc" rx="8" stroke="#cbd5e1"/>
-      <text x="165" y="22" text-anchor="middle" font-family="system-ui, sans-serif" font-size="11" font-weight="700" fill="#1e40af">1. Pha Hấp thu (C_{i+1} ≥ C_i): Hình thang Tuyến tính</text>
+      <rect width="330" height="162" fill="#f8fafc" rx="8" stroke="#cbd5e1"/>
+      <text x="165" y="22" text-anchor="middle" font-family="system-ui, sans-serif" font-size="11" font-weight="700" fill="#1e40af">1. Pha tăng (Cᵢ₊₁ ≥ Cᵢ) hoặc Cᵢ₊₁ = 0: Tuyến tính</text>
       
       <!-- Coordinate lines -->
       <line x1="45" y1="120" x2="280" y2="120" stroke="#64748b" stroke-width="1.5"/>
@@ -246,18 +286,19 @@ def get_diagram_5() -> str:
       <!-- Trapezoid polygon -->
       <polygon points="90,120 90,85 210,50 210,120" fill="#bfdbfe" stroke="#2563eb" stroke-width="2"/>
 
-      <text x="90" y="135" text-anchor="middle" font-family="system-ui, sans-serif" font-size="10" fill="#475569">t_i</text>
-      <text x="210" y="135" text-anchor="middle" font-family="system-ui, sans-serif" font-size="10" fill="#475569">t_{i+1}</text>
-      <text x="80" y="85" text-anchor="end" font-family="system-ui, sans-serif" font-size="10" font-weight="600" fill="#1e40af">C_i</text>
-      <text x="220" y="50" text-anchor="start" font-family="system-ui, sans-serif" font-size="10" font-weight="600" fill="#1e40af">C_{i+1}</text>
+      <text x="90" y="135" text-anchor="middle" font-family="system-ui, sans-serif" font-size="10" fill="#475569">tᵢ</text>
+      <text x="210" y="135" text-anchor="middle" font-family="system-ui, sans-serif" font-size="10" fill="#475569">tᵢ₊₁</text>
+      <text x="80" y="85" text-anchor="end" font-family="system-ui, sans-serif" font-size="10" font-weight="600" fill="#1e40af">Cᵢ</text>
+      <text x="220" y="50" text-anchor="start" font-family="system-ui, sans-serif" font-size="10" font-weight="600" fill="#1e40af">Cᵢ₊₁</text>
 
-      <text x="150" y="90" text-anchor="middle" font-family="system-ui, sans-serif" font-size="11" font-weight="700" fill="#1d4ed8">ΔAUC = ½(C_i + C_{i+1})·Δt</text>
+      <text x="150" y="90" text-anchor="middle" font-family="system-ui, sans-serif" font-size="11" font-weight="700" fill="#1d4ed8">ΔAUC = ½(Cᵢ + Cᵢ₊₁)·Δt</text>
+      <text x="165" y="152" text-anchor="middle" font-family="system-ui, sans-serif" font-size="8.5" fill="#475569">Bảo vệ BLQ: Nếu Cᵢ &gt; Cᵢ₊₁ = 0 → lùi về tuyến tính</text>
     </g>
 
     <!-- Right: Log Trapezoid (Elimination) -->
     <g transform="translate(370, 0)">
-      <rect width="330" height="150" fill="#f8fafc" rx="8" stroke="#cbd5e1"/>
-      <text x="165" y="22" text-anchor="middle" font-family="system-ui, sans-serif" font-size="11" font-weight="700" fill="#92400e">2. Pha Thải trừ (C_{i+1} &lt; C_i): Hình thang Logarit</text>
+      <rect width="330" height="162" fill="#f8fafc" rx="8" stroke="#cbd5e1"/>
+      <text x="165" y="22" text-anchor="middle" font-family="system-ui, sans-serif" font-size="11" font-weight="700" fill="#92400e">2. Pha giảm (Cᵢ &gt; Cᵢ₊₁ &gt; 0): Hình thang Logarit</text>
       
       <!-- Coordinate lines -->
       <line x1="45" y1="120" x2="280" y2="120" stroke="#64748b" stroke-width="1.5"/>
@@ -266,57 +307,108 @@ def get_diagram_5() -> str:
       <!-- Curved/Log Trapezoid representation -->
       <path d="M 90 120 L 90 50 Q 140 75 210 95 L 210 120 Z" fill="#fde68a" stroke="#d97706" stroke-width="2"/>
 
-      <text x="90" y="135" text-anchor="middle" font-family="system-ui, sans-serif" font-size="10" fill="#475569">t_i</text>
-      <text x="210" y="135" text-anchor="middle" font-family="system-ui, sans-serif" font-size="10" fill="#475569">t_{i+1}</text>
-      <text x="80" y="50" text-anchor="end" font-family="system-ui, sans-serif" font-size="10" font-weight="600" fill="#92400e">C_i</text>
-      <text x="220" y="95" text-anchor="start" font-family="system-ui, sans-serif" font-size="10" font-weight="600" fill="#92400e">C_{i+1}</text>
+      <text x="90" y="135" text-anchor="middle" font-family="system-ui, sans-serif" font-size="10" fill="#475569">tᵢ</text>
+      <text x="210" y="135" text-anchor="middle" font-family="system-ui, sans-serif" font-size="10" fill="#475569">tᵢ₊₁</text>
+      <text x="80" y="50" text-anchor="end" font-family="system-ui, sans-serif" font-size="10" font-weight="600" fill="#92400e">Cᵢ</text>
+      <text x="220" y="95" text-anchor="start" font-family="system-ui, sans-serif" font-size="10" font-weight="600" fill="#92400e">Cᵢ₊₁</text>
 
-      <text x="150" y="85" text-anchor="middle" font-family="system-ui, sans-serif" font-size="11" font-weight="700" fill="#b45309">ΔAUC = [(C_i - C_{i+1})/ln(C_i/C_{i+1})]·Δt</text>
+      <text x="150" y="85" text-anchor="middle" font-family="system-ui, sans-serif" font-size="10.5" font-weight="700" fill="#b45309">ΔAUC = [(Cᵢ - Cᵢ₊₁)/ln(Cᵢ/Cᵢ₊₁)]·Δt</text>
+      <text x="165" y="152" text-anchor="middle" font-family="system-ui, sans-serif" font-size="8.5" fill="#92400e">Tránh ước tính vượt mức trên đoạn suy giảm hàm mũ</text>
     </g>
   </g>"""
-    return _svg_wrapper(760, 210, content)
+    return _svg_wrapper(760, 222, content)
 
 
 # -----------------------------------------------------------------------------
 # Lesson 6: BE Statistical Decision Tree
 # -----------------------------------------------------------------------------
 def get_diagram_6() -> str:
-    content = """  <text x="380" y="24" text-anchor="middle" font-family="system-ui, sans-serif" font-size="13" font-weight="700" fill="#0f172a">Cây Quyết định Đánh giá Tương đương Sinh học (ICH M13A · EMA · FDA)</text>
-  <g transform="translate(15, 38)">
-    <!-- Top model -->
-    <rect x="225" y="0" width="270" height="42" rx="8" fill="#eff6ff" stroke="#3b82f6" stroke-width="1.8"/>
-    <text x="360" y="18" text-anchor="middle" font-family="system-ui, sans-serif" font-size="11" font-weight="700" fill="#1e40af">Mô hình ANOVA / Tuyến tính Hỗn hợp</text>
-    <text x="360" y="33" text-anchor="middle" font-family="system-ui, sans-serif" font-size="10" fill="#2563eb">ln(AUC), ln(Cmax) · Ước lượng s_wR (CV_wR)</text>
+    content = """  <text x="380" y="22" text-anchor="middle" font-family="system-ui, sans-serif" font-size="13" font-weight="700" fill="#0f172a">Cây Quyết định BE (ICH M13A · EMA · US FDA) &amp; Minh họa Forest Plot GMR / 90% CI</text>
+  <g transform="translate(15, 34)">
+    <!-- Top box -->
+    <rect x="200" y="0" width="330" height="40" rx="8" fill="#eff6ff" stroke="#3b82f6" stroke-width="1.6"/>
+    <text x="365" y="17" text-anchor="middle" font-family="system-ui, sans-serif" font-size="10.5" font-weight="700" fill="#1e40af">Phân tích trên ln(Cmax), ln(AUC₀₋ₜ), ln(AUC₀₋∞)</text>
+    <text x="365" y="31" text-anchor="middle" font-family="system-ui, sans-serif" font-size="9.5" fill="#2563eb">2×2 / Song song: ANOVA | Replicate: Method A (EMA) / Tương phản I, D (FDA)</text>
 
-    <!-- Branch lines -->
-    <line x1="280" y1="42" x2="160" y2="70" stroke="#2563eb" stroke-width="2" marker-end="url(#arrow)"/>
-    <line x1="440" y1="42" x2="550" y2="70" stroke="#9333ea" stroke-width="2" marker-end="url(#arrow-purple)"/>
+    <!-- Branch arrows -->
+    <line x1="255" y1="40" x2="118" y2="62" stroke="#16a34a" stroke-width="1.8" marker-end="url(#arrow-green)"/>
+    <line x1="365" y1="40" x2="365" y2="62" stroke="#dc2626" stroke-width="1.8" marker-end="url(#arrow-red)"/>
+    <line x1="475" y1="40" x2="592" y2="62" stroke="#9333ea" stroke-width="1.8" marker-end="url(#arrow-purple)"/>
 
-    <!-- Left Branch: Standard Drug -->
-    <rect x="30" y="70" width="260" height="95" rx="8" fill="#f0fdf4" stroke="#16a34a" stroke-width="1.5"/>
-    <text x="160" y="90" text-anchor="middle" font-family="system-ui, sans-serif" font-size="11" font-weight="700" fill="#166534">Thuốc thường (CV_wR ≤ 30%)</text>
-    <text x="160" y="110" text-anchor="middle" font-family="system-ui, sans-serif" font-size="10" font-weight="600" fill="#15803d">ABE Truyền thống (Conventional ABE)</text>
-    <rect x="50" y="120" width="220" height="35" rx="6" fill="#dcfce7" stroke="#16a34a" stroke-width="1"/>
-    <text x="160" y="142" text-anchor="middle" font-family="system-ui, sans-serif" font-size="11" font-weight="700" fill="#14532d">90% CI ∈ [80.00 – 125.00%]</text>
+    <!-- Branch 1: Standard ABE -->
+    <rect x="0" y="64" width="228" height="92" rx="8" fill="#f0fdf4" stroke="#16a34a" stroke-width="1.4"/>
+    <text x="114" y="82" text-anchor="middle" font-family="system-ui, sans-serif" font-size="10.5" font-weight="700" fill="#166534">1. ABE Chuẩn (Thông thường)</text>
+    <text x="114" y="98" text-anchor="middle" font-family="system-ui, sans-serif" font-size="9" fill="#15803d">Áp dụng cho 2×2, Song song</text>
+    <text x="114" y="112" text-anchor="middle" font-family="system-ui, sans-serif" font-size="9" fill="#15803d">&amp; thuốc biến thiên thấp (CV_wR ≤ 30%)</text>
+    <rect x="14" y="122" width="200" height="26" rx="5" fill="#dcfce7" stroke="#16a34a" stroke-width="1"/>
+    <text x="114" y="139" text-anchor="middle" font-family="system-ui, sans-serif" font-size="10" font-weight="700" fill="#14532d">90% CI ∈ [80.00 – 125.00%]</text>
 
-    <!-- Right Branch: HVD -->
-    <rect x="420" y="70" width="295" height="95" rx="8" fill="#faf5ff" stroke="#9333ea" stroke-width="1.5"/>
-    <text x="567" y="90" text-anchor="middle" font-family="system-ui, sans-serif" font-size="11" font-weight="700" fill="#6b21a8">Thuốc biến thiên cao (CV_wR &gt; 30%)</text>
-    <g transform="translate(430, 102)">
-      <!-- EMA -->
-      <rect x="0" y="0" width="135" height="53" rx="6" fill="#f3e8ff" stroke="#9333ea" stroke-width="1"/>
-      <text x="67" y="16" text-anchor="middle" font-family="system-ui, sans-serif" font-size="10" font-weight="700" fill="#581c87">EMA ABEL</text>
-      <text x="67" y="32" text-anchor="middle" font-family="system-ui, sans-serif" font-size="9" fill="#6b21a8">Mở rộng [L, U] theo swR</text>
-      <text x="67" y="45" text-anchor="middle" font-family="system-ui, sans-serif" font-size="9" font-weight="600" fill="#581c87">GMR ∈ [80.00–125.00%]</text>
+    <!-- Branch 2: NTI -->
+    <rect x="240" y="64" width="222" height="92" rx="8" fill="#fef2f2" stroke="#dc2626" stroke-width="1.4"/>
+    <text x="351" y="82" text-anchor="middle" font-family="system-ui, sans-serif" font-size="10.5" font-weight="700" fill="#991b1b">2. Khoảng Điều trị Hẹp (NTI)</text>
+    <text x="351" y="99" text-anchor="middle" font-family="system-ui, sans-serif" font-size="9" font-weight="600" fill="#b91c1c">• EMA: [90.00 – 111.11%] (AUC; Cmax tùy thuốc)</text>
+    <text x="351" y="114" text-anchor="middle" font-family="system-ui, sans-serif" font-size="9" font-weight="600" fill="#7f1d1d">• US FDA (`full4`): Đồng thời 3 điều kiện:</text>
+    <text x="351" y="128" text-anchor="middle" font-family="system-ui, sans-serif" font-size="8.5" fill="#7f1d1d">ABE [80–125] + RSABE (σw0=0.10)</text>
+    <text x="351" y="142" text-anchor="middle" font-family="system-ui, sans-serif" font-size="8.5" fill="#7f1d1d">+ Upper 90% CI(sWT/sWR) ≤ 2.5</text>
 
-      <!-- FDA -->
-      <rect x="142" y="0" width="135" height="53" rx="6" fill="#fef3c7" stroke="#d97706" stroke-width="1"/>
-      <text x="209" y="16" text-anchor="middle" font-family="system-ui, sans-serif" font-size="10" font-weight="700" fill="#78350f">FDA RSABE</text>
-      <text x="209" y="32" text-anchor="middle" font-family="system-ui, sans-serif" font-size="9" fill="#92400e">95% UCB ≤ 0</text>
-      <text x="209" y="45" text-anchor="middle" font-family="system-ui, sans-serif" font-size="9" font-weight="600" fill="#78350f">GMR ∈ [80.00–125.00%]</text>
-    </g>
+    <!-- Branch 3: HVD / HVDP -->
+    <rect x="474" y="64" width="256" height="92" rx="8" fill="#faf5ff" stroke="#9333ea" stroke-width="1.4"/>
+    <text x="602" y="82" text-anchor="middle" font-family="system-ui, sans-serif" font-size="10.5" font-weight="700" fill="#6b21a8">3. Biến thiên cao (Replicate)</text>
+    <rect x="484" y="90" width="115" height="58" rx="5" fill="#f3e8ff" stroke="#9333ea" stroke-width="1"/>
+    <text x="541" y="104" text-anchor="middle" font-family="system-ui, sans-serif" font-size="9.5" font-weight="700" fill="#581c87">EMA ABEL</text>
+    <text x="541" y="117" text-anchor="middle" font-family="system-ui, sans-serif" font-size="8" fill="#6b21a8">Chỉ nới Cmax (CV_wR &gt; 30%,</text>
+    <text x="541" y="128" text-anchor="middle" font-family="system-ui, sans-serif" font-size="8" fill="#6b21a8">trần 50%); AUC [80–125%]</text>
+    <text x="541" y="140" text-anchor="middle" font-family="system-ui, sans-serif" font-size="8" font-weight="700" fill="#581c87">GMR ∈ [80.00–125.00%]</text>
+
+    <rect x="605" y="90" width="115" height="58" rx="5" fill="#fef3c7" stroke="#d97706" stroke-width="1"/>
+    <text x="662" y="104" text-anchor="middle" font-family="system-ui, sans-serif" font-size="9.5" font-weight="700" fill="#78350f">FDA RSABE</text>
+    <text x="662" y="117" text-anchor="middle" font-family="system-ui, sans-serif" font-size="8" fill="#92400e">Nếu s_wR ≥ 0.294:</text>
+    <text x="662" y="128" text-anchor="middle" font-family="system-ui, sans-serif" font-size="8" fill="#92400e">Howe UCB95% ≤ 0 + GMR</text>
+    <text x="662" y="140" text-anchor="middle" font-family="system-ui, sans-serif" font-size="8" font-weight="700" fill="#78350f">s_wR &lt; 0.294 → ABE chuẩn</text>
+  </g>
+
+  <!-- Bottom Forest Plot illustration -->
+  <g transform="translate(15, 202)">
+    <rect x="0" y="0" width="730" height="98" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.2"/>
+    <text x="12" y="16" font-family="system-ui, sans-serif" font-size="10.5" font-weight="700" fill="#1e293b">Minh họa Biểu đồ Forest: So sánh GMR &amp; Khoảng tin cậy 90% với Giới hạn Chấp nhận</text>
+
+    <!-- Vertical Reference Lines: 80%=290, 90%=355, 100%=420, 111.11%=492, 125%=582, 143.19%=680 -->
+    <line x1="290" y1="22" x2="290" y2="82" stroke="#dc2626" stroke-width="1.4" stroke-dasharray="3,2"/>
+    <line x1="355" y1="22" x2="355" y2="82" stroke="#ea580c" stroke-width="1" stroke-dasharray="2,2"/>
+    <line x1="420" y1="22" x2="420" y2="82" stroke="#64748b" stroke-width="1.2"/>
+    <line x1="492" y1="22" x2="492" y2="82" stroke="#ea580c" stroke-width="1" stroke-dasharray="2,2"/>
+    <line x1="582" y1="22" x2="582" y2="82" stroke="#dc2626" stroke-width="1.4" stroke-dasharray="3,2"/>
+    <line x1="680" y1="22" x2="680" y2="82" stroke="#9333ea" stroke-width="1.2" stroke-dasharray="2,3"/>
+
+    <!-- Axis Labels -->
+    <text x="290" y="93" text-anchor="middle" font-family="system-ui, sans-serif" font-size="8.5" font-weight="700" fill="#dc2626">80%</text>
+    <text x="355" y="93" text-anchor="middle" font-family="system-ui, sans-serif" font-size="8" fill="#ea580c">90%</text>
+    <text x="420" y="93" text-anchor="middle" font-family="system-ui, sans-serif" font-size="8.5" font-weight="700" fill="#334155">100%</text>
+    <text x="492" y="93" text-anchor="middle" font-family="system-ui, sans-serif" font-size="8" fill="#ea580c">111.1%</text>
+    <text x="582" y="93" text-anchor="middle" font-family="system-ui, sans-serif" font-size="8.5" font-weight="700" fill="#dc2626">125%</text>
+    <text x="680" y="93" text-anchor="middle" font-family="system-ui, sans-serif" font-size="8" fill="#9333ea">143.2% (Trần ABEL)</text>
+
+    <!-- Row 1: Standard PASS -->
+    <text x="14" y="34" font-family="system-ui, sans-serif" font-size="9" font-weight="600" fill="#166534">ABE Chuẩn — ĐẠT [94–108%]</text>
+    <line x1="381" y1="31" x2="472" y2="31" stroke="#16a34a" stroke-width="2.5"/>
+    <circle cx="426" cy="31" r="3.5" fill="#16a34a"/>
+
+    <!-- Row 2: Standard FAIL -->
+    <text x="14" y="50" font-family="system-ui, sans-serif" font-size="9" font-weight="600" fill="#dc2626">ABE Chuẩn — KHÔNG ĐẠT [104–129%]</text>
+    <line x1="446" y1="47" x2="608" y2="47" stroke="#dc2626" stroke-width="2.5"/>
+    <circle cx="527" cy="47" r="3.5" fill="#dc2626"/>
+
+    <!-- Row 3: EMA NTI PASS -->
+    <text x="14" y="65" font-family="system-ui, sans-serif" font-size="9" font-weight="600" fill="#c2410c">EMA NTI — ĐẠT [95–107% ∈ 90–111.1%]</text>
+    <line x1="387" y1="62" x2="465" y2="62" stroke="#ea580c" stroke-width="2.5"/>
+    <circle cx="426" cy="62" r="3.5" fill="#ea580c"/>
+
+    <!-- Row 4: EMA ABEL Cmax PASS -->
+    <text x="14" y="80" font-family="system-ui, sans-serif" font-size="9" font-weight="600" fill="#7e22ce">EMA ABEL Cmax — ĐẠT [76–134%, GMR 101%]</text>
+    <line x1="264" y1="77" x2="640" y2="77" stroke="#9333ea" stroke-width="2.5"/>
+    <circle cx="426" cy="77" r="3.5" fill="#9333ea"/>
   </g>"""
-    return _svg_wrapper(760, 185, content)
+    return _svg_wrapper(760, 312, content)
 
 
 # -----------------------------------------------------------------------------
@@ -451,30 +543,37 @@ def get_diagram_compartment(route: str, compartments: int) -> str:
         r_type = "oral"
         r_title = "Đường uống qua ống tiêu hóa (Oral Absorption)"
         input_label = "Ruột / Ống TH"
-        input_sub = "Liều D · F (Tlag)"
+        input_sub = "Liều D · F (Tlag = 0)"
         input_color = "#fef3c7"
         input_stroke = "#d97706"
         input_text = "#92400e"
         in_arrow = "arrow"
         arrow_label = "Hấp thu ka"
 
+    v1_label = "Vc" if r_type != "oral" else "V₁/F"
+    v2_label = "Vp" if r_type != "oral" else "V₂/F"
+    v3_label = "V₃" if r_type != "oral" else "V₃/F"
+    vss_label = "Vss" if r_type != "oral" else "Vss/F"
+    q_label = "Q" if r_type != "oral" else "Q/F"
+    auc_label = "AUC = D / CL" if r_type != "oral" else "AUC = D / (CL/F)"
+
     if compartments == 1:
         cpt_title = f"{r_title} — Mô hình 1 Ngăn"
-        cl_label = "CL = k₁₀·V₁" if r_type != "oral" else "CL/F = kel·V₁"
+        cl_label = "CL = k₁₀·Vc" if r_type != "oral" else "CL/F = kel·(V/F)"
         eq_badge = (
             '<rect x="500" y="45" width="245" height="150" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.2"/>\n'
             '<text x="515" y="68" font-family="system-ui, sans-serif" font-size="11" font-weight="700" fill="#1e293b">Đặc trưng Mô hình 1 Ngăn:</text>\n'
-            f'<text x="515" y="90" font-family="system-ui, sans-serif" font-size="10" fill="#475569">• Thể tích phân bố: {"V₁ (hoặc Vc)" if r_type != "oral" else "V₁/F (biểu kiến)"}</text>\n'
+            f'<text x="515" y="90" font-family="system-ui, sans-serif" font-size="10" fill="#475569">• Thể tích phân bố: {"Vc" if r_type != "oral" else "V/F (biểu kiến)"}</text>\n'
             f'<text x="515" y="110" font-family="system-ui, sans-serif" font-size="10" fill="#475569">• Độ thanh thải: {cl_label}</text>\n'
-            '<text x="515" y="130" font-family="system-ui, sans-serif" font-size="10" fill="#475569">• Thời gian bán thải: t½ = 0.693 / k₁₀</text>\n'
-            '<text x="515" y="150" font-family="system-ui, sans-serif" font-size="10" fill="#475569">• Diện tích dưới đường cong: AUC = D / CL</text>\n'
-            f'<text x="515" y="172" font-family="system-ui, sans-serif" font-size="10" font-weight="600" fill="#2563eb">• Nghiệm C(t): {"C₀·e^(-k₁₀t)" if r_type=="bolus" else ("(R₀/CL)(1-e^(-kt))" if r_type=="infusion" else "Bateman (ka, kel)")}</text>'
+            '<text x="515" y="130" font-family="system-ui, sans-serif" font-size="10" fill="#475569">• Thời gian bán thải: t½ = ln(2) / k₁₀</text>\n'
+            f'<text x="515" y="150" font-family="system-ui, sans-serif" font-size="10" fill="#475569">• Diện tích: {auc_label}</text>\n'
+            f'<text x="515" y="172" font-family="system-ui, sans-serif" font-size="9.5" font-weight="600" fill="#2563eb">• Nghiệm: {"C₀·e^(-k₁₀t)" if r_type=="bolus" else ("(R₀/CL)(1-e^(-k₁₀t))" if r_type=="infusion" else "Bateman (ka, kel; Tlag=0)")}</text>'
         )
         body = f"""  <text x="380" y="24" text-anchor="middle" font-family="system-ui, sans-serif" font-size="13" font-weight="700" fill="#0f172a">{cpt_title}</text>
   <!-- Input -->
   <rect x="25" y="70" width="110" height="60" rx="8" fill="{input_color}" stroke="{input_stroke}" stroke-width="1.8"/>
   <text x="80" y="96" text-anchor="middle" font-family="system-ui, sans-serif" font-size="12" font-weight="700" fill="{input_text}">{input_label}</text>
-  <text x="80" y="114" text-anchor="middle" font-family="system-ui, sans-serif" font-size="10" fill="{input_text}">{input_sub}</text>
+  <text x="80" y="114" text-anchor="middle" font-family="system-ui, sans-serif" font-size="9.5" fill="{input_text}">{input_sub}</text>
 
   <!-- In arrow -->
   <line x1="135" y1="100" x2="195" y2="100" stroke="{input_stroke}" stroke-width="2" marker-end="url(#{in_arrow})"/>
@@ -482,7 +581,7 @@ def get_diagram_compartment(route: str, compartments: int) -> str:
 
   <!-- Central Compartment -->
   <rect x="205" y="60" width="155" height="75" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="2"/>
-  <text x="282" y="88" text-anchor="middle" font-family="system-ui, sans-serif" font-size="12" font-weight="700" fill="#1e40af">Ngăn Trung tâm (V₁)</text>
+  <text x="282" y="88" text-anchor="middle" font-family="system-ui, sans-serif" font-size="12" font-weight="700" fill="#1e40af">Ngăn Trung tâm ({"Vc" if r_type != "oral" else "V/F"})</text>
   <text x="282" y="106" text-anchor="middle" font-family="system-ui, sans-serif" font-size="11" fill="#3b82f6">Nồng độ huyết tương C₁(t)</text>
   <text x="282" y="122" text-anchor="middle" font-family="system-ui, sans-serif" font-size="9" fill="#1d4ed8">Máu &amp; các mô tưới máu cao</text>
 
@@ -491,28 +590,29 @@ def get_diagram_compartment(route: str, compartments: int) -> str:
   <text x="296" y="152" font-family="system-ui, sans-serif" font-size="11" font-weight="700" fill="#dc2626">k₁₀</text>
 
   <!-- Elimination -->
-  <rect x="215" y="167" width="135" height="30" rx="6" fill="#fee2e2" stroke="#dc2626" stroke-width="1.2"/>
-  <text x="282" y="187" text-anchor="middle" font-family="system-ui, sans-serif" font-size="11" font-weight="600" fill="#991b1b">Thải trừ ({cl_label})</text>
+  <rect x="210" y="167" width="145" height="30" rx="6" fill="#fee2e2" stroke="#dc2626" stroke-width="1.2"/>
+  <text x="282" y="187" text-anchor="middle" font-family="system-ui, sans-serif" font-size="10.5" font-weight="600" fill="#991b1b">Thải trừ ({cl_label})</text>
 
   <!-- Summary badge -->
   {eq_badge}"""
     elif compartments == 2:
         cpt_title = f"{r_title} — Mô hình 2 Ngăn"
-        cl_label = "CL = k₁₀·V₁" if r_type != "oral" else "CL/F = k₁₀·V₁"
+        cl_label = "CL = k₁₀·Vc" if r_type != "oral" else "CL/F = k₁₀·(V₁/F)"
+        curve_note = "• C(t) = A·e^(-αt) + B·e^(-βt)" if r_type == "bolus" else ("• Truyền bậc 0 + Phân rã α, β" if r_type == "infusion" else "• A·e^(-αt)+B·e^(-βt)-(A+B)e^(-kat)")
         eq_badge = (
             '<rect x="520" y="45" width="225" height="150" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.2"/>\n'
             '<text x="532" y="68" font-family="system-ui, sans-serif" font-size="11" font-weight="700" fill="#1e293b">Đặc trưng Mô hình 2 Ngăn:</text>\n'
-            '<text x="532" y="90" font-family="system-ui, sans-serif" font-size="10" fill="#475569">• Thể tích Vss = V₁·(1 + k₁₂/k₂₁)</text>\n'
-            '<text x="532" y="110" font-family="system-ui, sans-serif" font-size="10" fill="#475569">• Thanh thải liên ngăn Q = k₁₂·V₁ = k₂₁·V₂</text>\n'
-            '<text x="532" y="130" font-family="system-ui, sans-serif" font-size="10" fill="#475569">• Pha phân bố α: t½,α = 0.693 / α</text>\n'
-            '<text x="532" y="150" font-family="system-ui, sans-serif" font-size="10" fill="#475569">• Pha thải trừ β: t½,β = 0.693 / β</text>\n'
-            '<text x="532" y="172" font-family="system-ui, sans-serif" font-size="10" font-weight="600" fill="#9333ea">• C(t) = A·e^(-αt) + B·e^(-βt)</text>'
+            f'<text x="532" y="90" font-family="system-ui, sans-serif" font-size="10" fill="#475569">• {vss_label} = {v1_label} + {v2_label}</text>\n'
+            f'<text x="532" y="110" font-family="system-ui, sans-serif" font-size="10" fill="#475569">• {q_label} = k₁₂·{v1_label} = k₂₁·{v2_label}</text>\n'
+            '<text x="532" y="130" font-family="system-ui, sans-serif" font-size="10" fill="#475569">• Pha phân bố α: t½,α = ln(2)/α</text>\n'
+            '<text x="532" y="150" font-family="system-ui, sans-serif" font-size="10" fill="#475569">• Pha thải trừ β: t½,β = ln(2)/β</text>\n'
+            f'<text x="532" y="172" font-family="system-ui, sans-serif" font-size="9.5" font-weight="600" fill="#9333ea">{curve_note}</text>'
         )
         body = f"""  <text x="380" y="24" text-anchor="middle" font-family="system-ui, sans-serif" font-size="13" font-weight="700" fill="#0f172a">{cpt_title}</text>
   <!-- Input -->
   <rect x="15" y="70" width="85" height="55" rx="8" fill="{input_color}" stroke="{input_stroke}" stroke-width="1.5"/>
   <text x="57" y="94" text-anchor="middle" font-family="system-ui, sans-serif" font-size="11" font-weight="700" fill="{input_text}">{input_label}</text>
-  <text x="57" y="110" text-anchor="middle" font-family="system-ui, sans-serif" font-size="9" fill="{input_text}">{input_sub}</text>
+  <text x="57" y="110" text-anchor="middle" font-family="system-ui, sans-serif" font-size="8.5" fill="{input_text}">{input_sub}</text>
 
   <!-- In arrow -->
   <line x1="100" y1="97" x2="140" y2="97" stroke="{input_stroke}" stroke-width="1.8" marker-end="url(#{in_arrow})"/>
@@ -520,7 +620,7 @@ def get_diagram_compartment(route: str, compartments: int) -> str:
 
   <!-- Central Compartment 1 -->
   <rect x="145" y="58" width="130" height="75" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="2"/>
-  <text x="210" y="84" text-anchor="middle" font-family="system-ui, sans-serif" font-size="11" font-weight="700" fill="#1e40af">Ngăn 1 (V₁)</text>
+  <text x="210" y="84" text-anchor="middle" font-family="system-ui, sans-serif" font-size="11" font-weight="700" fill="#1e40af">Ngăn 1 ({v1_label})</text>
   <text x="210" y="100" text-anchor="middle" font-family="system-ui, sans-serif" font-size="10" fill="#3b82f6">Trung tâm (C₁)</text>
   <text x="210" y="116" text-anchor="middle" font-family="system-ui, sans-serif" font-size="8" fill="#1d4ed8">Máu &amp; dịch ngoại bào</text>
 
@@ -532,7 +632,7 @@ def get_diagram_compartment(route: str, compartments: int) -> str:
 
   <!-- Peripheral Compartment 2 -->
   <rect x="340" y="58" width="140" height="75" rx="8" fill="#f3e8ff" stroke="#9333ea" stroke-width="1.8"/>
-  <text x="410" y="84" text-anchor="middle" font-family="system-ui, sans-serif" font-size="11" font-weight="700" fill="#6b21a8">Ngăn 2 (V₂)</text>
+  <text x="410" y="84" text-anchor="middle" font-family="system-ui, sans-serif" font-size="11" font-weight="700" fill="#6b21a8">Ngăn 2 ({v2_label})</text>
   <text x="410" y="100" text-anchor="middle" font-family="system-ui, sans-serif" font-size="10" fill="#7e22ce">Ngoại vi (C₂)</text>
   <text x="410" y="116" text-anchor="middle" font-family="system-ui, sans-serif" font-size="8" fill="#581c87">Mô cơ, mô liên kết</text>
 
@@ -541,36 +641,37 @@ def get_diagram_compartment(route: str, compartments: int) -> str:
   <text x="222" y="150" font-family="system-ui, sans-serif" font-size="10" font-weight="700" fill="#dc2626">k₁₀</text>
 
   <!-- Elimination -->
-  <rect x="150" y="165" width="120" height="28" rx="6" fill="#fee2e2" stroke="#dc2626" stroke-width="1.2"/>
-  <text x="210" y="184" text-anchor="middle" font-family="system-ui, sans-serif" font-size="10" font-weight="600" fill="#991b1b">Thải trừ ({cl_label})</text>
+  <rect x="145" y="165" width="130" height="28" rx="6" fill="#fee2e2" stroke="#dc2626" stroke-width="1.2"/>
+  <text x="210" y="184" text-anchor="middle" font-family="system-ui, sans-serif" font-size="9.5" font-weight="600" fill="#991b1b">Thải trừ ({cl_label})</text>
 
   <!-- Summary badge -->
   {eq_badge}"""
     else:
         # 3 compartments
         cpt_title = f"{r_title} — Mô hình 3 Ngăn"
-        cl_label = "CL = k₁₀·V₁" if r_type != "oral" else "CL/F = k₁₀·V₁"
+        cl_label = "CL = k₁₀·Vc" if r_type != "oral" else "CL/F = k₁₀·(V₁/F)"
+        exp_note = "• Triexp: A·e^-αt+B·e^-βt+C·e^-γt" if r_type == "bolus" else ("• 3-pha Truyền bậc 0 + α,β,γ" if r_type == "infusion" else "• 4-hàm mũ (α,β,γ,ka; Tlag=0)")
         eq_badge = (
             '<rect x="535" y="45" width="210" height="150" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.2"/>\n'
             '<text x="545" y="68" font-family="system-ui, sans-serif" font-size="11" font-weight="700" fill="#1e293b">Đặc trưng Mô hình 3 Ngăn:</text>\n'
-            '<text x="545" y="88" font-family="system-ui, sans-serif" font-size="10" fill="#475569">• Vss = V₁ + V₂ + V₃</text>\n'
-            '<text x="545" y="106" font-family="system-ui, sans-serif" font-size="10" fill="#475569">• Q₂ = k₁₂·V₁; Q₃ = k₁₃·V₁</text>\n'
+            f'<text x="545" y="88" font-family="system-ui, sans-serif" font-size="10" fill="#475569">• {vss_label} = {v1_label} + {v2_label} + {v3_label}</text>\n'
+            f'<text x="545" y="106" font-family="system-ui, sans-serif" font-size="9.5" fill="#475569">• {q_label}₂ = k₁₂·{v1_label}; {q_label}₃ = k₁₃·{v1_label}</text>\n'
             '<text x="545" y="124" font-family="system-ui, sans-serif" font-size="10" fill="#475569">• 3 pha: α (nhanh), β (chậm), γ (cuối)</text>\n'
             '<text x="545" y="142" font-family="system-ui, sans-serif" font-size="10" fill="#475569">• t½,γ phản ánh thải trừ mô sâu</text>\n'
-            '<text x="545" y="162" font-family="system-ui, sans-serif" font-size="9.5" font-weight="600" fill="#0d9488">• Triexponential: A·e^-αt+B·e^-βt+C·e^-γt</text>'
+            f'<text x="545" y="162" font-family="system-ui, sans-serif" font-size="9.5" font-weight="600" fill="#0d9488">{exp_note}</text>'
         )
         body = f"""  <text x="380" y="24" text-anchor="middle" font-family="system-ui, sans-serif" font-size="13" font-weight="700" fill="#0f172a">{cpt_title}</text>
   <!-- Input -->
   <rect x="10" y="72" width="75" height="50" rx="6" fill="{input_color}" stroke="{input_stroke}" stroke-width="1.5"/>
   <text x="47" y="94" text-anchor="middle" font-family="system-ui, sans-serif" font-size="10" font-weight="700" fill="{input_text}">{input_label}</text>
-  <text x="47" y="108" text-anchor="middle" font-family="system-ui, sans-serif" font-size="8" fill="{input_text}">{input_sub}</text>
+  <text x="47" y="108" text-anchor="middle" font-family="system-ui, sans-serif" font-size="7.5" fill="{input_text}">{input_sub}</text>
 
   <!-- In arrow -->
   <line x1="85" y1="97" x2="115" y2="97" stroke="{input_stroke}" stroke-width="1.8" marker-end="url(#{in_arrow})"/>
 
   <!-- Central Compartment 1 -->
   <rect x="120" y="60" width="115" height="75" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="2"/>
-  <text x="177" y="86" text-anchor="middle" font-family="system-ui, sans-serif" font-size="11" font-weight="700" fill="#1e40af">Ngăn 1 (V₁)</text>
+  <text x="177" y="86" text-anchor="middle" font-family="system-ui, sans-serif" font-size="11" font-weight="700" fill="#1e40af">Ngăn 1 ({v1_label})</text>
   <text x="177" y="102" text-anchor="middle" font-family="system-ui, sans-serif" font-size="10" fill="#3b82f6">Trung tâm (C₁)</text>
   <text x="177" y="118" text-anchor="middle" font-family="system-ui, sans-serif" font-size="8" fill="#1d4ed8">Máu &amp; tạng tuần hoàn</text>
 
@@ -578,14 +679,14 @@ def get_diagram_compartment(route: str, compartments: int) -> str:
   <line x1="235" y1="72" x2="280" y2="58" stroke="#9333ea" stroke-width="1.5" marker-end="url(#arrow-purple)"/>
   <line x1="280" y1="70" x2="235" y2="84" stroke="#9333ea" stroke-width="1.5" marker-end="url(#arrow-purple)"/>
   <rect x="285" y="44" width="135" height="46" rx="6" fill="#f3e8ff" stroke="#9333ea" stroke-width="1.5"/>
-  <text x="352" y="64" text-anchor="middle" font-family="system-ui, sans-serif" font-size="10" font-weight="700" fill="#6b21a8">Ngăn 2 (V₂ - Nông)</text>
+  <text x="352" y="64" text-anchor="middle" font-family="system-ui, sans-serif" font-size="10" font-weight="700" fill="#6b21a8">Ngăn 2 ({v2_label} - Nông)</text>
   <text x="352" y="78" text-anchor="middle" font-family="system-ui, sans-serif" font-size="8.5" fill="#7e22ce">Mô cơ (k₁₂ / k₂₁)</text>
 
   <!-- Exchange 1 <-> 3 (Sâu) -->
   <line x1="235" y1="108" x2="280" y2="122" stroke="#0d9488" stroke-width="1.5" marker-end="url(#arrow-green)"/>
   <line x1="280" y1="134" x2="235" y2="120" stroke="#0d9488" stroke-width="1.5" marker-end="url(#arrow-green)"/>
   <rect x="285" y="105" width="135" height="46" rx="6" fill="#ccfbf1" stroke="#0d9488" stroke-width="1.5"/>
-  <text x="352" y="125" text-anchor="middle" font-family="system-ui, sans-serif" font-size="10" font-weight="700" fill="#0f766e">Ngăn 3 (V₃ - Sâu)</text>
+  <text x="352" y="125" text-anchor="middle" font-family="system-ui, sans-serif" font-size="10" font-weight="700" fill="#0f766e">Ngăn 3 ({v3_label} - Sâu)</text>
   <text x="352" y="139" text-anchor="middle" font-family="system-ui, sans-serif" font-size="8.5" fill="#115e59">Mô mỡ, xương (k₁₃ / k₃₁)</text>
 
   <!-- Kel arrow -->
@@ -593,8 +694,8 @@ def get_diagram_compartment(route: str, compartments: int) -> str:
   <text x="189" y="152" font-family="system-ui, sans-serif" font-size="10" font-weight="700" fill="#dc2626">k₁₀</text>
 
   <!-- Elimination -->
-  <rect x="122" y="165" width="110" height="28" rx="6" fill="#fee2e2" stroke="#dc2626" stroke-width="1.2"/>
-  <text x="177" y="184" text-anchor="middle" font-family="system-ui, sans-serif" font-size="10" font-weight="600" fill="#991b1b">Thải trừ ({cl_label})</text>
+  <rect x="115" y="165" width="124" height="28" rx="6" fill="#fee2e2" stroke="#dc2626" stroke-width="1.2"/>
+  <text x="177" y="184" text-anchor="middle" font-family="system-ui, sans-serif" font-size="9.5" font-weight="600" fill="#991b1b">Thải trừ ({cl_label})</text>
 
   <!-- Summary badge -->
   {eq_badge}"""
@@ -756,7 +857,7 @@ def get_diagram_10() -> str:
   <g transform="translate(15, 366)">
     <rect width="770" height="152" fill="#f8fafc" rx="8" stroke="#cbd5e1" stroke-width="1.2"/>
     <rect width="770" height="24" fill="#fffbeb" rx="8" stroke="#fde68a" stroke-width="1"/>
-    <text x="12" y="16" font-family="system-ui, sans-serif" font-size="11" font-weight="700" fill="#92400e">3. ĐƯỜNG UỐNG (ORAL) — Hấp thu bậc 1 qua ống tiêu hóa (kₐ, F, Tlag) vào Ngăn Trung tâm</text>
+    <text x="12" y="16" font-family="system-ui, sans-serif" font-size="11" font-weight="700" fill="#92400e">3. ĐƯỜNG UỐNG (ORAL) — Hấp thu bậc 1 (kₐ, F; Tlag = 0 trong BE_app) vào Ngăn Trung tâm</text>
 
     <!-- 3.1 Oral 1 Ngăn -->
     <g transform="translate(10, 30)">
@@ -768,8 +869,8 @@ def get_diagram_10() -> str:
       <line x1="68" y1="47" x2="88" y2="47" stroke="#2563eb" stroke-width="1.8" marker-end="url(#arrow)"/>
       <text x="78" y="40" text-anchor="middle" font-family="system-ui, sans-serif" font-size="8" font-weight="700" fill="#2563eb">kₐ</text>
       <rect x="90" y="26" width="138" height="42" rx="6" fill="#dbeafe" stroke="#2563eb" stroke-width="1.8"/>
-      <text x="159" y="43" text-anchor="middle" font-family="system-ui, sans-serif" font-size="10" font-weight="700" fill="#1e40af">Ngăn Trung tâm (V₁)</text>
-      <text x="159" y="58" text-anchor="middle" font-family="system-ui, sans-serif" font-size="8" fill="#3b82f6">Tmax = Tlag + ln(ka/kel)/(ka-kel)</text>
+      <text x="159" y="43" text-anchor="middle" font-family="system-ui, sans-serif" font-size="10" font-weight="700" fill="#1e40af">Ngăn Trung tâm (V/F)</text>
+      <text x="159" y="58" text-anchor="middle" font-family="system-ui, sans-serif" font-size="8" fill="#3b82f6">Tmax = ln(ka/kel)/(ka-kel)</text>
       <line x1="159" y1="68" x2="159" y2="85" stroke="#dc2626" stroke-width="1.8" marker-end="url(#arrow-red)"/>
       <text x="169" y="80" font-family="system-ui, sans-serif" font-size="9" font-weight="700" fill="#dc2626">kₑₗ</text>
       <rect x="105" y="87" width="108" height="20" rx="4" fill="#fee2e2" stroke="#dc2626" stroke-width="1"/>
@@ -786,7 +887,7 @@ def get_diagram_10() -> str:
       <line x1="55" y1="48" x2="68" y2="48" stroke="#2563eb" stroke-width="1.5" marker-end="url(#arrow)"/>
       <text x="61" y="42" text-anchor="middle" font-family="system-ui, sans-serif" font-size="8" font-weight="700" fill="#2563eb">kₐ</text>
       <rect x="70" y="26" width="85" height="42" rx="6" fill="#dbeafe" stroke="#2563eb" stroke-width="1.8"/>
-      <text x="112" y="43" text-anchor="middle" font-family="system-ui, sans-serif" font-size="10" font-weight="700" fill="#1e40af">Ngăn 1 (V₁)</text>
+      <text x="112" y="43" text-anchor="middle" font-family="system-ui, sans-serif" font-size="10" font-weight="700" fill="#1e40af">Ngăn 1 (V/F)</text>
       <text x="112" y="58" text-anchor="middle" font-family="system-ui, sans-serif" font-size="8" fill="#3b82f6">Trung tâm</text>
       <line x1="155" y1="39" x2="175" y2="39" stroke="#9333ea" stroke-width="1.5" marker-end="url(#arrow-purple)"/>
       <text x="165" y="35" text-anchor="middle" font-family="system-ui, sans-serif" font-size="8" font-weight="700" fill="#9333ea">k₁₂</text>
@@ -794,7 +895,7 @@ def get_diagram_10() -> str:
       <text x="165" y="64" text-anchor="middle" font-family="system-ui, sans-serif" font-size="8" font-weight="700" fill="#9333ea">k₂₁</text>
       <rect x="178" y="26" width="64" height="42" rx="6" fill="#f3e8ff" stroke="#9333ea" stroke-width="1.5"/>
       <text x="210" y="43" text-anchor="middle" font-family="system-ui, sans-serif" font-size="10" font-weight="700" fill="#6b21a8">Ngăn 2</text>
-      <text x="210" y="58" text-anchor="middle" font-family="system-ui, sans-serif" font-size="8" fill="#7e22ce">V₂, C₂</text>
+      <text x="210" y="58" text-anchor="middle" font-family="system-ui, sans-serif" font-size="8" fill="#7e22ce">Vp/F, C₂</text>
       <line x1="112" y1="68" x2="112" y2="85" stroke="#dc2626" stroke-width="1.8" marker-end="url(#arrow-red)"/>
       <text x="120" y="80" font-family="system-ui, sans-serif" font-size="8" font-weight="700" fill="#dc2626">k₁₀</text>
       <rect x="68" y="87" width="88" height="20" rx="4" fill="#fee2e2" stroke="#dc2626" stroke-width="1"/>
@@ -810,17 +911,17 @@ def get_diagram_10() -> str:
       <text x="27" y="65" text-anchor="middle" font-family="system-ui, sans-serif" font-size="7" fill="#b45309">D·F</text>
       <line x1="49" y1="56" x2="58" y2="56" stroke="#2563eb" stroke-width="1.5" marker-end="url(#arrow)"/>
       <rect x="60" y="38" width="68" height="38" rx="6" fill="#dbeafe" stroke="#2563eb" stroke-width="1.8"/>
-      <text x="94" y="53" text-anchor="middle" font-family="system-ui, sans-serif" font-size="9" font-weight="700" fill="#1e40af">Ngăn 1 (V₁)</text>
+      <text x="94" y="53" text-anchor="middle" font-family="system-ui, sans-serif" font-size="9" font-weight="700" fill="#1e40af">Ngăn 1 (V/F)</text>
       <text x="94" y="67" text-anchor="middle" font-family="system-ui, sans-serif" font-size="8" fill="#3b82f6">Trung tâm</text>
       <line x1="128" y1="44" x2="160" y2="34" stroke="#9333ea" stroke-width="1.3" marker-end="url(#arrow-purple)"/>
       <line x1="160" y1="42" x2="128" y2="52" stroke="#9333ea" stroke-width="1.3" marker-end="url(#arrow-purple)"/>
       <rect x="163" y="24" width="70" height="28" rx="4" fill="#f3e8ff" stroke="#9333ea" stroke-width="1.2"/>
-      <text x="198" y="38" text-anchor="middle" font-family="system-ui, sans-serif" font-size="8" font-weight="700" fill="#6b21a8">Ngăn 2 (V₂)</text>
+      <text x="198" y="38" text-anchor="middle" font-family="system-ui, sans-serif" font-size="8" font-weight="700" fill="#6b21a8">Ngăn 2 (Vp2/F)</text>
       <text x="198" y="48" text-anchor="middle" font-family="system-ui, sans-serif" font-size="7" fill="#7e22ce">Nông (k₁₂/k₂₁)</text>
       <line x1="128" y1="62" x2="160" y2="72" stroke="#0d9488" stroke-width="1.3" marker-end="url(#arrow-green)"/>
       <line x1="160" y1="80" x2="128" y2="70" stroke="#0d9488" stroke-width="1.3" marker-end="url(#arrow-green)"/>
       <rect x="163" y="68" width="70" height="28" rx="4" fill="#ccfbf1" stroke="#0d9488" stroke-width="1.2"/>
-      <text x="198" y="82" text-anchor="middle" font-family="system-ui, sans-serif" font-size="8" font-weight="700" fill="#0f766e">Ngăn 3 (V₃)</text>
+      <text x="198" y="82" text-anchor="middle" font-family="system-ui, sans-serif" font-size="8" font-weight="700" fill="#0f766e">Ngăn 3 (Vp3/F)</text>
       <text x="198" y="92" text-anchor="middle" font-family="system-ui, sans-serif" font-size="7" fill="#115e59">Sâu (k₁₃/k₃₁)</text>
       <line x1="94" y1="76" x2="94" y2="90" stroke="#dc2626" stroke-width="1.5" marker-end="url(#arrow-red)"/>
       <rect x="56" y="92" width="76" height="17" rx="3" fill="#fee2e2" stroke="#dc2626" stroke-width="1"/>
@@ -834,31 +935,35 @@ def get_diagram_10() -> str:
 # Lesson 11: Quick BE Screening
 # -----------------------------------------------------------------------------
 def get_diagram_11() -> str:
-    content = """  <text x="380" y="24" text-anchor="middle" font-family="system-ui, sans-serif" font-size="13" font-weight="700" fill="#0f172a">Luồng Xử lý Sàng lọc Tương đương Sinh học Nhanh (R&amp;D / Pilot)</text>
-  <g transform="translate(15, 42)">
-    <rect x="0" y="0" width="160" height="65" rx="8" fill="#f8fafc" stroke="#64748b" stroke-width="1.5"/>
-    <text x="80" y="25" text-anchor="middle" font-family="system-ui, sans-serif" font-size="11" font-weight="700" fill="#334155">Bảng Dán Nhanh</text>
-    <text x="80" y="46" text-anchor="middle" font-family="system-ui, sans-serif" font-size="10" fill="#64748b">Ctrl+V từ Excel</text>
+    content = """  <text x="380" y="22" text-anchor="middle" font-family="system-ui, sans-serif" font-size="13" font-weight="700" fill="#0f172a">Luồng Sàng lọc BE Nhanh (`quick_be.py`: R&amp;D / Pilot — Không thay thế Hồ sơ Đăng ký)</text>
+  <g transform="translate(15, 38)">
+    <rect x="0" y="0" width="168" height="72" rx="8" fill="#f8fafc" stroke="#64748b" stroke-width="1.5"/>
+    <text x="84" y="22" text-anchor="middle" font-family="system-ui, sans-serif" font-size="10.5" font-weight="700" fill="#334155">1. Hai nhánh Nhập liệu</text>
+    <text x="84" y="40" text-anchor="middle" font-family="system-ui, sans-serif" font-size="9" fill="#475569">• Nồng độ (t, C) → NCA</text>
+    <text x="84" y="55" text-anchor="middle" font-family="system-ui, sans-serif" font-size="9" fill="#475569">• Hoặc Cmax / AUC tính sẵn</text>
 
-    <line x1="160" y1="32" x2="190" y2="32" stroke="#2563eb" stroke-width="2" marker-end="url(#arrow)"/>
+    <line x1="168" y1="36" x2="190" y2="36" stroke="#2563eb" stroke-width="2" marker-end="url(#arrow)"/>
 
-    <rect x="190" y="0" width="165" height="65" rx="8" fill="#eff6ff" stroke="#3b82f6" stroke-width="1.5"/>
-    <text x="272" y="25" text-anchor="middle" font-family="system-ui, sans-serif" font-size="11" font-weight="700" fill="#1e40af">Ánh xạ Tức thời</text>
-    <text x="272" y="46" text-anchor="middle" font-family="system-ui, sans-serif" font-size="10" fill="#3b82f6">Subj, Per, Trt, Cmax/AUC</text>
+    <rect x="192" y="0" width="166" height="72" rx="8" fill="#eff6ff" stroke="#3b82f6" stroke-width="1.5"/>
+    <text x="275" y="22" text-anchor="middle" font-family="system-ui, sans-serif" font-size="10.5" font-weight="700" fill="#1e40af">2. Thiết kế &amp; Quy chế</text>
+    <text x="275" y="40" text-anchor="middle" font-family="system-ui, sans-serif" font-size="9" fill="#1d4ed8">2×2 · Song song · Lặp 3/4 kỳ</text>
+    <text x="275" y="55" text-anchor="middle" font-family="system-ui, sans-serif" font-size="9" fill="#1d4ed8">ICH M13A · FDA · EMA · NTI</text>
 
-    <line x1="355" y1="32" x2="385" y2="32" stroke="#2563eb" stroke-width="2" marker-end="url(#arrow)"/>
+    <line x1="358" y1="36" x2="380" y2="36" stroke="#2563eb" stroke-width="2" marker-end="url(#arrow)"/>
 
-    <rect x="385" y="0" width="170" height="65" rx="8" fill="#fef3c7" stroke="#d97706" stroke-width="1.5"/>
-    <text x="470" y="25" text-anchor="middle" font-family="system-ui, sans-serif" font-size="11" font-weight="700" fill="#92400e">Tính NCA &amp; ANOVA</text>
-    <text x="470" y="46" text-anchor="middle" font-family="system-ui, sans-serif" font-size="10" fill="#b45309">Ước tính GMR &amp; 90% CI</text>
+    <rect x="382" y="0" width="174" height="72" rx="8" fill="#fef3c7" stroke="#d97706" stroke-width="1.5"/>
+    <text x="469" y="22" text-anchor="middle" font-family="system-ui, sans-serif" font-size="10.5" font-weight="700" fill="#92400e">3. Mô hình Thống kê BE</text>
+    <text x="469" y="40" text-anchor="middle" font-family="system-ui, sans-serif" font-size="9" fill="#b45309">ANOVA / Welch / Replicate</text>
+    <text x="469" y="55" text-anchor="middle" font-family="system-ui, sans-serif" font-size="9" fill="#b45309">+ Tmax mô tả (2×2 &amp; Song song)</text>
 
-    <line x1="555" y1="32" x2="585" y2="32" stroke="#2563eb" stroke-width="2" marker-end="url(#arrow)"/>
+    <line x1="556" y1="36" x2="578" y2="36" stroke="#2563eb" stroke-width="2" marker-end="url(#arrow)"/>
 
-    <rect x="585" y="0" width="145" height="65" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5"/>
-    <text x="657" y="25" text-anchor="middle" font-family="system-ui, sans-serif" font-size="11" font-weight="700" fill="#166534">Bảng Kết luận Sơ bộ</text>
-    <text x="657" y="46" text-anchor="middle" font-family="system-ui, sans-serif" font-size="10" fill="#15803d">Quyết định thử chính thức</text>
+    <rect x="580" y="0" width="150" height="72" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5"/>
+    <text x="655" y="22" text-anchor="middle" font-family="system-ui, sans-serif" font-size="10.5" font-weight="700" fill="#166534">4. Kết quả Sàng lọc</text>
+    <text x="655" y="40" text-anchor="middle" font-family="system-ui, sans-serif" font-size="9" fill="#15803d">GMR · 90% CI · CV</text>
+    <text x="655" y="55" text-anchor="middle" font-family="system-ui, sans-serif" font-size="9" fill="#15803d">→ Quyết định nghiên cứu</text>
   </g>"""
-    return _svg_wrapper(760, 135, content)
+    return _svg_wrapper(760, 138, content)
 
 
 DIAGRAM_SVGS = {

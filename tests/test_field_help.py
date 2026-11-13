@@ -66,3 +66,49 @@ def test_in_table_help_tooltips_and_legends():
     render_table_legend(test_terms)
     render_table_legend([])
 
+
+def test_displayed_workflow_columns_and_unique_dictionary_keys():
+    import ast
+    from pathlib import Path
+
+    # Verify zero duplicate keys in any dict literal inside field_help.py
+    tree = ast.parse(Path(__file__).resolve().parents[1].joinpath("be_app", "field_help.py").read_text(encoding="utf-8"))
+    for node in ast.walk(tree):
+        if isinstance(node, ast.Dict):
+            keys = [k.value for k in node.keys if isinstance(k, ast.Constant)]
+            assert len(keys) == len(set(keys))
+
+    displayed_cols = [
+        "Vai trò",
+        "Phương pháp",
+        "CI 90% (bổ trợ nếu RSABE)",
+        "Giới hạn",
+        "UCB scaling",
+        "Trạng thái",
+        "Quyết định",
+        "Lý do",
+        "SD_ratio_CI90_lower",
+        "SD_ratio_CI90_upper",
+        "Mã hồ sơ",
+        "Hồ sơ",
+        "Số ngăn",
+        "Trọng số",
+        "Lambda-z (1/giờ)",
+        "t½ (giờ)",
+        "AUC0–∞ (ng·giờ/mL)",
+        "Điều kiện Jacobian",
+        "CL/F",
+        "V/F",
+        "Vc",
+        "Vp3",
+        "Vp3/F",
+        "ka",
+        "evaluable",
+        "recruit",
+        "achieved_power",
+    ]
+    for col in displayed_cols:
+        desc = get_field_description(col)
+        assert desc and len(desc) > 10, f"Missing tooltip for {col}"
+
+

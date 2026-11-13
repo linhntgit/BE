@@ -22,7 +22,7 @@ from be_app.be_reporting import (
 from be_app.branding import software_attribution
 from be_app.compartment_help import render_compartment_model_details
 from be_app.context_help import QUICK_TASKS, RESEARCH_TASKS, integrity_terms_for, lesson_for, profile_help
-from be_app.field_help import field_help_for, get_field_description, render_table_legend, table_column_config
+from be_app.field_help import field_help_for, render_table_legend, table_column_config
 from be_app.demo_scenarios import (
     ENDPOINT_CASES,
     FULL_RAW_CASES,
@@ -120,11 +120,16 @@ def capability_notice(rule_id: str, design: str) -> None:
         st.caption(f"{rule.effective} · mục {rule.section} · phiên bản quy tắc {rule.version}")
         for index, url in enumerate(rule.sources, start=1):
             st.markdown(f"[Nguồn chính thức {index}]({url})")
+    endpoint_vi = {
+        "available": "khả dụng",
+        "pending": "đang chờ",
+        "unavailable": "chưa hỗ trợ",
+    }.get(capability.endpoint_decision, capability.endpoint_decision)
     st.caption(
         f"{rule_id} · tính thành phần: {'có' if capability.numerical_components else 'không'} · "
-        f"kết luận endpoint: {capability.endpoint_decision} · "
+        f"kết luận endpoint: {endpoint_vi} · "
         f"planning: {'có' if capability.planning else 'chưa mở'} · "
-        f"qualification độc lập: {'đã đạt' if capability.independently_qualified else 'chưa đạt'}"
+        f"thẩm định độc lập: {'đã đạt' if capability.independently_qualified else 'chưa đạt'}"
     )
     if design not in RULES[rule_id].designs:
         st.warning("Thiết kế đã chọn nằm ngoài phạm vi của profile này.")
@@ -656,7 +661,11 @@ def design_page(state):
         st.warning("Chưa có cỡ mẫu đủ điều kiện sử dụng cho profile này. Không dùng kết quả planning cũ.")
         return
     if project.study.design not in ("2x2", "parallel"):
-        st.warning("Chưa hỗ trợ power replicate/ABEL/RSABE.")
+        st.warning(
+            "Chưa hỗ trợ tính cỡ mẫu cho thiết kế replicate hoặc phương pháp mở rộng giới hạn ABEL/RSABE: "
+            "lực thống kê phụ thuộc vào giả định độ lệch chuẩn nội cá thể của thuốc đối chứng ($s_{WR}$ / $CV_{wR}$) "
+            "và nhánh chuyển ngưỡng co giãn (US FDA $s_{WR} \\ge 0{,}294$ hoặc EMA $CV_{wR} > 30\\%$), cần mô phỏng Monte Carlo theo SAP."
+        )
         return
     if project.study.design not in RULES[project.study.rule_set_id].designs or project.be_config.alpha != 0.05:
         st.warning("Thiết kế hoặc alpha ngoài phạm vi công cụ planning; không hiển thị cỡ mẫu.")
@@ -1637,6 +1646,22 @@ def nca_page(state):
             project.be_config.missing_data_reason,
             disabled=bool(project.freeze_hash),
         )
+        if project.study.design == "parallel":
+            st.caption(
+                "ℹ️ Ngữ cảnh thiết kế Song song (Parallel): tùy chọn **Phương sai parallel theo SAP** (`pooled`/`welch`) "
+                "được áp dụng; tùy chọn **REML 2×2 (`available_observations`)** và hệ số biến thiên nội cá thể $CV_{intra}$ "
+                "không áp dụng do mỗi đối tượng chỉ dùng một thuốc."
+            )
+        elif project.study.design == "2x2":
+            st.caption(
+                "ℹ️ Ngữ cảnh thiết kế Chéo đôi 2×2: **Phương sai parallel** không áp dụng ở bước phân tích BE; "
+                "tùy chọn `available_observations` cho phép chạy REML trên quan sát sẵn có nếu được định trước trong SAP."
+            )
+        else:
+            st.caption(
+                f"ℹ️ Ngữ cảnh thiết kế Lặp lại ({project.study.design}): **Phương sai parallel** và REML 2×2 không áp dụng; "
+                "ước lượng $s_{WR}$, $s_{WT}$ và co giãn RSABE/ABEL (nếu bật) sẽ chạy ở Bước 6 theo quy chế đã chọn."
+            )
         if st.button("Lưu cấu hình trước khóa", disabled=bool(project.freeze_hash)):
             cfg = NcaConfig.model_validate(
                 {
@@ -1833,9 +1858,15 @@ def show_be_results(results, key, *, data=None, design=None):
         st.dataframe(pd.DataFrame(scalars), hide_index=True, column_config=table_column_config(pd.DataFrame(scalars).columns))
         render_table_legend(pd.DataFrame(scalars).columns, title="ℹ️ Chú thích tiêu đề cột bảng phương sai & HVD/NTI")
         if all(r.get("swr") is None for r in values):
-            st.info(
-                "Thiết kế 2×2 không ước tính riêng sWR/sWT. CV nội cá thể gộp không đủ để áp dụng scaling HVD hoặc FDA NTI."
-            )
+            if design == "parallel":
+                st.info(
+                    "Thiết kế song song (Parallel) mỗi đối tượng chỉ dùng 1 thuốc (T hoặc R) nên không tách được "
+                    "sWR/sWT hay CV nội cá thể; phân tích dùng phương sai giữa các cá thể và không áp dụng co giãn HVD/FDA NTI."
+                )
+            else:
+                st.info(
+                    "Thiết kế 2×2 không ước tính riêng sWR/sWT. CV nội cá thể gộp không đủ để áp dụng scaling HVD hoặc FDA NTI."
+                )
         if not tables["Subject Contrasts"].empty:
             st.dataframe(tables["Subject Contrasts"], hide_index=True)
         if not tables["FDA Intermediate Fits"].empty:
@@ -2222,7 +2253,28 @@ Dữ liệu không thỏa mãn điều kiện để kết luận tương đươn
         hide_index=True,
         alt="Tóm tắt vai trò endpoint, GMR, CI90, giới hạn, UCB và kết luận của snapshot nghiên cứu",
     )
-    st.caption("FDA RSABE: đánh giá UCB và đầy đủ tiêu chí profile; CI90 chỉ là thông tin bổ trợ.")
+    rule_id_run = run.get("rule_set_id", "")
+    if rule_id_run == "FDA_HVD_RSABE_2026":
+        st.caption(
+            "FDA RSABE: khi sWR ≥ 0,294 đánh giá theo UCB95 ≤ 0 và GMR ∈ [80,00%–125,00%]; "
+            "khi sWR < 0,294 chuyển về ABE chuẩn (CI90 chỉ là thông tin bổ trợ khi sWR ≥ 0,294)."
+        )
+    elif rule_id_run == "EMA_HVDP_ABEL":
+        st.caption(
+            "EMA ABEL: mở rộng giới hạn tối đa [69,84%–143,19%] chỉ áp dụng cho Cmax khi CVwR > 30% "
+            "(kèm GMR ∈ [80,00%–125,00%]); AUC vẫn giữ biên chuẩn [80,00%–125,00%]."
+        )
+    elif rule_id_run == "FDA_NTI":
+        st.caption(
+            "FDA NTI (full replicate 4 kỳ): yêu cầu đạt đồng thời ABE chuẩn [80–125%], RSABE thu hẹp (σ_w0 = 0,10) "
+            "và cận trên 90% CI của tỷ số sWT/sWR ≤ 2,5."
+        )
+    elif rule_id_run == "EMA_NTI":
+        st.caption("EMA NTI: áp dụng biên thu hẹp [90,00%–111,11%] cho AUC (và Cmax nếu được quy định trong SAP).")
+    elif run["study"]["design"] == "parallel":
+        st.caption("Thiết kế song song (Parallel): suy luận dựa trên phương sai giữa các cá thể (pooled hoặc Welch); không ước tính CV_intra.")
+    else:
+        st.caption("ABE chuẩn: khoảng tin cậy 90% của GMR phải nằm trọn trong giới hạn chấp nhận quy định trong SAP.")
     show_be_results(shown, "be_" + run["analysis_run_id"], data=run["nca"], design=run["study"]["design"])
     st.markdown("**So sánh Tmax phi tham số (phân tích hỗ trợ)**")
     tmax = run.get("tmax_comparison")
@@ -2626,69 +2678,106 @@ def render_live_diagnostic_banner(page: str, state: ProjectState | None, quick_s
                     f"📌 **Bước 0:** Quy chuẩn `{project.study.rule_set_id}` | "
                     f"Hoạt chất: `{project.study.active_ingredient or 'Chưa khai báo'}` | "
                     f"Liều dùng: `{project.study.dose} {project.study.dose_unit}` ({project.study.fed_state}). "
-                    f"Tiêu chuẩn: chênh lệch hàm lượng giữa 2 lô $\\le 5.0\\%$ theo ICH M13A (cấm potency adjustment)."
+                    "Chênh lệch hàm lượng hai lô khuyến cáo ≤ 5,0% theo ICH M13A (BE_app không tự hiệu chỉnh hàm lượng)."
                 )
             elif p_idx == 1:
+                if project.study.design == "2x2":
+                    design_note = "Dùng $CV_w$ nội cá thể; tính lực TOST bằng tích phân số chuẩn có điều kiện × phân phối $\\chi^2_\\nu$ (`design.tost_power`)."
+                elif project.study.design == "parallel":
+                    design_note = "Dùng $CV_{\\text{total}}$ giữa cá thể trên hai nhánh độc lập (`design.tost_power`); không tách $CV_w$."
+                else:
+                    design_note = "Planning cỡ mẫu trong BE_app đang khóa cho thiết kế replicate (cần mô phỏng Monte Carlo theo SAP)."
                 st.caption(
                     f"📌 **Bước 1:** Thiết kế `{project.study.design}` | "
-                    f"Chỉ tiêu chính: `{', '.join(project.study.primary_endpoints)}`. "
-                    f"Dựa trên $CV_W$ nội cá thể, tính cỡ mẫu bằng TOST Schuirmann & công thức Diletti."
+                    f"Chỉ tiêu chính: `{', '.join(project.study.primary_endpoints)}`. {design_note}"
                 )
             elif p_idx == 2:
                 st.caption(
                     "📌 **Bước 2:** Thời gian rửa giải yêu cầu $T_{\\text{washout}} \\ge 5 \\times t_{1/2}$; "
-                    "khống chế phần trăm diện tích ngoại suy $AUC_{\\%\\text{extrap}} \\le 20.0\\%$."
+                    "lấy mẫu cần bao phủ $\\ge 80\\%$ $AUC_{0-\\infty}$ ($AUC_{\\%\\text{extrap}} \\le 20\\%$; trừ ngoại lệ lấy mẫu tới 72 h cho thuốc IR $t_{1/2}$ dài theo ICH M13A)."
                 )
             elif p_idx == 3:
                 raw_info = f"Tệp `{project.raw_file_name}`" if project.raw_file_name else "Chưa tải tệp nồng độ"
                 st.caption(
                     f"📌 **Bước 3:** {raw_info} | Sửa đổi đang chờ: `{len(project.pending_edits)} mẫu`. "
-                    "Mọi thay đổi dữ liệu đều được sinh mã băm SHA-256 bảo toàn tính toàn vẹn ALCOA+."
+                    "Mọi thay đổi dữ liệu đều được gắn mã băm SHA-256 bảo toàn tính toàn vẹn ALCOA+."
                 )
             elif p_idx == 4:
                 corr_count = len(project.corrections)
                 st.caption(
                     f"📌 **Bước 4:** Số bản ghi sửa hợp lệ: `{corr_count}`. "
-                    "Tiêu chuẩn chấp nhận nồng độ trước liều: $C_{\\text{predose}} \\le 5.0\\% C_{\\max}$ theo ICH M13A."
+                    "Nếu $C_{\\text{predose}} > 5\\% C_{\\max}$, `imports.py` chặn Data Freeze (`PREDOSE_5PCT`) để xử lý loại trừ theo SAP trước khi khóa."
                 )
             elif p_idx == 5:
+                nc = project.nca_config
                 st.caption(
-                    "📌 **Bước 5:** Tích phân hình thang hỗn hợp Linear Up / Log Down (ICH M13A); "
-                    "Hồi quy OLS xác định $\\lambda_z$ trên thang bán logarit ($R^2 \\ge 0.85$)."
+                    f"📌 **Bước 5:** Tích phân `{nc.integration}` (`linear_up_log_down` lùi về tuyến tính nếu $C_{{i+1}}=0$); "
+                    f"hồi quy OLS $\\lambda_z$ yêu cầu Adjusted $R^2 \\ge {nc.terminal_min_adj_r2:.2f}$, "
+                    f"Span $\\ge {nc.terminal_min_span_half_lives:.1f}\\times t_{{1/2}}$ và $\\ge {nc.terminal_min_points}$ điểm pha cuối."
                 )
             elif p_idx == 6:
-                st.caption(
-                    f"📌 **Bước 6:** Đánh giá ABE theo chuẩn `{project.study.rule_set_id}`. "
-                    "Khoảng tin cậy $90\\%$ của GMR cho $C_{\\max}$ và $AUC_{0-t}$ phải nằm trọn vẹn trong $[80.00\\% - 125.00\\%]$."
-                )
+                rule_id = project.study.rule_set_id
+                if rule_id == "FDA_HVD_RSABE_2026":
+                    rule_note = "$s_{WR} \\ge 0{,}294 \\Rightarrow$ Howe $UCB_{95} \\le 0$ + GMR $\\in [80, 125]\\%$; $s_{WR} < 0{,}294 \\Rightarrow$ ABE chuẩn $[80, 125]\\%$."
+                elif rule_id == "EMA_HVDP_ABEL":
+                    rule_note = "Chỉ $C_{\\max}$ mở rộng theo $CV_{wR} > 30\\%$ (tối đa $69{,}84\\%–143{,}19\\%$) + GMR $\\in [80, 125]\\%$; $AUC$ giữ $[80, 125]\\%$."
+                elif rule_id == "FDA_NTI":
+                    rule_note = "Full replicate 4 kỳ: đạt đồng thời ABE $[80, 125]\\%$, RSABE thu hẹp ($\\sigma_{w0}=0{,}10$) và $s_{WT}/s_{WR} \\le 2{,}5$ (CI 90%)."
+                elif rule_id == "EMA_NTI":
+                    rule_note = "Thu hẹp biên $[90{,}00\\%–111{,}11\\%]$ cho AUC (và Cmax nếu quy định trong SAP)."
+                elif project.study.design == "parallel":
+                    rule_note = f"Thiết kế song song (`{project.be_config.parallel_variance}`): so sánh trên log với phương sai giữa cá thể, không tách $CV_{{intra}}$."
+                else:
+                    rule_note = "ABE chuẩn: khoảng tin cậy 90% của GMR nằm trọn trong $[80{,}00\\% – 125{,}00\\%]$ cho $C_{\\max}$ và $AUC$."
+                st.caption(f"📌 **Bước 6:** Quy chuẩn `{rule_id}` ({project.study.design}). {rule_note}")
             elif p_idx == 7:
                 st.caption(
-                    "📌 **Bước 7:** Phần dư chuẩn hóa Studentized $|r_i| > 3.0$ phát hiện nghi ngờ ngoại lai. "
-                    "Chỉ sử dụng để chạy phân tích độ nhạy (Sensitivity Analysis), tuyệt đối không tự ý xóa dữ liệu."
+                    "📌 **Bước 7:** Phần dư chuẩn hóa Studentized $|r_i| > 3{,}0$ là tín hiệu tham khảo nghi ngờ ngoại lai "
+                    "(theo thực hành thống kê; chỉ dùng đánh giá độ nhạy, không tự ý loại bỏ đối tượng khỏi tập phân tích)."
                 )
             elif p_idx == 8:
                 st.caption(
-                    "📌 **Bước 8:** Xuất hồ sơ đăng ký CTD Module 5.3.1.2 kèm bảng kê SHA-256 Manifest bất biến."
+                    "📌 **Bước 8:** Xuất hồ sơ báo cáo & gói truy vết dự án kèm bảng kê SHA-256 Manifest; "
+                    "nội dung báo cáo dùng hỗ trợ rà soát chuyên môn trước khi biên tập hồ sơ CTD chính thức."
                 )
             elif p_idx == 9:
                 st.caption(
-                    f"📌 **Bước 9:** Nhật ký kiểm toán liên kết chuỗi khối gồm `{len(project.events)} sự kiện`. "
-                    "Bảo đảm tuân thủ 21 CFR Part 11 và EU GMP Annex 11."
+                    f"📌 **Bước 9:** Nhật ký kiểm toán nối chuỗi băm SHA-256 trên SQLite gồm `{len(project.events)} sự kiện`. "
+                    "Hỗ trợ truy vết cục bộ đơn người dùng (chưa có phân quyền RBAC hay chữ ký điện tử đầy đủ theo 21 CFR Part 11 / EU GMP Annex 11)."
                 )
         elif page == PAGES[10]:
             rt = st.session_state.get("pk_route", "oral")
             dm = st.session_state.get("pk_dose_mode", "single")
+            wt = st.session_state.get("pk_weighting", "equal")
+            methods = ", ".join(st.session_state.get("pk_methods", ["NCA", "1 ngăn"])) or "Chưa chọn"
             st.markdown(
-                f"- **Đường dùng:** `{rt}` | **Chế độ liều:** `{dm}`\n"
-                f"- **Đánh giá mô hình:** So sánh AICc giữa mô hình 1 ngăn và 2 ngăn."
+                f"- **Đường dùng:** `{rt}` | **Chế độ liều:** `{dm}` | **Trọng số:** `{wt}`\n"
+                f"- **Phương pháp đang chọn:** `{methods}` (chỉ so sánh $AIC_c$ trên cùng hồ sơ, cùng tập mẫu và cùng trọng số)."
             )
-            st.caption("📌 Áp dụng phương trình Bateman có $T_{\\text{lag}}$ và phân biệt hiện tượng Flip-flop ($k_a \\ll k_{el}$).")
+            if rt == "oral":
+                rt_note = "Hấp thu bậc 1 với $T_{\\text{lag}} = 0$ cố định trong solver; tham số biểu kiến mang `/F` ($CL/F, V/F$); cảnh giác hiện tượng flip-flop ($k_a < k_{el}$)."
+            elif rt == "iv_bolus":
+                rt_note = "Tiêm TM nhanh ($F=1$): tách trực tiếp $CL$ và $V_c$; không nhập $C(0)=0$ nhân tạo làm điểm đo (nếu cần, bật ngoại suy $C_0$ ở NCA)."
+            else:
+                rt_note = "Truyền TM tốc độ hằng $R_0 = D/T_{\\text{inf}}$ ($F=1$): $C_{\\max}$ thực ở $t = T_{\\text{inf}}$ và $MRT_{\\text{thực}} = MRT_{\\text{inf}} - T_{\\text{inf}}/2$."
+            if dm != "single":
+                rt_note += " Đa liều dùng cộng tác dụng tuyến tính cách đều $\\tau$; $CL_{ss}$ chỉ tính khi xác nhận steady-state và có liều."
+            st.caption(f"📌 {rt_note}")
         elif page == PAGES[11]:
+            q_design = st.session_state.get("quick_design", "2x2")
+            q_rule = st.session_state.get("quick_rule", "EMA_IR_NONREPLICATE_M13A")
+            q_mode = st.session_state.get("quick_mode", "concentration")
+            if q_design == "parallel":
+                q_note = "Song song (Pooled/Welch): không ước tính $CV_{\\text{intra}}$; so sánh $T_{\\max}$ bằng Mann-Whitney U."
+            elif q_design in ("partial3", "full4"):
+                q_note = f"Replicate (`{q_design}`): tách được $s_{{WR}}$/$s_{{WT}}$; phần mềm không tự chạy kiểm định phi tham số $T_{{\\max}}$ (`NOT EVALUABLE`)."
+            else:
+                q_note = "Chéo đôi $2\\times 2$: ANOVA OLS / REML trên thang log; so sánh $T_{\\max}$ bằng Wilcoxon signed-rank."
             st.markdown(
-                f"- **Luồng phân tích:** `BE Nhanh (Sàng lọc R&D / Pilot)` | **Giai đoạn:** `{quick_stage or 'Nhập liệu'}`\n"
-                f"- **Thiết kế:** Mô hình ANOVA chéo đôi $2\\times 2$ cho dữ liệu pilot."
+                f"- **Luồng phân tích:** `BE Nhanh (R&D / Giảng dạy)` | **Giai đoạn:** `{quick_stage or 'Nhập liệu'}`\n"
+                f"- **Thiết kế & Quy tắc:** `{q_design}` | `{q_rule}` | **Đầu vào:** `{q_mode}`"
             )
-            st.caption("📌 Lưu ý: Kết quả BE nhanh phục vụ định hướng nội bộ; hồ sơ chính thức cần quy trình BE đầy đủ.")
+            st.caption(f"📌 {q_note} Lưu ý: Kết quả BE nhanh ở trạng thái DRAFT; hồ sơ đăng ký chính thức cần quy trình BE đầy đủ.")
         else:
             st.caption(
                 "⏳ **Chưa mở hoặc tạo dự án:** Hãy nhập thông tin thuốc Thử (T) và thuốc Đối chứng (R) "
@@ -2868,7 +2957,10 @@ def render_help_body(page: str, state: ProjectState | None, quick_stage: str | N
             st.caption(f"{rule.jurisdiction} · {rule.method} · {rule_id}")
             for item in explanation:
                 st.markdown(f"- {item}")
-            st.warning(status)
+            if capability_for(rule_id).endpoint_decision != "available":
+                st.warning(status)
+            else:
+                st.info(status)
         elif page_index == 10:
             st.markdown("---")
             st.markdown("**Tra cứu chuyên sâu theo từng mô hình (Interactive Compartmental Model Explorer):**")
@@ -2895,6 +2987,16 @@ def render_help_body(page: str, state: ProjectState | None, quick_stage: str | N
             )
             if chosen_model != "Toàn cảnh 9 mô hình (Tổng quan kiến trúc)":
                 render_compartment_model_details(chosen_model)
+
+        if lesson.interpretation:
+            st.markdown("**Điều kiện diễn giải & Phạm vi áp dụng:**")
+            for tip in lesson.interpretation:
+                st.markdown(f"- {tip}")
+
+    if lesson.examples:
+        with st.expander("Ví dụ minh họa & Kết quả kiểm chứng", expanded=is_dialog):
+            for ex in lesson.examples:
+                st.markdown(f"- {ex}")
 
     # -------------------------------------------------------------------------
     # 3. PHƯƠNG TRÌNH TOÁN HỌC VÀ GIẢI THÍCH BIẾN SỐ
@@ -2963,8 +3065,17 @@ def render_help_body(page: str, state: ProjectState | None, quick_stage: str | N
             for q in lesson.questions:
                 st.markdown(f"- {q}")
 
-    with st.expander("Câu hỏi tự kiểm tra", expanded=is_dialog):
-        st.write(lesson.exercise)
+    if lesson.question_answers:
+        with st.expander("Gợi ý đáp án & Giải thích tự kiểm tra", expanded=is_dialog):
+            for q_title, q_ans in lesson.question_answers:
+                st.markdown(f"**{q_title}**")
+                st.markdown(q_ans)
+
+    if lesson.self_study:
+        with st.expander("Chủ đề tự học chuyên sâu (Contextual Self-Study)", expanded=is_dialog):
+            for topic_title, topic_body in lesson.self_study:
+                st.markdown(f"**{topic_title}**")
+                st.markdown(topic_body)
 
     # -------------------------------------------------------------------------
     # 6. TÀI LIỆU THAM KHẢO

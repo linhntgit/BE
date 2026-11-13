@@ -66,12 +66,12 @@ MODEL_DOCS: dict[str, CompartmentModelDoc] = {
             "  - Liều dùng: $D = 325\\text{ mg}$ (tương ứng $5\\text{ mg/kg}$).\n"
             "  - Thể tích phân bố: $V_1 = 16.25\\text{ L}$ ($0.25\\text{ L/kg}$ dịch ngoại bào).\n"
             "  - Hằng số thải trừ: $k_{10} = 0.231\\text{ h}^{-1}$.\n"
-            "- **Kết quả tính toán dược động học:**\n"
-            "  - $C_0 = 325 / 16.25 = 20.0\\text{ mg/L}$ (nồng độ đỉnh tức thời).\n"
-            "  - $CL = 0.231 \\times 16.25 = 3.75\\text{ L/h}$ ($62.5\\text{ mL/min}$).\n"
-            "  - $t_{1/2} = 0.693 / 0.231 = 3.0\\text{ giờ}$.\n"
-            "  - $AUC_{0-\\infty} = 325 / 3.75 = 86.67\\text{ mg}\\cdot\\text{h/L}$.\n"
-            "  - Nồng độ tại $t=8\\text{h}$: $C(8) = 20.0 \\cdot e^{-0.231 \\times 8} = 20.0 \\cdot e^{-1.848} = 3.15\\text{ mg/L}$.\n"
+            "- **Kết quả tính toán dược động học (đối chiếu chuẩn `pk_models.py`):**\n"
+            "  - $C_0 = 325 / 16.25 = 20.0\\text{ mg/L}$ (nồng độ đỉnh ngoại suy tức thời $C(0^+)$).\n"
+            "  - $CL = 0.231 \\times 16.25 = 3.754\\text{ L/h}$ ($62.56\\text{ mL/min}$).\n"
+            "  - $t_{1/2} = \\ln(2) / 0.231 = 3.00\\text{ giờ}$.\n"
+            "  - $AUC_{0-\\infty} = 325 / 3.75375 = 86.58\\text{ mg}\\cdot\\text{h/L}$.\n"
+            "  - Nồng độ tại $t=8\\text{h}$: $C(8) = 20.0 \\cdot e^{-0.231 \\times 8} = 3.15\\text{ mg/L}$.\n"
             "  - Nồng độ đáy tại $t=24\\text{h}$ ($C_{\\text{trough}}$): $C(24) = 20.0 \\cdot e^{-0.231 \\times 24} = 0.078\\text{ mg/L}$ ($< 0.5\\text{ mg/L}$, bảo đảm an toàn thận)."
         ),
         notes=(
@@ -120,19 +120,15 @@ MODEL_DOCS: dict[str, CompartmentModelDoc] = {
             "**Bệnh nhân:** Người lớn 70 kg, tiêm tĩnh mạch liều nạp Vancomycin $D = 1000\\text{ mg}$.\n"
             "- **Bộ tham số vi mô giả định:**\n"
             "  - $V_1 = 20.0\\text{ L}$, $k_{10} = 0.150\\text{ h}^{-1}$, $k_{12} = 0.250\\text{ h}^{-1}$, $k_{21} = 0.100\\text{ h}^{-1}$.\n"
-            "- **Quy đổi sang tham số vĩ mô:**\n"
-            "  - $\\alpha + \\beta = 0.150 + 0.250 + 0.100 = 0.500\\text{ h}^{-1}$.\n"
-            "  - $\\alpha \\cdot \\beta = 0.150 \\times 0.100 = 0.015\\text{ h}^{-2}$.\n"
-            "  - Giải phương trình bậc 2: $\\alpha \\approx 0.468\\text{ h}^{-1}$, $\\beta \\approx 0.032\\text{ h}^{-1}$.\n"
-            "  - $t_{1/2,\\alpha} = 0.693 / 0.468 \\approx 1.48\\text{ giờ}$ (pha phân bố kết thúc sau $\\approx 4-6\\text{h}$).\n"
-            "  - $t_{1/2,\\beta} = 0.693 / 0.032 \\approx 21.6\\text{ giờ}$ (thời gian bán thải pha cuối).\n"
-            "  - $A = \\frac{1000}{20} \\frac{0.468 - 0.100}{0.468 - 0.032} = 50 \\times \\frac{0.368}{0.436} = 42.2\\text{ mg/L}$.\n"
-            "  - $B = 50 - 42.2 = 7.8\\text{ mg/L}$. Nồng độ đỉnh $C_0 = 50.0\\text{ mg/L}$.\n"
+            "- **Quy đổi sang tham số vĩ mô & bộ tham số chuẩn (`CL=3.0 L/h, Vc=20.0 L, Q=5.0 L/h, Vp=50.0 L`):**\n"
+            "  - $\\alpha + \\beta = 0.150 + 0.250 + 0.100 = 0.500\\text{ h}^{-1}$, $\\alpha \\cdot \\beta = 0.150 \\times 0.100 = 0.015\\text{ h}^{-2}$.\n"
+            "  - Giải phương trình bậc 2 chính xác: $\\alpha = 0.4679\\text{ h}^{-1}$, $\\beta = 0.0321\\text{ h}^{-1}$.\n"
+            "  - $t_{1/2,\\alpha} = \\ln(2) / 0.4679 = 1.48\\text{ giờ}$ (pha phân bố giảm rõ rệt sau $\\approx 4-6\\text{ h}$).\n"
+            "  - $t_{1/2,\\beta} = \\ln(2) / 0.03206 = 21.62\\text{ giờ}$ (thời gian bán thải pha cuối).\n"
+            "  - $A = 42.21\\text{ mg/L}$, $B = 7.79\\text{ mg/L}$ ($C_0 = 50.0\\text{ mg/L}$); $C(2\\text{h}) = 23.86\\text{ mg/L}$, $C(12\\text{h}) = 5.46\\text{ mg/L}$.\n"
             "- **Thể tích và độ thanh thải:**\n"
-            "  - $CL = 0.150 \\times 20.0 = 3.0\\text{ L/h}$.\n"
-            "  - $V_2 = 20 \\times (0.250 / 0.100) = 50.0\\text{ L}$.\n"
-            "  - $V_{ss} = 20 + 50 = 70.0\\text{ L}$. Thể tích $V_\\beta = 3.0 / 0.032 = 93.75\\text{ L}$.\n"
-            "  - $AUC_{0-\\infty} = \\frac{42.2}{0.468} + \\frac{7.8}{0.032} = 90.17 + 243.75 = 333.9\\text{ mg}\\cdot\\text{h/L}$."
+            "  - $CL = 0.150 \\times 20.0 = 3.00\\text{ L/h}$, $V_2 = 20.0 \\times (0.250 / 0.100) = 50.0\\text{ L}$, $V_{ss} = 70.0\\text{ L}$, $V_\\beta = 93.59\\text{ L}$.\n"
+            "  - $AUC_{0-\\infty} = \\frac{A}{\\alpha} + \\frac{B}{\\beta} = \\frac{D}{CL} = \\frac{1000}{3.0} = 333.33\\text{ mg}\\cdot\\text{h/L}$."
         ),
         notes=(
             "- **Hình dạng đường cong:** Đồ thị bán logarit gồm 2 đoạn dốc rõ rệt: đoạn đầu dốc đứng (pha $\\alpha$, thuốc vừa sang mô vừa bị thải trừ), đoạn sau thoai thoải hơn (pha $\\beta$, cân bằng phân bố mô đã thiết lập).\n"
@@ -173,11 +169,11 @@ MODEL_DOCS: dict[str, CompartmentModelDoc] = {
             "- $t_{1/2,\\alpha}$ (vài phút), $t_{1/2,\\beta}$ (vài giờ), $t_{1/2,\\gamma}$ (thời gian bán thải thực tế, kéo dài nhiều ngày)."
         ),
         example=(
-            "**Thuốc gây mê / giảm đau:** Fentanyl liều tiêm tĩnh mạch nhanh $D = 100\\ \\mu\\text{g}$ ($0.1\\text{ mg}$).\n"
-            "- **Tham số:** $V_1 = 12.0\\text{ L}, V_2 = 30.0\\text{ L}, V_3 = 250.0\\text{ L} \\Rightarrow V_{ss} = 292.0\\text{ L}$.\n"
-            "- $CL = 45.0\\text{ L/h}$ ($750\\text{ mL/min}$, thanh thải gan rất cao).\n"
-            "- $t_{1/2,\\alpha} \\approx 1.8\\text{ phút}$; $t_{1/2,\\beta} \\approx 35\\text{ phút}$; $t_{1/2,\\gamma} \\approx 12.5\\text{ giờ}$.\n"
-            "- **Diễn giải lâm sàng:** Bệnh nhân hết đau và hồi tỉnh chỉ sau 15–30 phút không phải do thuốc bị chuyển hóa hết, mà do thuốc tái phân bố cực nhanh từ não ($V_1$) sang mô cơ ($V_2$) và mô mỡ ($V_3$). Tuy nhiên, tổng lượng thuốc trong cơ thể vẫn còn rất lớn và đào thải rất chậm với $t_{1/2,\\gamma} = 12.5\\text{ h}$."
+            "**Thuốc gây mê / giảm đau:** Fentanyl liều tiêm tĩnh mạch nhanh $D = 0.1\\text{ mg}$ ($100\\ \\mu\\text{g}$).\n"
+            "- **Bộ 6 tham số đầy đủ (`pk_models.py`):** $CL = 45.0\\text{ L/h}, V_c = 12.0\\text{ L}, Q_2 = 140.0\\text{ L/h}, V_{p2} = 30.0\\text{ L}, Q_3 = 42.0\\text{ L/h}, V_{p3} = 250.0\\text{ L}$ ($V_{ss} = 292.0\\text{ L}$).\n"
+            "- **Kết quả nghiệm chính xác:** $C(0^+) = 8.33\\text{ ng/mL}$, $C(0.5\\text{h}) = 0.62\\text{ ng/mL}$, $C(4\\text{h}) = 0.072\\text{ ng/mL}$, $C(24\\text{h}) = 0.013\\text{ ng/mL}$.\n"
+            "- **Ba pha bán thải tương ứng:** $t_{1/2,\\alpha} = 1.88\\text{ phút}$; $t_{1/2,\\beta} = 26.1\\text{ phút}$; $t_{1/2,\\gamma} = 8.31\\text{ giờ}$.\n"
+            "- **Diễn giải lâm sàng:** Bệnh nhân hết đau và hồi tỉnh chỉ sau 15–30 phút không phải do thuốc bị chuyển hóa hết, mà do thuốc tái phân bố cực nhanh từ não ($V_1$) sang mô cơ ($V_2$) và mô mỡ ($V_3$). Tuy nhiên, tổng lượng thuốc trong cơ thể vẫn còn tích lũy và đào thải chậm theo pha cuối $t_{1/2,\\gamma} = 8.31\\text{ h}$."
         ),
         notes=(
             "- **Cảnh báo quá khớp:** Mô hình 3 ngăn có 6 tham số IV ($CL,V_c,Q_2,V_{p2},Q_3,V_{p3}$), cần mẫu trải đủ pha sớm, giữa và muộn. Ít hơn 15 mẫu, Jacobian thiếu hạng hoặc điều kiện kém là dấu hiệu tham số khó định danh. $C(0^+)$ được ngoại suy từ đường cong, không ghi thành phép đo tại $t=0$."
@@ -256,12 +252,11 @@ MODEL_DOCS: dict[str, CompartmentModelDoc] = {
             "- $AUC_{0-\\infty} = \\frac{\\text{Dose}}{CL}$."
         ),
         example=(
-            "**Kháng sinh Vancomycin:** Liều $1000\\text{ mg}$ truyền trong $T_{\\text{inf}} = 1.0\\text{ h}$ ($R_0 = 1000\\text{ mg/h}$).\n"
-            "- Tham số: $V_1 = 15.0\\text{ L}, k_{10} = 0.20\\text{ h}^{-1}, k_{12} = 0.30\\text{ h}^{-1}, k_{21} = 0.15\\text{ h}^{-1}$.\n"
-            "- $CL = 3.0\\text{ L/h}, V_2 = 30.0\\text{ L}, V_{ss} = 45.0\\text{ L}$.\n"
-            "- Tại $t = 1\\text{h}$ (ngắt truyền): $C_{\\text{peak}} \\approx 42.0\\text{ mg/L}$.\n"
-            "- Tại $t = 2\\text{h}$ (1 giờ sau ngắt truyền, kết thúc pha $\\alpha$): $C(2) \\approx 26.5\\text{ mg/L}$.\n"
-            "- Tại $t = 12\\text{h}$ (thời điểm đáy $C_{\\text{trough}}$): $C(12) \\approx 12.5\\text{ mg/L}$ (đạt đích điều trị $10 - 15\\text{ mg/L}$)."
+            "**Kháng sinh Vancomycin (đơn liều truyền tĩnh mạch):** Liều $1000\\text{ mg}$ truyền trong $T_{\\text{inf}} = 1.0\\text{ h}$ ($R_0 = 1000\\text{ mg/h}$).\n"
+            "- Tham số (`pk_models.py`): $CL = 3.0\\text{ L/h}, V_c = 15.0\\text{ L}, Q = 4.5\\text{ L/h}, V_p = 30.0\\text{ L}$ (tương ứng $k_{10}=0.20, k_{12}=0.30, k_{21}=0.15\\text{ h}^{-1}$, $V_{ss} = 45.0\\text{ L}$).\n"
+            "- Tại $t = 1.0\\text{h}$ (ngắt truyền): $C_{\\max} = 52.84\\text{ mg/L}$.\n"
+            "- Tại $t = 2.0\\text{h}$ (1 giờ sau ngắt truyền, pha phân bố $\\alpha$ đang cân bằng): $C(2) = 33.76\\text{ mg/L}$.\n"
+            "- Tại $t = 12.0\\text{h}$ (đáy liều đơn đầu): $C(12) = 6.88\\text{ mg/L}$, $AUC_{0-\\infty} = 333.33\\text{ mg}\\cdot\\text{h/L}$ (cần đa liều tích lũy q12h để đạt đích đáy $10 - 15\\text{ mg/L}$ ở trạng thái ổn định)."
         ),
         notes=(
             "- **Quy tắc vàng trong TDM:** Không lấy mẫu nồng độ đỉnh ngay khi vừa rút kim truyền vì sẽ đo phải nồng độ ngăn 1 giả tạo quá cao; bắt buộc phải chờ 1–2 giờ sau khi kết thúc truyền."
@@ -297,9 +292,10 @@ MODEL_DOCS: dict[str, CompartmentModelDoc] = {
             "- 6 tham số ước lượng: $CL,V_c,Q_2,V_{p2},Q_3,V_{p3}$; $CL = k_{10} V_c$, $V_{ss} = V_c + V_{p2} + V_{p3}$."
         ),
         example=(
-            "**Gây mê Propofol:** Truyền duy trì nồng độ đích với liều nạp $150\\text{ mg}$ và tốc độ truyền duy trì $R_0 = 600\\text{ mg/h}$: $CL = 1.8\\text{ L/min} = 108\\text{ L/h}, V_1 = 16\\text{ L}, V_2 = 30\\text{ L}, V_3 = 200\\text{ L}$ ($V_{ss} = 246\\text{ L}$).\n"
-            "- Nếu truyền ngắn 1 giờ: CSHT $\\approx 10\\text{ phút}$ (bệnh nhân tỉnh mê sau 10 phút).\n"
-            "- Nếu truyền kéo dài 8 giờ trong phòng ICU: CSHT tăng lên gần $40\\text{ phút}$ do thuốc từ ngăn 3 giải phóng ngược trở lại máu kéo dài thời gian thức tỉnh."
+            "**Gây mê Propofol (mô phỏng 1 lần truyền hằng tốc độ trong `pk_models.py`):** Liều $D = 600\\text{ mg}$ truyền đều trong $T_{\\text{inf}} = 1.0\\text{ h}$ ($R_0 = 600\\text{ mg/h}$).\n"
+            "- **Bộ 6 tham số đầy đủ:** $CL = 108.0\\text{ L/h}$ ($1.8\\text{ L/min}$), $V_c = 16.0\\text{ L}, Q_2 = 100.0\\text{ L/h}, V_{p2} = 30.0\\text{ L}, Q_3 = 40.0\\text{ L/h}, V_{p3} = 200.0\\text{ L}$ ($V_{ss} = 246.0\\text{ L}$).\n"
+            "- **Kết quả mô phỏng đơn liều ($T_{\\text{inf}}=1\\text{h}$):** $C(1.0\\text{h}) = 3.82\\text{ mg/L}$, $C(1.5\\text{h}) = 0.85\\text{ mg/L}$, $C(4.0\\text{h}) = 0.15\\text{ mg/L}$; ba bán thải $t_{1/2} = (2.4\\text{ phút}, 22.6\\text{ phút}, 4.84\\text{ giờ})$.\n"
+            "- **Khái niệm tham khảo về CSHT lâm sàng (khi truyền kéo dài không liều nạp bằng phác đồ đa tốc độ TCI):** Nếu truyền ngắn 1 giờ, CSHT $\\approx 10\\text{ phút}$, nhưng nếu truyền duy trì kéo dài 8 giờ trong ICU, CSHT tăng vọt do bão hòa ngăn sâu $V_3$ làm kéo dài thời gian hồi tỉnh."
         ),
         notes=(
             "- **Phạm vi:** Bộ khớp hiện tại mô phỏng một lần truyền với tốc độ cố định $R_0=D/T_{\\text{inf}}$ (và chồng chất liều tuyến tính khi chọn đa liều). Ví dụ TCI có liều nạp và tốc độ biến đổi cần mô hình truyền riêng."
@@ -367,10 +363,10 @@ MODEL_DOCS: dict[str, CompartmentModelDoc] = {
             "- $V_1/F, V_2/F, V_{ss}/F, CL/F, Q/F$: Các thể tích và độ thanh thải biểu kiến sau đường uống."
         ),
         example=(
-            "**Ciprofloxacin 500 mg viên nén:**\n"
-            "- Tham số: $k_a = 1.20\\text{ h}^{-1}, \\alpha = 0.80\\text{ h}^{-1}, \\beta = 0.140\\text{ h}^{-1}, V_1/F = 60.0\\text{ L}$.\n"
-            "- $T_{\\max} \\approx 1.50\\text{ h}, C_{\\max} \\approx 2.40\\text{ mg/L}$.\n"
-            "- $t_{1/2,\\alpha} = 0.87\\text{ h}, t_{1/2,\\beta} = 4.95\\text{ h}$. $CL/F \\approx 35.0\\text{ L/h}$."
+            "**Ciprofloxacin 500 mg viên nén (không trễ hấp thu $T_{\\text{lag}}=0$):**\n"
+            "- Bộ 5 tham số (`pk_models.py`): $CL/F = 35.0\\text{ L/h}, V/F = 60.0\\text{ L}, Q/F = 9.88\\text{ L/h}, V_p/F = 51.46\\text{ L}, k_a = 1.20\\text{ h}^{-1}$ (tương ứng $\\alpha = 0.80\\text{ h}^{-1}, \\beta = 0.140\\text{ h}^{-1}, V_{ss}/F = 111.46\\text{ L}$).\n"
+            "- Kết quả giải tích khớp `predict()`: $T_{\\max} = 1.06\\text{ h}, C_{\\max} = 3.84\\text{ mg/L}, AUC_{0-\\infty} = 500 / 35 = 14.29\\text{ mg}\\cdot\\text{h/L}$.\n"
+            "- Bán thải hai pha: $t_{1/2,\\alpha} = 0.87\\text{ h}, t_{1/2,\\beta} = 4.95\\text{ h}$."
         ),
         notes=(
             "- **Nguy cơ lỗi thuật toán:** Khi dữ liệu lấy mẫu sau đỉnh quá thưa, thuật toán sẽ không phân tách được $k_{12}$ và $k_{21}$, dẫn đến lỗi ma trận kỳ dị."
@@ -382,7 +378,7 @@ MODEL_DOCS: dict[str, CompartmentModelDoc] = {
         route="oral",
         compartments=3,
         theory=(
-            "**Khái niệm & Nguyên lý:** Thuốc hấp thu bậc nhất từ ruột vào ngăn trung tâm, liên thông với ngăn nông và ngăn sâu. Bộ khớp dùng 7 tham số biểu kiến $CL/F,V_c/F,Q_2/F,V_{p2}/F,Q_3/F,V_{p3}/F,k_a$; không khớp thời gian trễ hấp thu.\n\n"
+            "**Khái niệm & Nguyên lý:** Thuốc hấp thu bậc nhất từ ruột vào ngăn trung tâm, liên thông với ngăn nông và ngăn sâu. Bộ khớp dùng 7 tham số biểu kiến $CL/F, V/F, Q_2/F, V_{p2}/F, Q_3/F, V_{p3}/F, k_a$; không khớp thời gian trễ hấp thu ($T_{\\text{lag}} = 0$).\n\n"
             "**Đặc điểm ADME:** Nghiệm gồm 4 hàm mũ (3 tốc độ phân bố/thải trừ và 1 tốc độ hấp thu); hệ số từng hàm mũ có thể mang dấu khác nhau khi hấp thu chậm. Thể tích phân bố biểu kiến $V_{ss}/F$ có thể lớn khi thuốc tích lũy ở mô sâu.\n\n"
             "**Điều kiện áp dụng:** Thuốc thân dầu cao, tích lũy sâu trong tế bào và mô mỡ. Ví dụ: Azithromycin, amiodarone, chloroquine."
         ),
@@ -401,10 +397,10 @@ MODEL_DOCS: dict[str, CompartmentModelDoc] = {
             "- $t_{1/2,\\gamma} = \\frac{\\ln 2}{\\gamma}$ (thời gian bán thải pha cuối thực tế)."
         ),
         example=(
-            "**Azithromycin 500 mg uống:**\n"
-            "- $F \\approx 0.37, V_{ss}/F \\approx 2500\\text{ L}, CL/F \\approx 40\\text{ L/h}$.\n"
-            "- $t_{1/2,\\alpha} \\approx 1.5\\text{ h}, t_{1/2,\\beta} \\approx 10\\text{ h}, t_{1/2,\\gamma} \\approx 68\\text{ giờ}$.\n"
-            "- Thuốc duy trì nồng độ kháng khuẩn trong mô phổi nhiều ngày sau khi kết thúc đợt điều trị 3 ngày."
+            "**Azithromycin 500 mg uống (đơn liều mô phỏng trong `pk_models.py`, $T_{\\text{lag}}=0$):**\n"
+            "- **Bộ 7 tham số đầy đủ:** $CL/F = 40.0\\text{ L/h}, V/F = 150.0\\text{ L}, Q_2/F = 80.0\\text{ L/h}, V_{p2}/F = 350.0\\text{ L}, Q_3/F = 25.0\\text{ L/h}, V_{p3}/F = 2000.0\\text{ L}, k_a = 1.00\\text{ h}^{-1}$ (tổng $V_{ss}/F = 2500.0\\text{ L}$; nếu $F \\approx 0.37$ thì $V_{ss} \\approx 925\\text{ L}, CL \\approx 14.8\\text{ L/h}$).\n"
+            "- **Kết quả tính toán chính xác:** $T_{\\max} = 1.09\\text{ h}, C_{\\max} = 1.28\\text{ mg/L}, AUC_{0-\\infty} = 500 / 40 = 12.50\\text{ mg}\\cdot\\text{h/L}$.\n"
+            "- **Ba bán thải tương ứng:** $t_{1/2,\\alpha} = 0.63\\text{ h}, t_{1/2,\\beta} = 7.45\\text{ h}, t_{1/2,\\gamma} = 93.7\\text{ giờ}$ (phân bố sâu trong mô, giải phóng chậm kéo dài nhiều ngày)."
         ),
         notes=(
             "- **Đánh giá độ tin cậy:** So sánh AICc/BIC khi các mô hình khớp trên cùng dữ liệu và trọng số, kiểm tra phần dư, độ phủ ba pha, hạng và điều kiện Jacobian cùng các cảnh báo tham số sát biên. AICc tính từ phần dư có trọng số chỉ mang tính chẩn đoán; phiên bản hiện tại chưa tính %RSE và không áp dụng ngưỡng ΔAICc cứng."

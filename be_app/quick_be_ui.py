@@ -289,7 +289,7 @@ def quick_be_page(project_controls=None) -> str | None:
         return "time"
     design = st.selectbox("Thiết kế", list(DESIGNS), format_func=lambda key: DESIGNS[key], key="quick_design", help="Cấu trúc thiết kế thử nghiệm: Crossover 2×2, Song song (Parallel) hoặc Replicate 3/4 kỳ.")
     choices = [key for key, rule in RULES.items() if design in rule.designs and rule.supported]
-    rule_id = st.selectbox("Quy tắc BE", choices, key="quick_rule", help="Quy chế pháp lý áp dụng (ICH M13A, US FDA, EMA, ASEAN, NTI, HVD RSABE/ABEL).")
+    rule_id = st.selectbox("Quy tắc BE", choices, key="quick_rule", help="Quy chế pháp lý áp dụng (ICH M13A/EMA, US FDA, NTI, HVD RSABE/ABEL).")
     try:
         original_treatments = sorted(preview[reverse["treatment"]].astype(str).str.strip().unique())
         original_sequences = sorted(preview[reverse["sequence"]].astype(str).str.strip().unique())
@@ -342,7 +342,11 @@ def quick_be_page(project_controls=None) -> str | None:
     justification = ""
     if rule_id in {"EMA_HVDP_ABEL", "FDA_HVD_RSABE_2026"}:
         scaled = st.checkbox("Scaling đã được định trước trong SAP", key="quick_scaling", help="Xác nhận phương pháp co giãn giới hạn BE (RSABE/ABEL) đã được quy định trước trong đề cương/SAP.")
-        justification = st.text_input("Căn cứ biến thiên và ý nghĩa lâm sàng", key="quick_justification", help="Giải trình căn cứ khoa học về độ biến thiên cao (sWR ≥ 0,294) và an toàn lâm sàng.")
+        justification = st.text_input(
+            "Căn cứ biến thiên và ý nghĩa lâm sàng",
+            key="quick_justification",
+            help="Giải trình căn cứ khoa học về độ biến thiên cao (sWR ≥ 0,294 theo US FDA hoặc CVwR > 30% theo EMA) và an toàn lâm sàng.",
+        )
 
     kwargs = dict(sheet=sheet, column_mapping=mapping, mode=mode, design=design, rule_id=rule_id,
                   treatment_mapping=treatment_mapping, sequence_mapping=sequence_mapping,
@@ -392,7 +396,11 @@ def quick_be_page(project_controls=None) -> str | None:
                 with st.container(border=True):
                     gmr_txt = f"{100 * r.gmr:.2f}%" if r.gmr is not None else "—"
                     ci_txt = f"[{100 * r.ci_lower:.2f}% – {100 * r.ci_upper:.2f}%]" if r.ci_lower is not None else "—"
-                    cv_txt = f"{100 * r.cv_within:.2f}%" if r.cv_within is not None else "—"
+                    cv_txt = (
+                        "không tách (Parallel)"
+                        if design == "parallel"
+                        else (f"{100 * r.cv_within:.2f}%" if r.cv_within is not None else "—")
+                    )
                     st.metric(label=f"Endpoint: {r.endpoint}", value=gmr_txt, delta=f"90% CI: {ci_txt}", delta_color="off")
                     st.caption(f"Quyết định: **{r.decision}** | $CV_{{intra}}$: {cv_txt}")
     rows = [{"Endpoint": r.endpoint, "GMR (%)": 100 * r.gmr if r.gmr is not None else None,

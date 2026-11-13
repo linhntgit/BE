@@ -416,3 +416,84 @@ def test_pk_standalone_help_model_explorer_ui(tmp_path, monkeypatch):
     model_sel.select_index(5).run()
     assert not app.exception
     assert any("Truyền tĩnh mạch liên tục (IV Infusion) — Mô hình 2 Ngăn" in m.value for m in app.markdown)
+
+
+def test_contextual_help_scientific_regulatory_and_code_alignment():
+    """Verify contextual help, equations, SVGs, and compartment models align with actual algorithms."""
+    import xml.etree.ElementTree as ET
+    from be_app.compartment_help import MODEL_DOCS
+    from be_app.context_equations import EQUATIONS_1, EQUATIONS_6, EQUATIONS_7, EQUATIONS_9, EQUATIONS_11
+    from be_app.diagram_svg import DIAGRAM_SVGS
+    from be_app.field_help import PAGE_HELP
+
+    # 1. All 12 SVG diagrams parse cleanly as XML and Lesson 0..11 include pedagogical extensions
+    assert len(DIAGRAM_SVGS) == 12
+    for idx, svg in DIAGRAM_SVGS.items():
+        assert ET.fromstring(svg).tag.endswith("svg")
+        lesson = lesson_for(idx)
+        assert lesson.examples
+        assert lesson.interpretation
+        assert lesson.self_study
+        assert lesson.question_answers
+
+    # 2. Sample size planning aligns with design.py / design.tost_power (no unsupported ASEAN or fake replicate planner)
+    assert "design.py" in " ".join(desc for _, desc in EQUATIONS_1)
+    assert "design.tost_power" in DIAGRAM_SVGS[1]
+    assert "scipy.integrate.quad" in " ".join(desc for _, desc in EQUATIONS_1)
+    assert "replicate 3–4 kỳ" in " ".join(desc for _, desc in EQUATIONS_1)
+    assert all("ASEAN" not in meaning for groups in PAGE_HELP for g in groups for _, meaning in g.entries)
+
+    # 3. EMA ABEL, FDA RSABE, FDA NTI, and default Adjusted R² >= 0.80 accuracy
+    eq6_text = " ".join(desc for _, desc in EQUATIONS_6)
+    assert "0.29356" in eq6_text
+    assert "0.760" in eq6_text
+    assert "C_{\\max}" in eq6_text
+    assert "0.294" in eq6_text
+    assert "2.5" in eq6_text
+    assert "0.80" in " ".join(desc for _, desc in EQUATIONS_7)
+    assert "single-user" in " ".join(desc for _, desc in EQUATIONS_9)
+    eq11_text = " ".join(desc for _, desc in EQUATIONS_11)
+    assert "chưa hỗ trợ kiểm định phi tham số" in eq11_text
+    assert "chưa hỗ trợ cho replicate" in " ".join(QUICK_BE_LESSON.interpretation)
+
+    # 4. Compartmental examples match pk_models.py exact forward evaluations
+    doc_1 = MODEL_DOCS["1. Tiêm tĩnh mạch nhanh (IV Bolus) — 1 Ngăn"]
+    doc_2 = MODEL_DOCS["2. Tiêm tĩnh mạch nhanh (IV Bolus) — 2 Ngăn"]
+    doc_5 = MODEL_DOCS["5. Truyền tĩnh mạch liên tục (IV Infusion) — 2 Ngăn"]
+    doc_7 = MODEL_DOCS["7. Đường uống (Oral) — 1 Ngăn (Bateman)"]
+    doc_9 = MODEL_DOCS["9. Đường uống (Oral) — 3 Ngăn"]
+    assert "86" in doc_1.example
+    assert "333" in doc_2.example
+    assert "52" in doc_5.example and "333" in doc_5.example
+    assert "T_{\\text{lag}} = 0" in PK_STANDALONE_LESSON.theory[1] or "Tlag = 0" in " ".join(PK_STANDALONE_LESSON.theory)
+    assert "7,10" in doc_7.example or "7.10" in doc_7.example
+    assert "12,5" in doc_9.example or "12.5" in doc_9.example
+
+
+def test_contextual_diagnostics_and_expanders_adapt_to_workflow_options(tmp_path, monkeypatch):
+    """Live workspace diagnostics and new expanders render cleanly without nested-expander errors."""
+    import be_app.ui as ui
+
+    monkeypatch.setattr(ui, "store", lambda: ProjectStore(tmp_path / "diag_adapt.sqlite"))
+    app = AppTest.from_file(str(Path(__file__).resolve().parents[1] / "app.py"), default_timeout=60).run()
+    assert not app.exception
+
+    # Full BE Step 0 renders examples / self-study / answer expanders cleanly without duplicate exercise
+    expander_labels = [exp.label for exp in app.get("expander")]
+    assert "Ví dụ minh họa & Kết quả kiểm chứng" in expander_labels
+    assert "Gợi ý đáp án & Giải thích tự kiểm tra" in expander_labels
+    assert "Chủ đề tự học chuyên sâu (Contextual Self-Study)" in expander_labels
+    assert "Câu hỏi tự kiểm tra" not in expander_labels
+
+    # Standalone PK reflects Tlag=0 for oral and switches guidance dynamically for IV bolus
+    app.sidebar.radio[0].set_value("Phân tích PK độc lập").run()
+    assert not app.exception
+    captions_oral = " ".join(c.value for c in app.caption)
+    assert "T_{\\text{lag}} = 0" in captions_oral
+    assert "có $T_{\\text{lag}}$" not in captions_oral
+
+    app.selectbox(key="pk_route").select_index(1).run()  # iv_bolus
+    assert not app.exception
+    captions_iv = " ".join(c.value for c in app.caption)
+    assert "Tiêm TM nhanh ($F=1$)" in captions_iv
+

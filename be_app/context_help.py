@@ -41,6 +41,10 @@ class Lesson:
     equations: tuple[tuple[str, str], ...] = ()
     questions: tuple[str, ...] = ()
     references: tuple[str, ...] = ()
+    examples: tuple[str, ...] = ()
+    interpretation: tuple[str, ...] = ()
+    self_study: tuple[tuple[str, str], ...] = ()
+    question_answers: tuple[tuple[str, str], ...] = ()
 
 
 @dataclass(frozen=True)
@@ -105,6 +109,27 @@ LESSONS: tuple[Lesson, ...] = (
             "US FDA (2021). Bioequivalence Studies with Pharmacokinetic Endpoints for Drugs Submitted Under an ANDA. Center for Drug Evaluation and Research.",
             "Chow, S. C., & Liu, J. P. (2008). Design and Analysis of Bioavailability and Bioequivalence Studies (3rd ed.). Chapman and Hall/CRC.",
         ),
+        examples=(
+            "**Ví dụ kiểm định hàm lượng lô (Assay Potency Gate):** Lô Thử `T` định lượng đạt `98.2%` nhãn; Lô Đối chứng `R` đạt `101.4%` nhãn $\\Rightarrow \\Delta_{\\text{Assay}} = |98.2 - 101.4| / 101.4 \\times 100\\% = 3.16\\% \\le 5.0\\%$ (Đạt chuẩn tiền phân tích; giữ nguyên nồng độ đo được mà không nhân chia hiệu chỉnh).",
+        ),
+        interpretation=(
+            "**Phạm vi & giới hạn thiết lập:** Thiết kế (2×2 / Song song / Replicate) và Quy chế pháp lý (ICH M13A / EMA / US FDA / NTI / HVD) chốt ở Bước 0 sẽ chi phối toàn bộ công cụ khả dụng ở các bước sau — ví dụ chọn `parallel` sẽ không tính được `CV_intra` nội cá thể, còn chọn `FDA_NTI` bắt buộc thiết kế `full4`.",
+            "**Hàm lượng & Trạng thái dùng thuốc:** Khai báo `assay_test_pct` và `assay_reference_pct` chỉ phục vụ kiểm soát chất lượng và lập báo cáo; `BE_app` không tự ý hiệu chỉnh (potency-correct) số liệu PK.",
+        ),
+        self_study=(
+            ("Khi nào sử dụng thiết kế Replicate (partial3 / full4)?",
+             "Dùng thiết kế lặp 3 hoặc 4 kỳ khi hoạt chất thuộc nhóm biến thiên cao ($CV_{wR} > 30\\%$) để ước lượng riêng phương sai nội cá thể của thuốc Đối chứng ($s_{wR}$) phục vụ mở rộng biên EMA ABEL hoặc US FDA RSABE; riêng US FDA NTI bắt buộc dùng `full4` để kiểm định đồng thời tỷ số $s_{wT}/s_{wR} \\le 2.5$."),
+            ("Sự khác biệt cơ bản giữa US FDA RSABE và EMA ABEL",
+             "EMA ABEL chỉ mở rộng khoảng 90% CI cho $C_{\\max}$ (từ $CV_{wR}>30\\%$ tới trần $50\\%$ ứng với $[69.84\\%, 143.19\\%]$), vẫn giữ $AUC$ ở $[80, 125]\\%$. US FDA RSABE áp dụng cho cả $C_{\\max}$ và $AUC$ khi $s_{wR} \\ge 0.294$ qua tiêu chí bất đẳng thức Howe $\\text{UCB}_{95\\%} \\le 0$ ($\\sigma_{w0}=0.25$), và cả hai đều đòi hỏi điểm $\\text{GMR} \\in [80.00\\%, 125.00\\%]$."),
+        ),
+        question_answers=(
+            ("1. Vì sao không tự ý hiệu chỉnh hàm lượng (potency adjustment) khi chênh lệch ≤ 5%?",
+             "Dao động $\\le 5\\%$ nằm trong sai số sản xuất và kiểm nghiệm định kỳ; tự ý chia cho tỷ lệ hàm lượng làm tăng nhiễu thực nghiệm không cần thiết. ICH M13A Mục 2.1.3 chỉ cho phép cân nhắc hiệu chỉnh ngoại lệ khi thực sự không tìm được lô Đối chứng chênh $\\le 5\\%$, phải định trước trong Protocol và nộp cả hai phân tích hiệu chỉnh/không hiệu chỉnh."),
+            ("2. Khi nào được xem xét miễn thử in vivo (BCS Biowaiver theo ICH M9)?",
+             "Áp dụng cho hoạt chất BCS nhóm I (độ tan cao, thấm cao) và nhóm III (độ tan cao, thấm thấp — tá dược giống nhau định lượng/định tính chặt chẽ hơn) với dạng bào chế IR không thuộc nhóm NTI và hòa tan in vitro tương đương ở pH 1.2, 4.5, 6.8 ($\\ge 85\\%$ trong 15 hoặc 30 phút kèm $f_2 \\ge 50$)."),
+            ("3. Bữa ăn giàu chất béo ảnh hưởng thế nào đến thuốc kiềm yếu?",
+             "Bữa ăn làm chậm rỗng dạ dày (tăng thời gian lưu trú hòa tan), tăng pH dạ dày tạm thời nhưng kích thích tiết muối mật/micelle hóa tại ruột non, giúp cải thiện rõ rệt sinh khả dụng của nhiều thuốc thân dầu/kiềm yếu kém tan (như itraconazole hoặc hoạt chất BCS II) hoặc làm chậm $T_{\\max}$."),
+        ),
     ),
 
     # -------------------------------------------------------------------------
@@ -131,7 +156,7 @@ LESSONS: tuple[Lesson, ...] = (
             "CV (Coefficient of Variation): Hệ số biến thiên; GMR (Geometric Mean Ratio): Tỷ số trung bình nhân giữa T và R.",
             "TOST (Two One-Sided Tests): Kiểm định hai phía đồng thời của Schuirmann; Dropout: Tỷ lệ người tình nguyện rút lui hoặc bị loại khỏi nghiên cứu.",
             "Intersection-Union Principle: Nguyên lý kiểm định đồng thời nhiều endpoint mà không làm tăng sai lầm loại I (không cần hiệu chỉnh Bonferroni).",
-            "Non-central t-distribution: Hàm phân phối t không tâm sử dụng trong giải tích lực thống kê chính xác (Owen's Q-function / Diletti).",
+            "Non-central t-distribution & Tích phân số (`design.tost_power`): Công thức giải tích Diletti xấp xỉ theo phân vị t; trong `BE_app`, lực TOST được tính bằng tích phân số chính xác hàm chuẩn điều kiện trên phân phối $\\chi^2$ (`scipy.integrate.quad`).",
         ),
         exercise="Trong nghiên cứu tương đương sinh học chéo đôi 2×2, nếu hệ số biến thiên nội cá thể CV_intra thực tế của Cmax tăng từ 20% lên 30% trong khi GMR kỳ vọng giữ nguyên ở mức 0.95, cỡ mẫu cần tuyển dụng sẽ thay đổi như thế nào và điều này ảnh hưởng ra sao đến tính khả thi của thử nghiệm lâm sàng?",
         diagram=DIAGRAM_SVGS[1],
@@ -150,6 +175,31 @@ LESSONS: tuple[Lesson, ...] = (
             "Schuirmann, D. J. (1987). A comparison of the two one-sided tests procedure and the power approach for assessing the equivalence of average bioavailability. Journal of Pharmacokinetics and Biopharmaceutics, 15(6), 657–680.",
             "Diletti, E., Hauschke, D., & Steinijans, V. W. (1991). Sample size determination for bioequivalence assessment by means of confidence intervals. International Journal of Clinical Pharmacology, Therapy, and Toxicology, 29(1), 1–8.",
             "Hauschke, D., Steinijans, V., & Pigeot, I. (2007). Bioequivalence Studies in Drug Development: Methods and Applications. John Wiley & Sons.",
+        ),
+        examples=(
+            "**Ví dụ kiểm chứng từ `design.tost_power` (2×2, GMR kỳ vọng = 0.95, α = 0.05, biên 80–125%, Power ≥ 80%):**\n"
+            "- Khi $CV_W = 20\\%$: cần `N_evaluable = 20` đối tượng ($10$ mỗi chuỗi; power chính xác $= 83.47\\%$); nếu dự kiến dropout $15\\%$ thì tuyển `N_recruited = 24`.\n"
+            "- Khi $CV_W$ tăng lên $30\\%$: cần `N_evaluable = 40` đối tượng ($20$ mỗi chuỗi; power $= 81.58\\%$); với dropout $15\\%$ phải tuyển `48` đối tượng (tăng gấp đôi quy mô!).",
+        ),
+        interpretation=(
+            "**Chức năng không áp dụng theo ngữ cảnh:** Mô-đun tính cỡ mẫu (`design.tost_power`) chỉ mở cho thiết kế **2×2 ABE** (dùng `CV_intra`) và **Song song ABE** (dùng `CV_total`). Khi chọn thiết kế **replicate** (`partial3` / `full4`) hoặc **NTI / ABEL / RSABE**, nút hoạch định cỡ mẫu bị khóa theo nguyên tắc an toàn (`planning = False`) vì đòi hỏi mô phỏng Monte Carlo chuyên biệt cho phương sai của R và quy tắc mở rộng.",
+            "**Lưu ý STALE:** Bất kỳ thay đổi nào ở `CV`, `GMR`, `Power` hoặc `Dropout` sau khi tính đều đánh dấu bảng kết quả cỡ mẫu là lỗi thời cho tới khi bạn bấm tính lại.",
+        ),
+        self_study=(
+            ("Tại sao phân tích BE thường sử dụng dữ liệu logarit tự nhiên ln(PK)?",
+             "(1) Mô hình dược động học là nhân tính ($AUC = F \\cdot D / CL$, $C_{\\max} \\propto F\\cdot D/V$), chuyển sang thang $\\ln$ biến quan hệ nhân thành cộng tuyến tính phù hợp cho ANOVA; (2) Phân bố thực nghiệm của $C_{\\max}$ và $AUC$ lệch phải, thang $\\ln$ ổn định phương sai và đưa phân bố phần dư về chuẩn xấp xỉ; (3) Hiệu số $\\bar{Y}_T - \\bar{Y}_R$ hồi biến đổi $\\exp(\\cdot)$ cho thẳng tỷ số $\\text{GMR} = T/R$ đối xứng quanh $100\\%$ ($80\\% = 1/1.25$)."),
+            ("Vì sao dùng khoảng tin cậy 90% trong TOST ở mức ý nghĩa α = 5%?",
+             "Theo thủ tục hai kiểm định một phía (TOST) của Schuirmann, giả thuyết vô hiệu hợp $H_0: \\theta \\le \\ln(0.80)$ hoặc $\\theta \\ge \\ln(1.25)$. Để khống chế sai lầm loại I của mỗi kiểm định biên ở $\\alpha = 0.05$ và bảo đảm sai lầm toàn thể không vượt quá $0.05$ (theo Nguyên lý Intersection-Union), ta cắt $5\\%$ ở đuôi trái và $5\\%$ ở đuôi phải ($1 - 2\\alpha = 90\\%$), tương đương kiểm tra $90\\% \\text{ CI} \\subset [80\\%, 125\\%]$."),
+            ("Sự khác nhau giữa CV nội cá thể (CV_intra) và CV giữa các cá thể (CV_inter / CV_total)",
+             "`CV_intra` phản ánh dao động ngẫu nhiên giữa các lần dùng thuốc trên CÙNG một người (chỉ tách được trong thiết kế chéo/lặp), còn `CV_inter` phản ánh khác biệt sinh lý giữa các cá thể khác nhau (thường lớn hơn nhiều). Trong thiết kế song song, vì mỗi người chỉ uống T hoặc R một lần nên sai số chuẩn chứa `CV_total` ($\\approx \\sqrt{e^{\\sigma^2_{\\text{inter}}+\\sigma^2_{\\text{intra}}}-1}$), đòi hỏi cỡ mẫu lớn gấp bội so với $2\\times 2$."),
+        ),
+        question_answers=(
+            ("1. Vì sao cỡ mẫu tăng phi tuyến khi CV > 30%?",
+             "Phương sai logarit $\\sigma_W^2 = \\ln(CV^2 + 1)$ tăng gần như theo bình phương của $CV$; do $N \\propto \\sigma_W^2$, tăng $CV$ gấp $1.5$ lần ($20\\% \\to 30\\%$) làm $N$ tăng hơn gấp đôi ($20 \\to 40$). Khi $CV > 30\\%$, thiết kế $2\\times 2$ truyền thống trở nên kém khả thi và nên cân nhắc thiết kế replicate (HVDP/HVD)."),
+            ("2. Tại sao mỗi kiểm định 1 phía α = 0.05 lại ứng với 90% CI?",
+             "Hai giả thuyết vô hiệu biên $H_{01}: \\Delta \\le \\ln(0.80)$ và $H_{02}: \\Delta \\ge \\ln(1.25)$ không thể đồng thời xảy ra cùng lúc (không gian tham số rời nhau). Vì vậy, dù dùng khoảng tin cậy 90% hai phía (mỗi đuôi $\\alpha = 0.05$), xác suất tối đa kết luận nhầm TĐSH trên thực tế vẫn bị chặn chặt bởi $\\alpha = 0.05$, không cần thu hẹp thành 95% CI (vốn làm giảm lực quá mức)."),
+            ("3. Ưu và nhược điểm của Thiết kế thích ứng 2 giai đoạn (Potvin/Maurer)?",
+             "*Ưu điểm:* Cho phép ước tính $CV_W$ thực ở giai đoạn 1 khi dữ liệu pilot thiếu chắc chắn rồi mở rộng cỡ mẫu ở giai đoạn 2. *Nhược điểm:* Phải điều chỉnh mức $\\alpha$ danh nghĩa (ví dụ $\\alpha_1 = \\alpha_2 = 0.0294$ theo Method B/C của Potvin), tăng phức tạp hậu cần (lô thuốc hạn dùng, 2 đợt tuyển) và phải định trước toàn bộ quy tắc dừng trong SAP (tài liệu tham khảo; chưa triển khai tự động trong `BE_app`)."),
         ),
     ),
 
@@ -194,6 +244,24 @@ LESSONS: tuple[Lesson, ...] = (
             "EMA (2010). Guideline on the Investigation of Bioequivalence, Section 4.1.5.",
             "Midha, K. K., et al. (1996). The preparation and reporting of bioequivalence protocols and reports. European Journal of Pharmaceutical Sciences, 4(4), 209–224.",
         ),
+        examples=(
+            "**Ví dụ tính thời gian rửa giải (Washout) và chọn điểm lấy mẫu:**\n"
+            "- Hoạt chất có $T_{\\max} \\approx 1.5\\text{ h}$ và $t_{1/2} = 12\\text{ h}$: cần $T_{\\text{washout}} \\ge 5 \\times 12 = 60\\text{ h}$ (thực tế thường chọn $7\\text{ ngày}$ giữa hai kỳ).\n"
+            "- Lịch lấy mẫu khuyến nghị: `0, 0.25, 0.5, 0.75, 1.0, 1.25, 1.5, 2.0, 2.5, 3, 4, 6, 8, 12, 24, 36, 48 h` ($17$ điểm, bảo đảm $\\ge 3$ điểm trước $T_{\\max}$, dày quanh $1.5\\text{ h}$ và $t_{\\text{last}} = 48\\text{ h} = 4 \\times t_{1/2}$ để $AUC_{\\%\\text{extrap}} \\approx 6\\% \\ll 20\\%$).",
+        ),
+        interpretation=(
+            "**Phân biệt theo thiết kế:** Trong **thiết kế Song song (Parallel)**, mỗi đối tượng chỉ dùng 1 thuốc trong 1 kỳ nên không có giai đoạn rửa giải hay hiệu ứng tồn lưu (carry-over) giữa kỳ; ngược lại, thiết kế **replicate 4 kỳ (`full4`)** đòi hỏi 3 khoảng rửa giải liên tiếp, cần tính tổng thời gian nghiên cứu và lượng máu lấy toàn đợt.",
+        ),
+        self_study=(
+            ("Cắt cụt lấy mẫu 72 giờ (AUC0-72h) cho thuốc giải phóng tức thời (IR) bán thải dài",
+             "Theo ICH M13A (Mục 2.2.3) và EMA (Mục 4.1.4), với thuốc IR có $t_{1/2}$ rất dài và hấp thu hoàn tất trước $72\\text{ h}$, có thể dùng $AUC_{0-72\\text{h}}$ thay $AUC_{0-t}$ trong nghiên cứu chéo để hạn chế gánh nặng lấy mẫu kéo dài nhiều tuần (tuy nhiên vẫn phải giữ $T_{\\text{washout}} \\ge 5 \\cdot t_{1/2}$ nếu dùng thiết kế chéo; hoặc cân nhắc thiết kế song song)."),
+        ),
+        question_answers=(
+            ("1. Hậu quả khi hơn 20% số hồ sơ có AUC_%extrap > 20% là gì?",
+             "Theo ICH M13A & EMA, nếu $>20\\%$ số quan sát có phần ngoại suy vượt $20\\%$, độ tin cậy của $AUC_{0-\\infty}$ (và có thể cả tính đủ dài của lịch lấy mẫu cho $AUC_{0-t}$) sẽ bị cơ quan thẩm định chất vấn nghiêm trọng, dễ dẫn tới yêu cầu lặp lại nghiên cứu với lịch lấy mẫu dài hơn hoặc LLOQ nhạy hơn."),
+            ("2. Vì sao được phép cắt tại 72h cho thuốc IR có t½ > 24h?",
+             "Quá trình hấp thu qua ống tiêu hóa của dạng bào chế IR hầu như hoàn tất trong $24 - 48\\text{ giờ}$; sai khác công thức bào chế thể hiện ở pha hấp thu chứ không nằm ở pha phân bố/thải trừ sau $72\\text{ giờ}$. Lưu ý điều này KHÔNG tự động áp dụng cho dạng phóng thích kéo dài (MR/ER)."),
+        ),
     ),
 
     # -------------------------------------------------------------------------
@@ -227,7 +295,7 @@ LESSONS: tuple[Lesson, ...] = (
         regulations=(
             "ICH M10 (2022): Bioanalytical Method Validation and Study Sample Analysis (Mục 7: LIMS, Raw Data, Run Logs).",
             "ICH M13A (2024) Mục 2.2.3: Bắt buộc dùng actual sampling time cho tính toán NCA.",
-            "US FDA 21 CFR Part 11: Electronic Records; Electronic Signatures (Quy chuẩn bản ghi điện tử).",
+            "US FDA 21 CFR Part 11: Chuẩn quản trị bản ghi điện tử cho hệ thống LIMS/phân tích sinh học (phiên bản single-user cục bộ của BE_app cung cấp mã băm SHA-256 kiểm tra dữ liệu thô).",
             "WHO TRS 996 (2016): Guidance on good data and record management practices.",
         ),
         equations=EQUATIONS_3,
@@ -239,6 +307,25 @@ LESSONS: tuple[Lesson, ...] = (
             "ICH Guideline M10 (2022). Bioanalytical Method Validation and Study Sample Analysis.",
             "US FDA (2018). Data Integrity and Compliance With Drug CGMP: Questions and Answers.",
             "WHO (2016). Annex 5: Guidance on good data and record management practices (TRS 996).",
+        ),
+        examples=(
+            "**Ví dụ kiểm soát thời gian thực & quy đổi đơn vị (`imports.py`):**\n"
+            "- Một mẫu dự kiến lấy ở `1.00 h` nhưng thực tế lấy lúc `1.12 h` (+7 phút), nồng độ đo được `2.45 μg/mL`.\n"
+            "- Khi nhập `actual_time_h = 1.12` và chọn đơn vị nguồn `μg/mL`, `BE_app` quy đổi chuẩn về `2450 ng/mL` và tích phân theo đúng `1.12 h`.",
+        ),
+        interpretation=(
+            "**Cơ chế chặn nhập liệu (`imports.py`):** Thiếu cột bắt buộc, trùng khóa `(subject_id, period, actual_time_h)`, nồng độ âm hoặc thời gian tiền liều âm không có mốc `0` sẽ chặn không cho lưu raw bất biến.",
+            "**Ràng buộc đối chiếu phân nhóm:** Số liệu nồng độ nhập vào phải khớp chặt với bảng phân nhóm Bước 2 về `subject_id`, `sequence`, `period`, `treatment`.",
+        ),
+        self_study=(
+            ("Quy tắc xử lý giá trị BLQ và thời gian thực (Actual Time) trong NCA",
+             "Trước $C_{\\max}$, các mẫu BLQ khởi đầu thường gán `0` để tích phân diện tích pha đầu; sau $T_{\\max}$, khi đã giảm xuống dưới LLOQ, các điểm BLQ bị loại khỏi hồi quy $\\lambda_z$ (`blq_flag` trong `BE_app` tách biệt trạng thái BLQ khỏi giá trị số `0`)."),
+        ),
+        question_answers=(
+            ("1. Vì sao thay BLQ pha cuối bằng LLOQ/2 hoặc 0 làm sai λz?",
+             "`ln(0)` không xác định, còn gán hằng số `LLOQ/2` ở cuối đường cong sẽ làm đường `ln(C) vs t` bị bẻ ngang phẳng nhân tạo, khiến độ dốc $-\\lambda_z$ quá nhỏ và $t_{1/2}, AUC_{0-\\infty}$ tăng vọt giả tạo."),
+            ("2. Yêu cầu lưu trữ sắc ký đồ thô theo ICH M10?",
+             "Phải lưu trữ toàn bộ tệp dữ liệu gốc từ máy LC-MS/MS, đường chuẩn/QC và nhật ký tái tích phân (re-integration audit trail kèm lý do rõ ràng trước khi tích phân lại)."),
         ),
     ),
 
@@ -283,6 +370,24 @@ LESSONS: tuple[Lesson, ...] = (
             "EMA (2010). Guideline on the Investigation of Bioequivalence, Section 4.1.8 (Removal of data).",
             "US FDA (2018). Data Integrity in Clinical Trials and CGMP.",
         ),
+        examples=(
+            "**Ví dụ kiểm soát `PREDOSE_5PCT` (kỳ 2):** Ở kỳ 2 đối tượng `S0004`, $C_{\\text{predose}}(0\\text{ h}) = 38\\text{ ng/mL}$, trong khi $C_{\\max} = 600\\text{ ng/mL}$. Tỷ lệ $38 / 600 = 6.33\\% > 5.0\\%$.\n"
+            "- Hệ thống tự động gắn cờ lỗi `PREDOSE_5PCT (ERROR)` và khóa nút Data Freeze cho đến khi dữ liệu được xử lý đúng theo biên bản điều tra tồn lưu hoặc loại trừ hợp lệ; nếu chỉ $18 / 600 = 3.0\\% \\le 5.0\\%$, giữ nguyên phân tích không hiệu chỉnh.",
+        ),
+        interpretation=(
+            "**Phân cấp ERROR vs WARNING:** Các lỗi `ERROR` (ví dụ `PREDOSE_5PCT`, `MISSING_PERIOD`, sai thời gian tiền liều) chặn không cho khóa Data Freeze; cảnh báo `WARNING` (ví dụ `TERMINAL_POINTS < 4`) cho phép đóng băng nếu được người rà soát xem xét và biện giải hợp lệ.",
+            "**Cơ chế STALE sau sửa đổi:** Nếu mở khóa và sửa dù chỉ 1 ô nồng độ sau khi đã chạy NCA/BE, `input_revision` tăng và toàn bộ kết quả cũ chuyển thành `STALE`.",
+        ),
+        self_study=(
+            ("Phân biệt xử lý lỗi Pre-dose > 5% vs Ngoại lai thống kê (Statistical Outlier)",
+             "Nồng độ tiền liều $> 5\\% C_{\\max}$ (kèm nôn trong vòng $2 \\times T_{\\max}$ đối với IR hoặc sai sót phân tích sinh học chứng minh trước mở mù) là tiêu chí loại trừ hợp lệ theo ICH M13A/EMA. Ngược lại, một đối tượng có $C_{\\max}$ hay $AUC$ lệch cao/thấp nhưng không tìm thấy bằng chứng lâm sàng hay sắc ký bất thường KHÔNG ĐƯỢC loại khỏi phân tích chính thức."),
+        ),
+        question_answers=(
+            ("1. Vì sao cấm loại đối tượng chỉ dựa trên lý do 'ngoại lai thống kê'?",
+             "Loại điểm bất lợi sau khi mở mù làm sai lệch nghiêm trọng mức ý nghĩa thực nghiệm (tăng giả mạo sai lầm loại I) và che giấu biến thiên thật của công thức thuốc trên quần thể (ví dụ khả năng giải phóng liều ồ ạt - dose dumping - ở một cá thể). Chỉ được chạy phân tích độ nhạy (Sensitivity analysis) bổ trợ song song với bộ dữ liệu đầy đủ."),
+            ("2. Quy trình SOP điều tra mẫu bất thường đáp ứng ICH M10 gồm gì?",
+             "Ghi nhận mẫu nghi ngờ khi vẫn đang mù (blinded), kích hoạt phân tích lặp lại theo tiêu chuẩn Incurred Sample Reanalysis / Re-assay định trước trong SOP (ví dụ kiểm tra 3 lần với mẫu chuẩn QC), chỉ thay thế giá trị khi xác định được nguyên nhân gốc rễ phân tích/lâm sàng rõ ràng và lưu toàn bộ vết kiểm toán."),
+        ),
     ),
 
     # -------------------------------------------------------------------------
@@ -290,14 +395,14 @@ LESSONS: tuple[Lesson, ...] = (
     # -------------------------------------------------------------------------
     Lesson(
         interface=(
-            "**Cấu hình NCA:** Quy tắc tích phân diện tích (Linear Up / Log Down), tiêu chí lựa chọn pha thải trừ cuối (λz), và chính sách xử lý ngoại suy.",
-            "**Bảng rà soát pha thải trừ terminal:** Đánh giá số điểm hồi quy, khoảng thời gian bắt đầu/kết thúc, và độ phù hợp R², R²_adj cho từng hồ sơ.",
-            "**Bảng kết quả thông số PK:** Hiển thị chi tiết Cmax, Tmax, AUClast, AUCinf, t1/2, λz, AUC_%extrap, MRT kèm chức năng xuất sổ tính Excel.",
+            "**Cấu hình NCA:** Quy tắc tích phân diện tích (Linear Up / Log Down hoặc Linear), tiêu chí pha thải trừ cuối (`λz`, tối thiểu điểm, `Adjusted R²`, `span`), và phân biệt biến thể `obs` vs `pred` cho `AUCinf/CL/Vz/MRT`.",
+            "**Bảng rà soát pha thải trừ terminal:** Đánh giá số điểm hồi quy, khoảng thời gian bắt đầu/kết thúc, `R²`, `Adjusted R²` và `span (t1/2)` cho từng hồ sơ.",
+            "**Bảng kết quả thông số PK:** Hiển thị chi tiết `Cmax, Tmax, AUClast, AUCinf (obs/pred), t1/2, λz, AUC_%extrap, MRT` kèm chức năng xuất sổ tính Excel.",
         ),
         actions=(
             "Rà soát cấu hình tích phân và tiêu chí pha thải trừ theo đúng SAP đã phê duyệt trước khi khóa dữ liệu.",
             "Đánh giá các điểm nồng độ ở pha cuối; chỉ can thiệp ghi đè khoảng hồi quy (Terminal Override) khi có căn cứ dược động học rõ ràng và được ghi nhận giải trình.",
-            "Bấm **Phân tích NCA và BE** trên dữ liệu đã Data Freeze; kiểm tra các cờ cảnh báo (đặc biệt các hồ sơ có AUC_%extrap > 20% hoặc R² < 0.85).",
+            "Bấm **Phân tích NCA và BE** trên dữ liệu đã Data Freeze; kiểm tra các cờ cảnh báo (đặc biệt hồ sơ có `AUC_%extrap > 20%`, `Adjusted R² < ngưỡng SAP` — mặc định BE_app là `0.80` — hoặc `NOT EVALUABLE`).",
         ),
         theory=(
             "Quy tắc tích phân hình thang tuyến tính đi lên - logarit đi xuống (Linear Trapezoidal up / Log Trapezoidal down) giảm thiểu tối đa sai số hệ thống khi tính diện tích dưới đường cong nồng độ–thời gian.",
@@ -326,6 +431,26 @@ LESSONS: tuple[Lesson, ...] = (
             "Gabrielsson, J., & Weiner, D. (2016). Pharmacokinetic and Pharmacodynamic Data Analysis: Concepts and Applications (5th ed.). Swedish Pharmaceutical Press.",
             "Yeh, K. C., & Kwan, K. C. (1978). A comparison of numerical integrating algorithms by trapezoidal, Lagrange, and spline approximation. Journal of Pharmacokinetics and Biopharmaceutics, 6(1), 79–98.",
             "Gibaldi, M., & Perrier, D. (1982). Pharmacokinetics (2nd ed.). Marcel Dekker, New York.",
+        ),
+        examples=(
+            "**Ví dụ tính tay Linear Up / Log Down (`nca.integrate_auc`):** Cho các điểm `(t, C)` là `(0h, 0)`, `(1h, 100)`, `(2h, 200)`, `(4h, 50)`, `(8h, 0 BLQ)` (đơn vị `h`, `ng/mL`):\n"
+            "- `[0→1h]` và `[1→2h]` (Pha tăng, Linear Up): $0.5(0+100)(1) + 0.5(100+200)(1) = 50 + 150 = 200.0$.\n"
+            "- `[2→4h]` (Pha giảm $C_1 > C_2 > 0$, Log Down): $\\frac{200 - 50}{\\ln(200/50)} \\times (4 - 2) = \\frac{150}{1.38629} \\times 2 = 216.40$.\n"
+            "- `[4→8h]` (Về `0 BLQ`, lùi về Tuyến tính để tránh $\\ln(0)$): $0.5(50+0)(4) = 100.0 \\Rightarrow AUC_{0-t} = 516.40\\text{ ng}\\cdot\\text{h/mL}$.",
+        ),
+        interpretation=(
+            "**Phân biệt `obs` vs `pred` & trạng thái `NOT EVALUABLE`:** Mặc định bảng BE chọn `AUC_inf` tính từ `C_last` thực đo (`obs`), đồng thời tính thêm biến thể dùng $\\hat{C}_{\\text{last}}$ hồi quy (`pred`) để đối chiếu khi nồng độ cuối nhiễu. Nếu hồ sơ có $C_{\\text{predose}} > 5\\% C_{\\max}$, `nca.py` gán `status = NOT EVALUABLE`.",
+            "**Lưu ý pha cuối:** Khi số điểm sau $T_{\\max}$ không đủ thỏa mãn `Adjusted R²` (mặc định `0.80`) hoặc `span`, hệ thống vẫn báo `AUC_last`/`Cmax` nhưng không suy diễn `λz`/`AUC_inf`.",
+        ),
+        self_study=(
+            ("Khi nào nên sử dụng NCA và khi nào cần mô hình PK ngăn?",
+             "**NCA** là phương pháp không phụ thuộc giả định cấu trúc ngăn, tái lập cao và ít thiên lệch chủ quan nên là **tiêu chuẩn vàng bắt buộc** trong đánh giá TĐSH (BE) để ước tính $C_{\\max}, AUC_{0-t}, AUC_{0-\\infty}$. Ngược lại, **mô hình PK ngăn** dùng khi cần mô tả cơ chế phân bố nhiều mô, mô phỏng đa liều không đồng nhất, dự đoán chế độ liều tối ưu trên lâm sàng (TDM) hoặc tìm hằng số hấp thu $k_a$."),
+        ),
+        question_answers=(
+            ("1. Chứng minh hình thang logarit hội tụ về tuyến tính khi C_i/C_{i+1} → 1?",
+             "Đặt $C_i = C_{i+1}(1 + x)$ với $x \\to 0$: $\\frac{C_i - C_{i+1}}{\\ln(C_i/C_{i+1})} = \\frac{C_{i+1}x}{\\ln(1+x)} \\approx \\frac{C_{i+1}x}{x - x^2/2} \\approx C_{i+1}(1 + x/2) = \\frac{C_i + C_{i+1}}{2}$."),
+            ("2. Tác hại khi đưa nhầm điểm pha phân bố vào hồi quy λz?",
+             "Pha phân bố có tốc độ giảm nhanh hơn ($\\alpha > \\beta$); đưa điểm sớm vào làm độ dốc $|\\text{slope}|$ tăng giả tạo, khiến $\\lambda_z$ quá lớn, làm **đánh giá thấp sai lầm $t_{1/2}$** và phần diện tích ngoại suy $C_{\\text{last}}/\\lambda_z$."),
         ),
     ),
 
@@ -371,6 +496,29 @@ LESSONS: tuple[Lesson, ...] = (
             "Tothfalusi, L., & Endrenyi, L. (2012). Sample sizes for designing bioequivalence studies for highly variable drugs. Journal of Pharmacy & Pharmaceutical Sciences, 15(1), 73–84.",
             "Haidar, V. H., et al. (2008). Bioequivalence approaches for highly variable drugs and drug products. Pharmaceutical Research, 25(1), 237–241.",
         ),
+        examples=(
+            "**Ví dụ so sánh cùng dữ liệu replicate (Cmax: GMR = 109.0%, 90% CI = [84.0%, 141.4%], CV_wR = 48%, s_wR = 0.455):**\n"
+            "- **ABE chuẩn `[80–125%]`:** KHÔNG ĐẠT (cận trên `141.4% > 125%`).\n"
+            "- **EMA ABEL ($CV_{wR} = 48\\% \\in (30\\%, 50\\%]$):** $[L, U] = \\exp(\\pm 0.760 \\times 0.455) \\times 100\\% = [70.77\\%, 141.30\\%]$, cần kiểm tra chính xác đến từng chữ số thập phân (với `141.4% > 141.30%` vẫn không đạt dù $\\text{GMR} = 109\\%$ thuộc $[80, 125]\\%$; riêng $AUC$ luôn áp dụng $[80, 125]\\%$).",
+        ),
+        interpretation=(
+            "**Phân biệt thuật toán thực tế (`statistics.py` / `replicate.py`) vs văn bản hướng dẫn:**\n"
+            "- Thiết kế **2×2**: Dùng OLS tương phản từng cặp kết hợp bảng ANOVA REML; **Song song**: dùng $t$-test phương sai gộp hoặc Welch–Satterthwaite khi $F$-test bất đồng nhất phương sai ($p < 0.05$), không có `CV_intra`.\n"
+            "- Thiết kế **Replicate**: Luồng EMA dùng **Method A** (`subject(sequence), period, formulation`); luồng FDA (`FDA_HVD_RSABE_2026`, `FDA_NTI`, `FDA_REPLICATE_STANDARD`) dùng **tương phản đối tượng `I_i, D_i` (OLS)** — khi $s_{wR} < 0.294$, `BE_app` đánh giá ABE bằng OLS tương phản `I` (`PASS`/`FAIL`), **chưa nối mô hình hỗn hợp tuyến tính Phụ lục C của FDA**.",
+            "**Chức năng không áp dụng:** Nếu chọn thiết kế `2x2` hoặc `parallel`, hệ thống không kích hoạt `EMA_HVDP_ABEL`, `FDA_HVD_RSABE_2026` hay `FDA_NTI`; ngược lại, các bảng `sequence`, `period` và `CV_intra` không tồn tại ở thiết kế `parallel`.",
+        ),
+        self_study=(
+            ("Sự khác biệt giữa US FDA RSABE và EMA ABEL cho thuốc biến thiên cao",
+             "**EMA ABEL:** Mở rộng giới hạn chấp nhận $90\\%\\text{ CI}$ theo $[\\exp(-0.760 s_{wR}), \\exp(+0.760 s_{wR})]$ (từ $CV_{wR} > 30\\%$, trần $50\\% = [69.84\\%, 143.19\\%]$) **chỉ cho $C_{\\max}$** ($AUC$ giữ $[80, 125]\\%$) kèm GMR $\\in [80, 125]\\%$. **US FDA RSABE:** Dùng tiêu chí tổng hợp $\\text{UCB}_{95\\%} \\le 0$ dựa trên $\\sigma_{w0}=0.25$ ($\\theta \\approx 0.7967$) khi $s_{wR} \\ge 0.294$ cho cả $C_{\\max}$ lẫn $AUC$ kèm GMR $\\in [80, 125]\\%$, và chuyển về $[80, 125]\\%$ nếu $s_{wR} < 0.294$."),
+            ("Khi nào dùng thiết kế replicate và tại sao kiểm định sWT/sWR cho NTI?",
+             "Thiết kế replicate 3 kỳ (`TRR/RTR/RRT`) đủ để ước tính $s_{wR}$ cho HVD; thiết kế 4 kỳ (`TRTR/RTRT`) ước tính được cả $s_{wR}$ lẫn $s_{wT}$, là điều kiện bắt buộc cho **FDA NTI** để bảo đảm thuốc Thử không có dao động nội cá thể rộng gấp $> 2.5$ lần thuốc Đối chứng (tránh mất an toàn khi chuyển đổi thuốc)."),
+        ),
+        question_answers=(
+            ("1. Tóm tắt khác biệt triết lý EMA ABEL vs US FDA RSABE?",
+             "EMA mở rộng tường minh **giới hạn khoảng tin cậy 90% của riêng $C_{\\max}$** theo mô hình cố định Method A và giữ nguyên $[80, 125]\\%$ cho $AUC$; US FDA giữ mức ý nghĩa $95\\%$ trên phương trình tỉ lệ hiệu bình phương chuẩn hóa $(\\mu_T-\\mu_R)^2 - \\theta\\sigma_{wR}^2 \\le 0$ (Howe UCB) cho mọi endpoint có $s_{wR} \\ge 0.294$."),
+            ("2. Vì sao FDA NTI đòi hỏi kiểm định sWT/sWR ≤ 2.50?",
+             "Với thuốc khoảng điều trị hẹp (warfarin, levothyroxine, tacrolimus), nếu GMR trung bình bằng 100% nhưng lô Thử có biến thiên nội cá thể ($s_{wT}$) lớn hơn nhiều so với Đối chứng ($s_{wR}$), bệnh nhân có thể gặp nồng độ đỉnh gây độc hoặc đáy mất hiệu lực giữa các ngày dùng thuốc."),
+        ),
     ),
 
     # -------------------------------------------------------------------------
@@ -412,6 +560,24 @@ LESSONS: tuple[Lesson, ...] = (
         references=(
             "Rowland, M., & Tozer, T. N. (2011). Clinical Pharmacokinetics and Pharmacodynamics: Concepts and Applications (4th ed.).",
             "Montgomery, D. C. (2017). Design and Analysis of Experiments (9th ed.). John Wiley & Sons.",
+        ),
+        examples=(
+            "**Ví dụ đọc biểu đồ bán logarit & phần dư (`plots_diagnostics`):**\n"
+            "- Một hồ sơ có đường `ln(C) vs t` uốn cong rõ từ `1–4 h` rồi thẳng từ `6–24 h` (4 điểm, `Adjusted R² = 0.992`): phải đặt điểm đầu pha cuối từ `6 h` (không kéo từ `2 h`).\n"
+            "- Quan sát có $|r_i| = 3.4 > 3.0$ được đánh dấu ở bảng Studentized Residuals để chạy phân tích độ nhạy, **không tự động xóa khỏi quần thể BE chính thức**.",
+        ),
+        interpretation=(
+            "**Lưu ý trạng thái đồng bộ:** Nếu chỉnh sửa số liệu ở Bước 4 sau khi đã vẽ đồ thị, biểu đồ hiển thị cảnh báo `STALE`; cần chạy lại Bước 5–6 để cập nhật snapshot `CURRENT` trước khi đưa vào báo cáo.",
+        ),
+        self_study=(
+            ("Đọc đồ thị bán logarit và chẩn đoán phần dư ANOVA/RSABE",
+             "Trên đồ thị `ln(C)-t`, pha thải trừ đơn thuần là một đoạn thẳng có hệ số góc $-\\lambda_z$. Nếu xuất hiện hai đỉnh (double peak), cần kiểm tra chu trình gan-ruột, làm rỗng dạ dày không đều hoặc lỗi nhãn mẫu sinh học."),
+        ),
+        question_answers=(
+            ("1. Hai đoạn thẳng dốc khác nhau trên đồ thị bán log phản ánh điều gì?",
+             "Thường phản ánh động học **đa ngăn** (đoạn dốc nhanh là pha phân bố mô $\\alpha$, đoạn thoải sau là pha thải trừ $\\beta$); hoặc đôi khi phản ánh hiện tượng tái hấp thu chậm/flip-flop khi đưa điểm sớm vào pha cuối."),
+            ("2. Vì sao Forest plot 90% CI không thay thế UCB trong FDA RSABE?",
+             "Trong FDA RSABE, khoảng biên được chuẩn hóa phụ thuộc đồng thời vào giá trị thực nghiệm $s_{wR}^2$ và độ bất định của $s_{wR}^2$ (tích hợp phân phối $\\chi^2$ trong bất đẳng thức Howe $\\text{UCB}_{95\\%} \\le 0$), không thể nhìn bằng một cặp biên cố định trên Forest plot 90% CI thông thường."),
         ),
     ),
 
@@ -459,6 +625,22 @@ LESSONS: tuple[Lesson, ...] = (
             "ICH M4E(R2) (2016). Common Technical Document for the Registration of Pharmaceuticals for Human Use — Efficacy.",
             "CDISC (2021). Analysis Data Model (ADaM) for Pharmacokinetics (ADNCA).",
         ),
+        examples=(
+            "**Ví dụ kiểm tra chuỗi truy xuất từ CSR → Raw Data:** Mục 11.4 trong tệp `CSR.docx` ghi `Cmax GMR = 98.42%, 90% CI = [92.15%, 105.12%]`. Đối chiếu mã `snapshot_hash` và `input_sha256` trong `Manifest.json` cho phép mở lại đúng tệp dữ liệu thô, sổ tính `Excel ANOVA` và đối chiếu khớp đến từng chữ số sau dấu phẩy.",
+        ),
+        interpretation=(
+            "**Ranh giới tài liệu dự thảo vs nộp pháp quy:** Các báo cáo Word/PDF do `BE_app` kết xuất là **bản dự thảo cấu trúc ICH E3 / CTD Module 5.3.1.2**; trước khi nộp hồ sơ chính thức lên cơ quan quản lý (DAV/EMA/FDA), cần rà soát các trường đánh dấu `[CẦN BỔ SUNG]` và ghép kèm sắc ký đồ gốc, thẩm định phương pháp sinh học (ICH M10) và xác nhận QA.",
+        ),
+        self_study=(
+            ("Cấu trúc CTD Module 5.3.1.2 & Truy xuất nguồn gốc (Traceability)",
+             "Hồ sơ BE trong CTD yêu cầu chuỗi đối chiếu xuyên suốt giữa Đề cương phê duyệt trước thử (Protocol/SAP), danh sách ngẫu nhiên, dữ liệu nồng độ gốc, bảng PK cá thể, bảng ANOVA/Mixed Model và mã băm tệp kết xuất."),
+        ),
+        question_answers=(
+            ("1. Khác biệt pháp lý giữa Protocol và CSR?",
+             "**Protocol** là cam kết *tiền cứu* (trước khi tuyển người tình nguyện), do IRB/IEC & cơ quan quản lý phê duyệt; **CSR** là báo cáo *hậu kiểm* (sau Data Lock và phân tích hoàn tất), được PI, nhà thống kê và đại diện nhà tài trợ ký xác nhận để nộp đăng ký thuốc."),
+            ("2. Xử lý khi số làm tròn trong tóm tắt hơi khác phụ lục ANOVA?",
+             "Không được sửa số tay một chiều; phải kiểm tra lại nguồn làm tròn từ bảng thống kê gốc (ví dụ thống nhất làm tròn sau khi giữ đủ chữ số có nghĩa trong tính toán trung gian) và tái lập lại toàn bộ báo cáo từ đúng snapshot nguồn."),
+        ),
     ),
 
     # -------------------------------------------------------------------------
@@ -503,6 +685,22 @@ LESSONS: tuple[Lesson, ...] = (
             "EMA (2020). Guideline on computerised systems and electronic data in clinical trials.",
             "PIC/S (2021). Good practices for data management and integrity in regulated GMP/GDP environments (PI 041-1).",
         ),
+        examples=(
+            "**Ví dụ chuỗi Audit Hash-Chain (`persistence.py`):** Sự kiện #1 `study_created` (`previous = \"\"`, `hash = abc123...`) $\\to$ Sự kiện #2 `raw_imported` (`previous = abc123...`) $\\to$ Sự kiện #3 `data_frozen` (`actor = 'Nguyen Tran Linh'`). Nếu sửa thủ công nội dung SQLite ở Sự kiện #2, mã băm kiểm chứng chuỗi từ #2 trở đi sẽ đứt gãy ngay lập tức.",
+        ),
+        interpretation=(
+            "**Khả năng hỗ trợ vs Giới hạn hệ thống (`single-user`):** `BE_app` cung cấp nhật ký kiểm toán nối chuỗi băm SHA-256 trên SQLite cục bộ, **nhưng không có cơ chế đăng nhập phân quyền RBAC hay chữ ký điện tử mã hóa theo 21 CFR Part 11** (`operator` là chuỗi văn bản tự khai báo). Với nghiên cứu nộp đăng ký chính thức, cần quy trình quản trị và xác thực hệ thống độc lập bổ sung.",
+        ),
+        self_study=(
+            ("Dấu vết kiểm toán ALCOA+ vs Ranh giới 21 CFR Part 11 của BE_app",
+             "Dấu vết kiểm toán GxP chuẩn yêu cầu 3 trụ cột: (1) Ghi tự động bất biến kèm `previous/new value + lý do`, (2) Xác thực danh tính riêng từng người dùng (RBAC), (3) Chữ ký điện tử gắn chặt bản ghi. `BE_app` hỗ trợ đầy đủ trụ cột (1) để giảng dạy và truy vết nội bộ, đồng thời minh bạch giới hạn ở trụ cột (2)–(3)."),
+        ),
+        question_answers=(
+            ("1. Dấu hiệu vi phạm Critical Deficiency trong Audit Trail khi thanh tra?",
+             "Tắt hoặc vô hiệu hóa Audit Trail; khoảng trống thời gian bất thường; sửa/xóa lặp đi lặp lại ngay trước Data Freeze để làm 'đẹp' kết quả (`testing into compliance`); dùng chung tài khoản (`shared login`); hoặc không lưu giá trị gốc trước khi sửa."),
+            ("2. Sự khác biệt giữa System Log thông thường và GxP Audit Trail?",
+             "`System Log` ghi sự kiện kỹ thuật (lỗi phần mềm, tắt/mở máy) và thường có thể xoay vòng/xóa bởi quản trị IT; `GxP Audit Trail` ghi ở mức dữ liệu nghiên cứu (Ai, Khi nào, Giá trị cũ $\\to$ Giá trị mới, Lý do sửa) và phải lưu trữ bất biến song hành suốt vòng đời dữ liệu."),
+        ),
     ),
 )
 
@@ -527,14 +725,14 @@ PK_STANDALONE_LESSON = Lesson(
         "**Tổng quan Lý thuyết Dược động học Ngăn (Compartmental Modeling Foundations):** Cơ thể được mô hình hóa như một hệ thống gồm một hoặc nhiều khoang (ngăn) đồng nhất, hòa lẫn tức thời. Động học được giả định là tuyến tính (Linear Pharmacokinetics), tuân theo nguyên lý cộng tác dụng (Superposition Principle) và các quá trình phân bố, thải trừ tuân theo động học bậc 1.",
         "**1. ĐƯỜNG TIÊM TĨNH MẠCH NHANH (IV BOLUS):**\n"
         "- *1 Ngăn IV Bolus:* Toàn bộ liều D nạp tức thời vào ngăn trung tâm tại t=0 (F=1). Nồng độ suy giảm hàm mũ đơn điệu C(t) = C₀·e^(-k₁₀t) với C₀ = D/V₁. Độ thanh thải CL = k₁₀·V₁ = D/AUC₀-∞; thời gian bán thải t½ = 0.693/k₁₀. Đồ thị bán logarit là một đường thẳng duy nhất dốc âm -k₁₀. Ví dụ: Aminoglycoside (gentamicin), D = 500 mg, V₁ = 25 L, k₁₀ = 0.10 h⁻¹ ⇒ C₀ = 20 mg/L, CL = 2.5 L/h, t½ = 6.93 h, AUC = 200 mg·h/L.\n"
-        "- *2 Ngăn IV Bolus:* Thuốc phân bố thuận nghịch giữa ngăn trung tâm V₁ và ngăn ngoại vi V₂ qua k₁₂ và k₂₁, thải trừ từ V₁ qua k₁₀. Nghiệm biexponential C(t) = A·e^(-αt) + B·e^(-βt) với C₀ = A+B = D/V₁. Pha α phản ánh phân bố nhanh, pha β phản ánh thải trừ chậm. Thể tích trạng thái ổn định Vss = V₁(1 + k₁₂/k₂₁); thể tích theo diện tích Vβ = CL/β (thứ bậc Vc < Vss < Vβ); thanh thải liên ngăn Q = k₁₂·V₁ = k₂₁·V₂. Ví dụ: Vancomycin, D = 1000 mg, V₁ = 20 L, k₁₀ = 0.15 h⁻¹, k₁₂ = 0.25 h⁻¹, k₂₁ = 0.10 h⁻¹ ⇒ α = 0.468 h⁻¹ (t½,α = 1.48 h), β = 0.032 h⁻¹ (t½,β = 21.6 h), Vss = 70 L, CL = 3 L/h, AUC = 403.8 mg·h/L.\n"
-        "- *3 Ngăn IV Bolus:* Thuốc phân bố vào ngăn ngoại vi nông V₂ (mô cơ, k₁₂/k₂₁) và ngăn ngoại vi sâu V₃ (mô mỡ, xương, k₁₃/k₃₁). Nghiệm triexponential C(t) = A·e^(-αt) + B·e^(-βt) + C·e^(-γt) với α > β > γ. Pha α (vài phút), pha β (vài giờ) và pha γ (hàng chục đến hàng trăm giờ). Thể tích Vss = V₁ + V₂ + V₃. Ví dụ: Fentanyl 100 µg (0.1 mg) tiêm IV ⇒ V₁ = 12 L, V₂ = 30 L, V₃ = 250 L (Vss = 292 L), CL = 45 L/h; tác dụng dứt nhanh do tái phân bố từ não (V₁) sang mô mỡ (V₃), nhưng khi tiêm nhắc lại nhiều lần thuốc tích lũy sâu trong V₃ gây thức tỉnh chậm.",
+        "- *2 Ngăn IV Bolus:* Thuốc phân bố thuận nghịch giữa ngăn trung tâm V₁ (Vc) và ngăn ngoại vi V₂ (Vp) qua k₁₂ và k₂₁, thải trừ từ V₁ qua k₁₀. Nghiệm biexponential C(t) = A·e^(-αt) + B·e^(-βt) với C₀ = A+B = D/V₁. Pha α phản ánh phân bố nhanh, pha β phản ánh thải trừ chậm. Thể tích trạng thái ổn định Vss = V₁ + V₂ = V₁(1 + k₁₂/k₂₁); thể tích theo diện tích Vβ = CL/β (thứ bậc Vc < Vss < Vβ); thanh thải liên ngăn Q = k₁₂·V₁ = k₂₁·V₂. Ví dụ kiểm chứng (`pk_models.py`): Vancomycin, D = 1000 mg, CL = 3 L/h, Vc = 20 L, Q = 5 L/h, Vp = 50 L (k₁₀ = 0,15 h⁻¹, k₁₂ = 0,25 h⁻¹, k₂₁ = 0,10 h⁻¹) ⇒ α = 0,4679 h⁻¹ (t½,α = 1,48 h), β = 0,0321 h⁻¹ (t½,β = 21,6 h), A = 42,21 mg/L, B = 7,79 mg/L, Vss = 70 L, Vβ = 93,59 L, AUC₀₋∞ = 333,33 mg·h/L.\n"
+        "- *3 Ngăn IV Bolus:* Thuốc phân bố vào ngăn ngoại vi nông V₂ (mô cơ/tưới máu vừa, Q₂, k₁₂/k₂₁) và ngăn ngoại vi sâu V₃ (mô mỡ/xương, Q₃, k₁₃/k₃₁). Nghiệm triexponential C(t) = A·e^(-αt) + B·e^(-βt) + C·e^(-γt) với α > β > γ. Thể tích Vss = Vc + Vp₂ + Vp₃. Ví dụ tham khảo (`MODEL_DOCS[3]`): Fentanyl 100 µg (0,1 mg) tiêm IV ⇒ CL = 45 L/h, Vc = 12 L, Q₂ = 140 L/h, Vp₂ = 30 L, Q₃ = 42 L/h, Vp₃ = 250 L (Vss = 292 L; t½ ≈ 1,88 phút / 26,1 phút / 8,31 h); tác dụng dứt nhanh sau liều đơn do tái phân bố từ máu/não (Vc) sang mô ngoại vi, nhưng tích lũy ở Vp₃ khi dùng lặp lại.",
         "**2. ĐƯỜNG TRUYỀN TĨNH MẠCH LIÊN TỤC (IV INFUSION):**\n"
-        "- *1 Ngăn IV Infusion:* Thuốc đưa vào ngăn trung tâm với tốc độ không đổi bậc 0 R₀ = D/Tinf trong khoảng thời gian truyền Tinf (F=1). Trong lúc truyền (t ≤ Tinf): C(t) = (R₀/CL)(1 - e^(-k₁₀t)). Sau khi ngừng truyền (t > Tinf): C(t) = C(Tinf)·e^(-k₁₀(t - Tinf)). Nồng độ ổn định Css = R₀/CL; thời gian lưu trú trung bình MRTinf = 1/k₁₀ + Tinf/2. Ví dụ: Truyền kháng sinh liều 1000 mg trong Tinf = 2 h (R₀ = 500 mg/h), CL = 5 L/h, V₁ = 20 L ⇒ Css = 100 mg/L; tại 2 h ngừng truyền đạt C(2) = 39.35 mg/L; sau 4 h nồng độ còn C(4) = 23.87 mg/L.\n"
-        "- *2 Ngăn IV Infusion:* Nạp R₀ vào ngăn 1, đồng thời phân bố sang ngăn 2 và thải trừ khỏi ngăn 1. Trong lúc truyền nồng độ tăng uốn lượn; sau ngừng truyền nồng độ suy giảm 2 pha (α và β). Khuyến cáo TDM: Mẫu nồng độ đỉnh không được lấy ngay khi vừa rút kim mà phải chờ ít nhất 1–2 giờ để pha phân bố mô α kết thúc. Ví dụ: Vancomycin 1000 mg truyền trong 1 h, CL = 3 L/h, V₁ = 15 L, V₂ = 30 L ⇒ Cpeak ≈ 42 mg/L, Ctrough(12h) ≈ 12.5 mg/L.\n"
-        "- *3 Ngăn IV Infusion:* Mô hình chuẩn trong truyền thuốc kiểm soát nồng độ đích (TCI) gây mê hồi sức (propofol, remifentanil). Xuất hiện khái niệm Thời gian bán thải phụ thuộc bối cảnh (Context-Sensitive Half-Time - CSHT): khi thời gian truyền càng kéo dài, lượng thuốc bão hòa ở ngăn sâu V₃ càng lớn, khiến thời gian để nồng độ giảm 50% sau ngừng truyền tăng vọt từ 10 phút lên gần 40 phút.",
+        "- *1 Ngăn IV Infusion:* Thuốc đưa vào ngăn trung tâm với tốc độ không đổi bậc 0 R₀ = D/Tinf trong khoảng thời gian truyền Tinf (F = 1). Trong lúc truyền (t ≤ Tinf): C(t) = (R₀/CL)(1 - e^(-k₁₀t)). Sau khi ngừng truyền (t > Tinf): C(t) = C(Tinf)·e^(-k₁₀(t - Tinf)). Nồng độ ổn định lý thuyết khi truyền vô hạn Css = R₀/CL; thời gian lưu trú trung bình MRTinf = 1/k₁₀ + Tinf/2. Ví dụ: Truyền liều 1000 mg trong Tinf = 2 h (R₀ = 500 mg/h), CL = 5 L/h, Vc = 20 L ⇒ Css = 100 mg/L; tại t = 2 h ngừng truyền đạt C(2) = 39,35 mg/L; tại t = 4 h nồng độ còn C(4) = 23,87 mg/L, AUC₀₋∞ = 200 mg·h/L.\n"
+        "- *2 Ngăn IV Infusion:* Nạp R₀ vào ngăn trung tâm Vc, đồng thời phân bố sang Vp và thải trừ khỏi Vc. Sau ngừng truyền nồng độ suy giảm 2 pha (α và β). Lưu ý thực hành TDM: mẫu đỉnh nên lấy sau khi pha phân bố α đã ổn định (thường 1–2 h sau kết thúc truyền) thay vì rút ngay lúc kết thúc truyền. Ví dụ kiểm chứng (`pk_models.py`): Vancomycin 1000 mg truyền Tinf = 1 h, CL = 3 L/h, Vc = 15 L, Q = 4,5 L/h, Vp = 30 L ⇒ C(1 h) = 52,84 mg/L, C(2 h) = 33,76 mg/L, C(12 h) = 6,88 mg/L, AUC₀₋∞ = 333,33 mg·h/L.\n"
+        "- *3 Ngăn IV Infusion:* Nền tảng của mô hình đa ngăn trong gây mê hồi sức (propofol, remifentanil). Trong bối cảnh truyền duy trì hằng định kéo dài (TCI), khái niệm Context-Sensitive Half-Time (CSHT — thời gian để nồng độ giảm 50% sau ngừng truyền) phản ánh sự bão hòa ngăn sâu Vp₃ (ví dụ propofol tăng từ ~10 phút lên gần 40 phút khi kéo dài thời gian truyền duy trì). Lưu ý phạm vi ứng dụng: mô hình 3-ngăn IV infusion trong `BE_app` mô phỏng một đợt truyền tốc độ hằng định (ví dụ D = 600 mg, Tinf = 1 h), không tự động tính đường cong CSHT của TCI.",
         "**3. ĐƯỜNG UỐNG QUA ỐNG TIÊU HÓA (ORAL ABSORPTION):**\n"
-        "- *1 Ngăn Đường uống (Bateman):* Hấp thu bậc 1 (ka), thải trừ bậc 1 (kel); không khớp thời gian trễ Tlag trong phiên bản hiện tại. C(t) = [D·ka / ((V₁/F)(ka - kel))] · [e^(-kel·t) - e^(-ka·t)]; Tmax = ln(ka/kel)/(ka - kel), Cmax = C(Tmax). Khi ka << kel có thể có hiện tượng flip-flop; từ riêng đường uống khó xác nhận cơ chế. Ví dụ tham số minh hoạ: Dose = 500 mg, ka = 1.8 h⁻¹, kel = 0.28 h⁻¹, V₁/F = 50 L, CL/F = 14 L/h, t½ = 2.48 h.\n"
+        "- *1 Ngăn Đường uống (Bateman):* Hấp thu bậc 1 (ka), thải trừ bậc 1 (kel); lưu ý thuật toán `BE_app` cố định thời gian trễ Tlag = 0. C(t) = [D·ka / ((V/F)(ka - kel))] · [e^(-kel·t) - e^(-ka·t)]; Tmax = ln(ka/kel)/(ka - kel), Cmax = C(Tmax). Khi ka < kel thật ngoài thực tế sẽ gây hiện tượng flip-flop; cần đối chiếu dữ liệu IV hoặc tài liệu sinh dược học do dữ liệu uống đơn lẻ không tự phân biệt được cặp nghiệm hoán đổi (ka, kel). Ví dụ kiểm chứng (`pk_models.py`): Dose = 500 mg, ka = 1,8 h⁻¹, CL/F = 14 L/h, V/F = 50 L (kel = 0,28 h⁻¹) ⇒ Tmax = 1,22 h, Cmax = 7,10 mg/L, t½ = 2,48 h, AUC₀₋∞ = 35,71 mg·h/L.\n"
         "- *2 Ngăn Đường uống:* Hấp thu bậc 1 (ka) vào ngăn trung tâm; phân bố thuận nghịch với ngăn ngoại vi. C(t) = A·e^(-αt) + B·e^(-βt) - (A+B)·e^(-ka·t). Các tham số ước lượng gồm CL/F, V/F, Q/F, Vp/F và ka; cần đủ mẫu pha hấp thu, phân bố và pha cuối để tránh khó định danh.\n"
         "- *3 Ngăn Đường uống:* Thuốc hấp thu vào ngăn trung tâm và phân bố sang hai ngăn ngoại vi. C(t) = A·e^(-αt) + B·e^(-βt) + C·e^(-γt) - (A+B+C)·e^(-ka·t). Bảy tham số biểu kiến: CL/F, V/F, Q₂/F, Vp₂/F, Q₃/F, Vp₃/F, ka; F không định lượng độc lập từ một đường uống. Kiểm tra phần dư, độ phủ ba pha, hạng/điều kiện Jacobian; hiện phần mềm chưa tính %RSE và không áp dụng ngưỡng ΔAICc bắt buộc.",
         "**4. ĐỘNG HỌC ĐA LIỀU VÀ TRẠNG THÁI ỔN ĐỊNH (STEADY-STATE):** Đạt được sau 4–5 lần thời gian bán thải t½ khi nồng độ đưa vào mỗi chu kỳ bằng đúng lượng thuốc đào thải. Tại trạng thái ổn định: AUC0-τ,ss trong một khoảng liều τ đúng bằng AUC0-∞ của liều đơn đầu tiên khi động học là tuyến tính. Nồng độ trung bình Css,avg = (F·D) / (CL·τ). Hệ số tích lũy Rac = 1 / (1 - e^(-kel·τ)).",
@@ -581,6 +779,34 @@ PK_STANDALONE_LESSON = Lesson(
         "Yamaoka, K., Nakagawa, T., & Uno, T. (1978). Application of Akaike's information criterion (AIC) in the evaluation of linear pharmacokinetic equations. Journal of Pharmacokinetics and Biopharmaceutics, 6(2), 165–175.",
         "Gabrielsson, J., & Weiner, D. (2016). Pharmacokinetic and Pharmacodynamic Data Analysis: Concepts and Applications (5th ed.). Swedish Pharmaceutical Press.",
     ),
+    examples=(
+        "**Ví dụ so sánh chọn mô hình bằng AICc trên cùng trọng số (`pk_models.py`, Oral 500 mg):**\n"
+        "- Cho đường cong uống có 12 điểm định lượng (`N=12`): Mô hình 1 ngăn (`p=3`) đạt `WSSR = 18.4, AICc = 15.13`; Mô hình 2 ngăn (`p=5`) đạt `WSSR = 1.92, AICc = 4.04` ($\\Delta AICc = 11.09 > 10$ $\\Rightarrow$ bằng chứng áp đảo chọn **2 ngăn**).\n"
+        "- Ngược lại, nếu chuyển sang mô hình 3 ngăn (`p=7`) làm `WSSR = 1.65`, do $N - p - 1 = 4$ nhỏ nên phạt phức tạp $2p + \\frac{2p(p+1)}{N-p-1} = 14 + 28 = 42$ tăng vọt $\\Rightarrow$ `AICc` xấu đi mạnh (tránh quá khớp!).",
+    ),
+    interpretation=(
+        "**Quy tắc khớp & Chức năng không áp dụng theo ngữ cảnh (`pk_models.py` / `pk_multiple.py`):**\n"
+        "- **Đường uống (`Tlag = 0`):** Bộ khớp hiện không ước lượng thời gian trễ $T_{\\text{lag}}$; nếu hoạt chất có pha trễ hấp thu rõ (ví dụ viên bao tan trong ruột), chất lượng khớp đoạn đầu sẽ kém.\n"
+        "- **IV Bolus & mẫu `t=0`:** Mọi điểm $t=0$ có nồng độ $=0$ bị loại khỏi khớp ngăn IV bolus vì không đại diện cho $C(0^+)$ tức thời ngay sau tiêm.\n"
+        "- **Đa liều & Trạng thái ổn định:** Dùng chồng chất tuyến tính các liều bằng nhau khoảng cách $\\tau$; tính $AUC_\\tau$ ở chu kỳ cuối đòi hỏi đo đủ 2 đầu $[0, \\tau]$ không BLQ. Riêng $V_{ss}$/phân bố ổn định chỉ áp dụng hợp lệ khi người dùng xác nhận đạt trạng thái ổn định (`steady_state_confirmed`).\n"
+        "- **So sánh trọng số (`1` vs `1/C` vs `1/C²`):** Không dùng giá trị `AICc`/`BIC` để so sánh mô hình giữa hai sơ đồ trọng số khác nhau.",
+    ),
+    self_study=(
+        ("Khi nào nên sử dụng NCA và khi nào cần mô hình PK ngăn?",
+         "**NCA** không phụ thuộc giả định số ngăn và hạn chế thiên lệch mô hình nên là chuẩn bắt buộc cho đánh giá BE (ước tính $C_{\\max}, AUC_{0-t}, AUC_{0-\\infty}, t_{1/2}$). **Mô hình PK ngăn** dùng khi cần giải tích cơ chế phân bố nhiều mô ($V_c, V_p, Q$), ước lượng $k_a$ hoặc mô phỏng nồng độ theo thời gian cho các chế độ đa liều khác nhau."),
+        ("Lựa chọn sơ đồ trọng số (1, 1/C, 1/C²) và hiện tượng Flip-flop",
+         "Trọng số `1` (bình phương thường) bị chi phối bởi các điểm đỉnh cao gần $C_{\\max}$; `1/C²` đặt trọng số công bằng theo sai số tương đối, rất hữu ích khi nồng độ thay đổi qua 2–3 bậc độ lớn để khớp chính xác pha thải trừ cuối. Hiện tượng **Flip-flop** ($k_a < k_{el}$) chỉ xảy ra trong mô hình hấp thu đường uống (không áp dụng cho IV bolus/infusion)."),
+    ),
+    question_answers=(
+        ("1. Khi nào ưu tiên mô hình 1 ngăn thay vì 2–3 ngăn? (%RSE vs AICc)",
+         "Khi đồ thị bán log chỉ có 1 đường thẳng pha thải trừ, $\\Delta AICc$ không cải thiện đáng kể ($< 2$), hoặc khi số điểm lấy mẫu pha phân bố quá thưa khiến ma trận Jacobian ở mô hình nhiều ngăn bị suy biến (`rank < p`, condition $> 10^8$). (Lưu ý: Lý thuyết dùng thêm `%RSE`; `BE_app` hiện chẩn đoán định danh qua `AICc/BIC`, hạng/condition Jacobian và cờ chạm biên).",),
+        ("2. Làm sao xác nhận hiện tượng Flip-flop cho viên nén ER?",
+         "Không thể phân biệt hai nghiệm $(k_a, k_{el})$ chỉ từ một đường cong uống đơn độc! Bắt buộc phải có thêm **dữ liệu tiêm tĩnh mạch (IV)** (hoặc dung dịch uống giải phóng tức thời) của cùng hoạt chất để biết chính xác $k_{el}$ thực tế; nếu $k_{\\text{pha cuối}}^{\\text{uống ER}} \\ll k_{el}^{\\text{IV}}$ thì khẳng định đó là Flip-flop."),
+        ("3. Vì sao không lấy Cpeak Vancomycin ngay lúc ngắt truyền 1h?",
+         "Vancomycin tuân theo mô hình 2 ngăn: ngay khi rút kim ($t = 1\\text{h}$), nồng độ ngăn trung tâm đạt đỉnh cao nhất thời ($52.84\\text{ mg/L}$) rồi sụt nhanh do phân bố vào mô ($\\alpha$ phase); chờ $1-2\\text{h}$ sau truyền ($33.76\\text{ mg/L}$) phản ánh nồng độ cân bằng mô lâm sàng chính xác hơn."),
+        ("4. Vì sao Fentanyl/Propofol bolus tỉnh nhanh nhưng truyền ICU lâu lại tỉnh chậm?",
+         "Sau một liều bolus, nồng độ trong não ($V_1$) giảm rất nhanh xuống dưới ngưỡng mê nhờ **tái phân bố** vào mô cơ ($V_2$) và mô mỡ ($V_3$) chứ chưa cần thải trừ hết. Khi truyền liên tục dài ngày ở ICU, ngăn sâu $V_3$ tích trữ lượng thuốc khổng lồ và bão hòa độ chênh nồng độ, nên khi ngắt truyền thuốc từ $V_3$ giải phóng ngược vào máu khiến CSHT tăng vọt."),
+    ),
 )
 
 
@@ -601,14 +827,15 @@ QUICK_BE_LESSON = Lesson(
         "Rà soát bảng kết quả GMR và khoảng tin cậy 90% CI; lưu ý kết quả này chỉ phục vụ sàng lọc sơ bộ R&D, không thay thế cho quy trình phân tích đầy đủ có Data Freeze và Audit Trail.",
     ),
     theory=(
-        "Phân tích BE nhanh (Rapid BE Screening) phục vụ các nhà nghiên cứu công thức (Formulation Scientists) và học viên trong giai đoạn sàng lọc thử nghiệm ban đầu (Pre-clinical hoặc Pilot screening), giúp định hướng công thức trước khi triển khai nghiên cứu chính thức.",
-        "Giới hạn của sàng lọc nhanh: Không có quy trình khóa dữ liệu (Data Freeze), không lưu trữ bất biến kèm mã băm SHA-256, không có nhật ký kiểm toán điều tra sai lệch. Do đó, kết quả chỉ mang tính định hướng nghiên cứu phát triển.",
-        "Kiểm tra tính cân bằng: Dữ liệu thiết kế chéo cần cân bằng về số lượng đối tượng giữa các trình tự để tránh mất lực thống kê.",
+        "Phân tích BE nhanh (Rapid BE Screening) phục vụ nghiên cứu công thức và sàng lọc pilot/R&D, hỗ trợ **hai nguồn dữ liệu** (bảng nồng độ `Cplasma` để tính NCA tại chỗ, hoặc bảng `Cmax/AUC` đã tính sẵn ở thang `raw`, `ln`, hay `log10`) trên **ba loại thiết kế** (`2×2`, `Song song` và `Replicate`).",
+        "Giới hạn pháp quy: Luồng BE Nhanh không có quy trình đóng băng dữ liệu (Data Freeze), không lưu chữ ký toàn vẹn khóa bước trước phân tích và không tạo hồ sơ CTD/Audit Trail; do đó kết quả chỉ phục vụ định hướng nội bộ.",
+        "Kiểm định `Tmax` mô tả (`quick_be.compare_tmax`): Dùng Wilcoxon signed-rank trên cặp T/R cho `2×2` và Mann–Whitney U cho `Song song` (không tham gia quyết định đạt/không đạt BE); chưa hỗ trợ kiểm định `Tmax` phi tham số cho thiết kế replicate.",
     ),
     terms=(
         "Pilot Study: Thử nghiệm tiền trạm quy mô nhỏ phục vụ ước tính độ biến thiên và GMR.",
         "Pivotal Study: Nghiên cứu then chốt chính thức nộp hồ sơ đăng ký lưu hành thuốc.",
         "Screening Tool: Công cụ sàng lọc nhanh phục vụ R&D nội bộ.",
+        "Mann–Whitney U / Wilcoxon Signed-Rank: Kiểm định phi tham số trên $T_{\\max}$ gốc (chỉ mô tả, không kết luận BE).",
     ),
     exercise="Tại sao một công thức thuốc đạt tương đương sinh học trong nghiên cứu pilot quy mô nhỏ (N = 12) vẫn có thể thất bại trong nghiên cứu chính thức quy mô lớn (N = 36)? Những yếu tố nào chi phối sự khác biệt này?",
     diagram=DIAGRAM_SVGS[11],
@@ -623,6 +850,25 @@ QUICK_BE_LESSON = Lesson(
     references=(
         "FDA Guidance for Industry (2021). Bioequivalence Studies with Pharmacokinetic Endpoints for Drugs Submitted Under an ANDA.",
         "ICH M9 (2019). Biopharmaceutics Classification System-based Biowaivers.",
+    ),
+    examples=(
+        "**Ví dụ đối chiếu thang nhập liệu PK (`quick_be.py`):**\n"
+        "- Nếu nhập bảng endpoint chứa `ln(AUC)` (thang tự nhiên đã lấy log, ví dụ `7.50`), bạn **bắt buộc** phải chọn thang nhập liệu là `ln`; nếu để nhầm là `raw`, chương trình sẽ lấy `ln(7.50)` lần nữa làm biến dạng toàn bộ `GMR`, `90% CI` và `CV`.\n"
+        "- Với dữ liệu `2×2` không có cột `Tmax` hoặc khi chọn thiết kế `replicate`, mục kiểm định `Tmax` tự báo `NOT EVALUABLE` và tách rời khỏi quyết định `PASS/FAIL` của `Cmax/AUC`.",
+    ),
+    interpretation=(
+        "**Hiển thị khác nhau theo thiết kế (`quick_be_ui.py`):**\n"
+        "- Khi chọn **Song song (Parallel)**: không tính được `CV_intra` nội cá thể (bảng thống kê hiển thị `CV_total` / phương sai gộp hoặc Welch).\n"
+        "- Khi chọn **Replicate** (`partial3` / `full4`): thống kê chính chuyển sang bảng mở rộng `EMA ABEL` / `FDA RSABE` hoặc `NTI`, còn phần kiểm định phi tham số `Tmax` bị vô hiệu hóa (`chưa hỗ trợ cho replicate`).\n"
+        "- Khi chọn **Thang `PK endpoints` đã tính sẵn**: các thông số nồng độ nguồn và bảng tích phân NCA không áp dụng.",
+    ),
+    self_study=(
+        ("Tại sao phân tích BE nhanh vẫn dùng biến đổi logarit cho Cmax/AUC nhưng giữ Tmax trên thang gốc?",
+         "`Cmax` và `AUC` là biến liên tục phân bố lệch phải và tuân theo quan hệ nhân tính nên dùng `ln` cho ANOVA; ngược lại `Tmax` là biến rời rạc phụ thuộc trực tiếp vào lưới thời điểm lấy mẫu thiết kế sẵn, không tuân theo phân bố chuẩn hay log-chuẩn nên chỉ so sánh mô tả trung vị/phi tham số trên đơn vị giờ gốc."),
+    ),
+    question_answers=(
+        ("1. Khi nào ưu tiên đánh giá hòa tan so sánh f2 / BCS Biowaiver thay cho nghiên cứu trên người?",
+         "Khi công thức là một hàm lượng phụ tuyến tính tỷ lệ thành phần của sản phẩm đã chứng minh BE ở hàm lượng cao nhất (Biowaiver theo hàm lượng), hoặc hoạt chất thuộc BCS nhóm I / III đáp ứng đầy đủ điều kiện độ tan cao và độ hòa tan tương đồng $f_2 \\ge 50$ theo hướng dẫn ICH M9."),
     ),
 )
 
@@ -830,20 +1076,20 @@ PROFILE_LESSONS: dict[str, tuple[str, str]] = {
         "Yêu cầu bắt buộc phải sử dụng thiết kế replicate hợp chuẩn, có bằng chứng chứng minh hoạt chất là HVDP và ước tính điểm GMR phải nằm trong khoảng [80.00% - 125.00%]; chỉ tiêu AUC vẫn áp dụng biên chuẩn 80.00–125.00%.",
     ),
     "FDA_HVD_RSABE_2026": (
-        "FDA RSABE cho thuốc biến thiên cao: Áp dụng thủ tục chuẩn hóa tham chiếu (Reference-Scaled Average Bioequivalence) với tiêu chí hỗn hợp dựa trên phương sai thuốc đối chứng và cận trên khoảng tin cậy 95% (Upper Confidence Bound - UCB ≤ 0).",
-        "Khoảng tin cậy 90% CI chỉ mang tính chất bổ trợ; khi sWR < 0,294 (tương ứng CVwR < 30%), FDA yêu cầu chuyển về phương pháp conventional replicate ABE thông thường chưa qualified nên hệ thống ghi nhận NOT EVALUABLE.",
+        "FDA RSABE cho thuốc biến thiên cao: Áp dụng thủ tục chuẩn hóa tham chiếu (Reference-Scaled Average Bioequivalence) khi $s_{wR} \\ge 0,294$ dựa trên cận trên khoảng tin cậy 95% Howe (UCB95% ≤ 0, với $\\sigma_{w0}=0,25$) kèm ràng buộc điểm GMR trong [80,00% – 125,00%].",
+        "Khoảng tin cậy 90% CI chỉ mang tính bổ trợ khi $s_{wR} \\ge 0,294$. Khi sWR < 0,294 (CVwR < 30,05%), US FDA yêu cầu quay về tiêu chuẩn ABE chuẩn [80,00%–125,00%]: trong `BE_app` (`replicate.py`), nhánh này đánh giá bằng OLS tương phản đối tượng I (`PASS`/`FAIL`), đồng thời ghi chú chưa nối mô hình hỗn hợp tuyến tính Phụ lục C vào luồng quyết định chính.",
     ),
     "FDA_NTI": (
-        "FDA NTI: Hướng dẫn chuyên biệt cho thuốc có khoảng điều trị hẹp (Narrow Therapeutic Index Drugs) đòi hỏi thiết kế full replicate 4 kỳ, đánh giá đồng thời tiêu chí RSABE thu hẹp và kiểm định tỷ số phương sai trong cá thể sWT/sWR ≤ 2.5.",
-        "Các thành phần thống kê được tính toán và kết luận endpoint dựa trên việc đáp ứng đầy đủ đồng thời cả 3 tiêu chuẩn của FDA NTI (RSABE, conventional 90% CI và tỷ số sWT/sWR).",
+        "FDA NTI: Hướng dẫn chuyên biệt cho thuốc có khoảng điều trị hẹp (Narrow Therapeutic Index Drugs) đòi hỏi thiết kế full replicate 4 kỳ (`full4`), đánh giá đồng thời tiêu chí ABE chuẩn [80,00%–125,00%], RSABE thu hẹp ($\\sigma_{w0}=0,10$) và kiểm định giới hạn trên 90% CI của tỷ số sWT/sWR ≤ 2,5.",
+        "Các thành phần thống kê được tính trên tương phản đối tượng I, D (`replicate.py`) và chỉ kết luận ĐẠT khi thỏa mãn đồng thời cả 3 tiêu chuẩn của FDA NTI (`BE_app` dùng $\\theta = (\\ln(1/0,9)/0,1)^2$; cần đối chiếu thêm sai số làm tròn nếu so sánh với SAS minh họa dùng `1,11111`).",
     ),
     "EMA_NTI": (
-        "EMA NTI: Quy chế của EMA đối với thuốc có khoảng điều trị hẹp yêu cầu thu hẹp biên tương đương sinh học của AUC về khoảng [90.00% - 111.11%]; biên Cmax cũng bị thu hẹp nếu được quy định cụ thể trong chuyên khảo sản phẩm.",
-        "Cần khai báo thuộc tính NTI đồng bộ với Đề cương và SAP ngay từ bước Tổng quan; mô-đun planning cho thuốc NTI hiện chưa được mở.",
+        "EMA NTI: Quy chế của EMA đối với thuốc có khoảng điều trị hẹp yêu cầu thu hẹp biên tương đương sinh học của AUC về khoảng [90.00% - 111.11%]; biên Cmax cũng bị thu hẹp về [90.00% - 111.11%] nếu được quy định cụ thể trong chuyên khảo/đặc tính an toàn sản phẩm.",
+        "Cần khai báo thuộc tính NTI và tùy chọn thu hẹp Cmax đồng bộ với Đề cương và SAP ngay từ bước Tổng quan; mô-đun planning cỡ mẫu chuyên biệt cho thuốc NTI hiện chưa được mở.",
     ),
     "FDA_REPLICATE_STANDARD": (
-        "FDA replicate ABE tiêu chuẩn: Áp dụng mô hình tuyến tính hỗn hợp (Linear Mixed-Effects Model) để phân tích dữ liệu thiết kế lặp mà không áp dụng thủ tục scaling.",
-        "Mô hình mixed replicate ABE phân tích và kết luận tương đương sinh học dựa trên khoảng tin cậy 90% trong khoảng chấp nhận [80.00% – 125.00%].",
+        "FDA replicate ABE tiêu chuẩn: Đánh giá tương đương sinh học chuẩn [80,00% – 125,00%] trên dữ liệu thiết kế lặp 3 hoặc 4 kỳ đầy đủ mà không áp dụng thủ tục nới biên scaling.",
+        "Lưu ý thuật toán thực tế (`replicate.py`): Kết luận ĐẠT/KHÔNG ĐẠT dựa trên phân tích tương phản đối tượng I bằng OLS (`df_I = N - số chuỗi`); mô hình hỗn hợp tuyến tính Phụ lục C nằm ở mô-đun thử nghiệm độc lập (`independently_qualified = False` cho nhánh mixed).",
     ),
 }
 
@@ -888,8 +1134,14 @@ def profile_help(rule_id: str) -> tuple[tuple[str, str], str, tuple[str, ...]]:
     """Method explanation, live implementation status, and authoritative reference URLs."""
     rule = RULES[rule_id]
     capability = capability_for(rule_id)
+    endpoint_map = {
+        "available": "khả dụng",
+        "pending": "đang chờ",
+        "unavailable": "chưa hỗ trợ",
+    }
+    endpoint_vi = endpoint_map.get(capability.endpoint_decision, capability.endpoint_decision)
     status = (
-        f"Kết luận endpoint: {capability.endpoint_decision}; "
+        f"Kết luận endpoint: {endpoint_vi}; "
         f"planning: {'mở' if capability.planning else 'chưa mở'}; "
         f"thẩm định độc lập: {'đã có' if capability.independently_qualified else 'chưa có'}. "
         f"{capability.limitation}"
