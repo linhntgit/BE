@@ -258,7 +258,7 @@ EQUATIONS_9: tuple[tuple[str, str], ...] = (
     (
         r"\mathcal{H}_k = \text{SHA-256}(\mathcal{H}_{k-1} \,\|\,\, \text{Timestamp}_k \,\|\,\, \text{Action}_k \,\|\,\, \text{User}_k \,\|\,\, \text{Details}_k)",
         (
-            "**Mô hình chuỗi khối kiểm toán liên kết bất biến (Hash-chained Audit Record):**\n"
+            "**Mô hình chuỗi băm kiểm toán liên kết bất biến (Hash-chained Audit Record):**\n"
             "- $\\mathcal{H}_k$: Mã băm SHA-256 của sự kiện kiểm toán thứ $k$.\n"
             "- $\\mathcal{H}_{k-1}$: Mã băm SHA-256 (`previous`) của sự kiện kiểm toán ngay trước đó ($k-1$). Với sự kiện đầu tiên của dự án, `previous` là chuỗi rỗng `\"\"`.\n"
             "- $\\text{Timestamp}_k$: Dấu thời gian chuẩn UTC theo chuẩn ISO-8601 của hành động.\n"
@@ -333,7 +333,7 @@ EQUATIONS_10: tuple[tuple[str, str], ...] = (
     (
         r"C(t) = \begin{cases} \frac{R_0}{V_1} \left[ \frac{k_{21} - \alpha}{\alpha(\beta - \alpha)} (1 - e^{-\alpha t}) + \frac{k_{21} - \beta}{\beta(\alpha - \beta)} (1 - e^{-\beta t}) \right], & t \le T_{\text{inf}} \\[6pt] \frac{R_0}{V_1} \left[ \frac{k_{21} - \alpha}{\alpha(\beta - \alpha)} (1 - e^{-\alpha T_{\text{inf}}}) e^{-\alpha(t - T_{\text{inf}})} + \frac{k_{21} - \beta}{\beta(\alpha - \beta)} (1 - e^{-\beta T_{\text{inf}}}) e^{-\beta(t - T_{\text{inf}})} \right], & t > T_{\text{inf}} \end{cases}",
         (
-            "**Truyền tĩnh mạch (IV Infusion) — Mô hình 2 ngăn:**\n"
+            "**Truyền tĩnh mạch liên tục (IV Infusion) — Mô hình 2 ngăn:**\n"
             "- $R_0, T_{\\text{inf}}$: Tốc độ truyền ($\\text{mg/h}$) và thời gian truyền tĩnh mạch ($\\text{h}$).\n"
             "- $C(t)$: Nồng độ trong ngăn trung tâm, phản ánh tương tác giữa nạp thuốc bậc 0, phân bố sang ngăn ngoại vi và thải trừ.\n"
             "- Nồng độ đỉnh đạt tại thời điểm ngắt truyền ($t = T_{\\text{inf}}$).\n"
@@ -345,7 +345,7 @@ EQUATIONS_10: tuple[tuple[str, str], ...] = (
     (
         r"C(t) = \begin{cases} \sum_{i \in \{\alpha, \beta, \gamma\}} \frac{L_i}{\lambda_i} \left( 1 - e^{-\lambda_i t} \right), & 0 \le t \le T_{\text{inf}} \\[6pt] \sum_{i \in \{\alpha, \beta, \gamma\}} \frac{L_i}{\lambda_i} \left( 1 - e^{-\lambda_i T_{\text{inf}}} \right) e^{-\lambda_i (t - T_{\text{inf}})}, & t > T_{\text{inf}} \end{cases}",
         (
-            "**Truyền tĩnh mạch (IV Infusion) — Mô hình 3 ngăn:**\n"
+            "**Truyền tĩnh mạch liên tục (IV Infusion) — Mô hình 3 ngăn:**\n"
             "- $\\lambda_i \\in \\{\\alpha, \\beta, \\gamma\\}$: Ba hằng số suy giảm đặc trưng của mô hình 3 ngăn ($\\text{h}^{-1}$).\n"
             "- $L_i$: Các hệ số vi mô tương ứng suy ra từ tích chập giữa tốc độ truyền $R_0$ và hàm đáp ứng xung của hệ 3 ngăn.\n"
             "- Ứng dụng lâm sàng: Mô hình nền tảng trong gây mê hồi sức và truyền thuốc kiểm soát nồng độ đích (Target Controlled Infusion - TCI).\n"
@@ -355,7 +355,7 @@ EQUATIONS_10: tuple[tuple[str, str], ...] = (
     (
         r"C(t) = \frac{F \cdot D \cdot k_a}{V_1 (k_a - k_{el})} \left( e^{-k_{el}(t - T_{\text{lag}})} - e^{-k_a (t - T_{\text{lag}})} \right) \quad (\text{với } t \ge T_{\text{lag}})",
         (
-            "**Phương trình Bateman mô hình 1 ngăn đường uống (có thời gian trễ $T_{\\text{lag}}$):**\n"
+            "**Đường uống (Oral) — Mô hình 1 ngăn (Phương trình Bateman; tổng quát có $T_{\\text{lag}}$, `BE_app` cố định $T_{\\text{lag}}=0$):**\n"
             "- $C(t)$: Nồng độ thuốc trong huyết tương tại thời điểm $t$ ($\\text{mg/L}$ hoặc $\\mu\\text{g/mL}$).\n"
             "- $D$: Liều thuốc đường uống dùng cho đối tượng ($\\text{mg}$).\n"
             "- $F$: Sinh khả dụng tuyệt đối đường uống ($0 < F \\le 1$; khi phân tích đường uống thường xác định dưới dạng $V_1/F, CL/F$).\n"

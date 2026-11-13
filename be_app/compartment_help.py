@@ -432,9 +432,9 @@ def render_compartment_model_details(selected_model_title: str) -> None:
 
     # C. Hệ phương trình toán học
     st.markdown("#### C. Hệ phương trình toán học & Nghiệm giải tích")
-    st.caption("Hệ phương trình vi phân mô tả biến thiên lượng/nồng độ:")
+    st.markdown("**Hệ phương trình vi phân mô tả biến thiên lượng/nồng độ:**")
     st.latex(doc.ode_latex)
-    st.caption("Phương trình nghiệm giải tích C(t):")
+    st.markdown("**Phương trình nghiệm giải tích $C(t)$:**")
     st.latex(doc.solution_latex)
 
     # D. Các thông số dược động học

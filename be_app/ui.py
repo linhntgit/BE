@@ -2858,6 +2858,16 @@ def _help_navigation(page: str, is_dialog: bool = False) -> str:
     return selected
 
 
+def _split_equation_description(eq_desc: str) -> tuple[str | None, str]:
+    """Split an equation description into its leading bold heading (if present) and body."""
+    normalized = eq_desc.replace(r"\n", "\n").strip()
+    first_line, _, remainder = normalized.partition("\n")
+    heading = first_line.strip()
+    if heading.startswith("**") and "**" in heading[2:]:
+        return heading, remainder.strip()
+    return None, normalized
+
+
 def render_help_body(page: str, state: ProjectState | None, quick_stage: str | None = None, is_dialog: bool = False, viewed_page: str | None = None) -> None:
     """Render the 6 pedagogical subsections for the contextual help pane or floating dialog."""
     active_view_page = viewed_page or page
@@ -3004,9 +3014,15 @@ def render_help_body(page: str, state: ProjectState | None, quick_stage: str | N
     st.markdown("### 3. Phương trình toán học và giải thích biến số")
     with st.expander("3. Phương trình Toán học & Giải thích Biến số (Mathematical Formulations & Parameter Nomenclature)", expanded=True):
         if lesson.equations:
-            for eq_latex, eq_desc in lesson.equations:
+            for eq_idx, (eq_latex, eq_desc) in enumerate(lesson.equations):
+                if eq_idx > 0:
+                    st.divider()
+                heading, body = _split_equation_description(eq_desc)
+                if heading:
+                    st.markdown(heading)
                 st.latex(eq_latex)
-                st.markdown(eq_desc.replace(r"\n", "\n"))
+                if body:
+                    st.markdown(body)
         else:
             st.info("Bước này tập trung vào thiết lập quy trình quản trị, không sử dụng công thức tính toán trực tiếp.")
 

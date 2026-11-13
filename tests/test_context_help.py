@@ -497,3 +497,86 @@ def test_contextual_diagnostics_and_expanders_adapt_to_workflow_options(tmp_path
     captions_iv = " ".join(c.value for c in app.caption)
     assert "Tiêm TM nhanh ($F=1$)" in captions_iv
 
+
+def _assert_section3_headings_precede_latex(app: AppTest) -> int:
+    """Assert every Latex element in Section 3 is immediately preceded by its bold heading and followed by bullets."""
+    from streamlit.testing.v1.element_tree import Divider, Latex, Markdown
+
+    exp = next((e for e in app.expander if "3. Phương trình Toán học" in e.label), None)
+    assert exp is not None
+    children = [exp.children[k] for k in sorted(exp.children)]
+    latex_positions = [idx for idx, elem in enumerate(children) if isinstance(elem, Latex)]
+    assert len(latex_positions) >= 1
+    for pos in latex_positions:
+        assert pos >= 1 and pos + 1 < len(children)
+        heading_elem = children[pos - 1]
+        body_elem = children[pos + 1]
+        assert isinstance(heading_elem, Markdown), f"Expected heading Markdown before Latex at {pos}, got {type(heading_elem)}"
+        assert heading_elem.value.strip().startswith("**"), f"Expected bold heading before Latex, got: {heading_elem.value!r}"
+        assert isinstance(body_elem, Markdown), f"Expected body Markdown after Latex at {pos}, got {type(body_elem)}"
+        assert body_elem.value.strip().startswith("- "), f"Expected variable list after Latex, got: {body_elem.value[:40]!r}"
+        if pos >= 2:
+            assert isinstance(children[pos - 2], Divider)
+    return len(latex_positions)
+
+
+def test_equation_headings_precede_latex_blocks_across_all_lessons_and_explorer(tmp_path, monkeypatch):
+    """Verify every equation across ALL_EQUATIONS renders heading -> LaTeX -> explanation without wording regressions."""
+    import be_app.ui as ui
+    from be_app.context_equations import ALL_EQUATIONS, EQUATIONS_9, EQUATIONS_10
+    from be_app.context_help import LESSONS
+    from streamlit.testing.v1.element_tree import Latex, Markdown
+
+    # 1. Static check on all 28 equations in ALL_EQUATIONS[0..11] and LESSONS text
+    for mod, eq_list in ALL_EQUATIONS.items():
+        for eq_idx, (eq_latex, eq_desc) in enumerate(eq_list):
+            assert eq_latex.strip()
+            heading, body = ui._split_equation_description(eq_desc)
+            assert heading is not None and heading.startswith("**"), f"Module {mod}[{eq_idx}] missing leading bold heading"
+            assert body.startswith("- "), f"Module {mod}[{eq_idx}] body should start with bullet list"
+            assert "chuỗi khối" not in f"{heading}\n{body}".lower()
+
+    for idx, lesson in enumerate(LESSONS):
+        combined = " ".join([*lesson.theory, *lesson.actions, *lesson.terms, lesson.exercise]).lower()
+        assert "chuỗi khối" not in combined, f"Lesson {idx} still contains 'chuỗi khối'"
+
+    assert "chuỗi băm" in EQUATIONS_9[0][1].lower()
+    assert "cố định $T_{\\text{lag}}=0$" in EQUATIONS_10[6][1]
+    assert "Truyền tĩnh mạch liên tục (IV Infusion) — Mô hình 2 ngăn" in EQUATIONS_10[4][1]
+    assert "Truyền tĩnh mạch liên tục (IV Infusion) — Mô hình 3 ngăn" in EQUATIONS_10[5][1]
+
+    # 2. Live AppTest DOM-order verification on Full BE, Quick BE, and Standalone PK
+    monkeypatch.setattr(ui, "store", lambda: ProjectStore(tmp_path / "eq_order.sqlite"))
+    app = AppTest.from_file(str(Path(__file__).resolve().parents[1] / "app.py"), default_timeout=60).run()
+    assert not app.exception
+    assert _assert_section3_headings_precede_latex(app) == len(ALL_EQUATIONS[0])
+
+    # Switch chapter selector in Full BE to Step 7 (Index 6: Phan tich BE, 4 equations)
+    chapter_sel = app.selectbox(key="help_chapter_selector_side")
+    chapter_sel.select_index(6).run()
+    assert not app.exception
+    assert _assert_section3_headings_precede_latex(app) == len(ALL_EQUATIONS[6])
+
+    # Switch to Quick BE
+    app.sidebar.radio[0].set_value("BE nhanh").run()
+    assert not app.exception
+    assert _assert_section3_headings_precede_latex(app) == len(ALL_EQUATIONS[11])
+
+    # Switch to Standalone PK (11 equations, starting with IV Bolus 1-compartment)
+    app.sidebar.radio[0].set_value("Phân tích PK độc lập").run()
+    assert not app.exception
+    assert _assert_section3_headings_precede_latex(app) == len(ALL_EQUATIONS[10])
+
+    # Also verify Compartment Model Explorer Subsection C places bold Markdown headings above both Latex blocks
+    model_sel = app.selectbox(key="pk_help_model_sel")
+    model_sel.select_index(1).run()  # 1-Compartment IV Bolus
+    assert not app.exception
+    theory_exp = next(e for e in app.expander if "2. Tóm tắt Lý thuyết" in e.label)
+    t_children = [theory_exp.children[k] for k in sorted(theory_exp.children)]
+    t_latex_pos = [idx for idx, elem in enumerate(t_children) if isinstance(elem, Latex)]
+    assert len(t_latex_pos) == 2
+    for pos in t_latex_pos:
+        assert isinstance(t_children[pos - 1], Markdown)
+        assert t_children[pos - 1].value.strip().startswith("**")
+
+
