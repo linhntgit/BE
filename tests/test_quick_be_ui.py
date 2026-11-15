@@ -66,10 +66,11 @@ def test_quick_be_upload_runs_without_creating_a_project_and_invalidates_old_res
     next(button for button in app.button if "Chạy phân tích BE nhanh" in button.label).click().run()
     assert not app.exception
     result = app.session_state["quick_be_result"][1]
-    assert result.overall_status == "PASS"
+    assert result.overall_status == "NOT EVALUABLE"
     assert len(result.endpoints) == 12
     assert app.session_state["project"] is None
-    assert any("PASS" in line.value for line in app.success)
+    assert not any("PASS" in line.value for line in app.success)
+    assert any("NOT EVALUABLE" in line.value for line in app.error)
 
     # Any change to the source must hide the old result until recalculated.
     # A real input change, using an endpoint value that remains valid.
@@ -101,7 +102,7 @@ def test_quick_be_uploaded_concentrations_complete_nca_and_be(tmp_path, monkeypa
     result = app.session_state["quick_be_result"][1]
     assert result.mode == "concentration"
     assert len(result.nca) == 12 and result.nca.status.eq("EVALUABLE").all()
-    assert result.overall_status == "PASS"
+    assert result.overall_status == "NOT EVALUABLE"
     assert app.session_state["project"] is None
 
 

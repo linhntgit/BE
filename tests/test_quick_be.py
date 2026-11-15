@@ -47,7 +47,8 @@ def test_endpoint_be_matches_existing_engine_and_preserves_leading_zero_ids():
     assert len(out.endpoints) == 12
     for result in out.results[:2]:
         reference = analyze_abe(out.endpoints, result.endpoint, "2x2", BeConfig())
-        assert result.decision == reference.decision
+        assert result.decision == "NOT EVALUABLE"
+        assert "6" in result.reason and "12" in result.reason
         assert result.gmr == pytest.approx(reference.gmr)
         assert result.ci_lower == pytest.approx(reference.ci_lower)
     assert len(out.provenance["source_sha256"]) == 64
@@ -62,7 +63,7 @@ def test_concentration_flow_runs_nca_then_be_and_exports_evidence():
     assert out.endpoints.tmax.eq(2).all()
     assert out.tmax.status == "EVALUABLE"
     assert out.tmax.n_pairs == 6 and out.tmax.p_value == 1.0
-    assert all(result.decision in ("PASS", "FAIL") for result in out.results[:2])
+    assert all(result.decision == "NOT EVALUABLE" for result in out.results[:2])
     exported = pd.ExcelFile(io.BytesIO(quick_be_workbook(out)))
     assert {"Input PK", "Input Concentrations", "NCA Profiles", "Quick BE Source", "Quick BE Review",
             "Tmax Nonparametric"} <= set(exported.sheet_names)
@@ -121,7 +122,7 @@ def test_parallel_and_replicate_endpoint_paths():
     p["Sequence"] = p["Treatment"]
     outcome = run(p, design="parallel")
     assert len(outcome.results) >= 2
-    assert all(r.decision in ("PASS", "FAIL") for r in outcome.results[:2])
+    assert all(r.decision == "NOT EVALUABLE" for r in outcome.results[:2])
 
     rows = []
     for sequence in ("TRR", "RTR", "RRT"):
@@ -176,7 +177,7 @@ def test_tmax_missing_invalid_and_partial_pairs_fail_closed_without_affecting_be
     frame = pk_table()
     absent = run(frame)
     assert absent.tmax.status == "NOT EVALUABLE" and "Không có cột Tmax" in absent.tmax.reason
-    assert absent.overall_status == "PASS"
+    assert absent.overall_status == "NOT EVALUABLE"
 
     frame["Tmax"] = "2.0"
     for invalid in ("", "abc", "inf", "-1"):

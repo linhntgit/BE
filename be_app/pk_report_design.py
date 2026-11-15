@@ -260,7 +260,7 @@ def _nca_summary(snapshot: dict) -> list[list[str]]:
     auc = "auc_tau_ng_h_ml" if regimen else "auc_0_inf"
     peak = "cmax_tau_ng_ml" if regimen else "cmax_ng_ml"
     col = "AUCτ" if regimen else "AUC0-inf"
-    rows = [["Hồ sơ", "Trạng thái", "Cmax (ng/mL)", f"{col} (ng.h/mL)", "Số mẫu"]]
+    rows = [["Hồ sơ", "Trạng thái", "Cmax quan sát (ng/mL)", f"{col} (ng.h/mL)", "Số mẫu"]]
     for item in snapshot.get("nca") or []:
         rows.append([str(item.get("profile_id", "")), shown(item.get("status")),
                      shown(item.get(peak)), shown(item.get(auc)), shown(item.get("n"))])

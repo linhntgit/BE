@@ -59,13 +59,6 @@ def run_analysis(
     rule = RULES.get(project.study.rule_set_id)
     if project.be_config.alpha != 0.05 or project.be_config.lower != 0.8 or project.be_config.upper != 1.25:
         blockers.append("Profile phát hành chỉ cho phép alpha=0.05 và giới hạn 0.8–1.25; custom chưa hỗ trợ.")
-    if rule:
-        if project.study.design != "parallel" and endpoints.subject_id.nunique() < rule.minimum_crossover:
-            blockers.append("Crossover dưới 12 người có dữ liệu đánh giá theo M13A.")
-        if project.study.design == "parallel":
-            sizes = endpoints.groupby("treatment").subject_id.nunique()
-            if any(sizes.get(arm, 0) < rule.minimum_parallel_per_arm for arm in ("T", "R")):
-                blockers.append("Parallel cần ít nhất 12 người đánh giá mỗi nhánh theo M13A.")
     results = []
     for endpoint in (*project.study.primary_endpoints, *project.study.secondary_endpoints):
         if not endpoints.status.eq("EVALUABLE").all():
@@ -74,13 +67,6 @@ def run_analysis(
             )
         else:
             result = run_abe(snapshot, nca, endpoint)
-        if result.n and project.study.design != "parallel" and result.n < 12:
-            result = result.model_copy(
-                update={
-                    "decision": "NOT EVALUABLE",
-                    "reason": "Dưới 12 subject có dữ liệu endpoint để đánh giá.",
-                }
-            )
         if blockers:
             result = result.model_copy(update={"decision": "NOT EVALUABLE", "reason": "; ".join(blockers)})
         result = result.model_copy(

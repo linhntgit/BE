@@ -50,8 +50,8 @@ def test_previous_engine_snapshot_becomes_legacy_without_mutating_it(demo):
 
     project = run_analysis(demo.freeze())
     current = project.runs[-1]
-    assert current["engine_version"] == __version__ == "0.3.1"
+    assert current["engine_version"] == __version__ == "0.3.2"
     assert result_status(project, current) == "CURRENT"
-    previous = {**current, "engine_version": "0.3.0"}
+    previous = {**current, "engine_version": "0.3.1"}
     assert result_status(project, previous) != "CURRENT"
-    assert previous["engine_version"] == "0.3.0" and current["engine_version"] == "0.3.1"
+    assert previous["engine_version"] == "0.3.1" and current["engine_version"] == "0.3.2"

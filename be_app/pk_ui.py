@@ -13,6 +13,7 @@ import pandas as pd
 import plotly.graph_objects as go
 import streamlit as st
 
+from be_app import __version__
 from be_app.field_help import render_table_legend, table_column_config
 from be_app.pk_analysis import (
     CONCENTRATION_FACTORS,
@@ -36,7 +37,11 @@ from be_app.pk_records import (
     word_report,
 )
 from be_app.table_editor import render_persistent_editor
-from be_app.workflow_project import export_workflow_project, import_workflow_project, validate_project_filename
+from be_app.workflow_project import (
+    export_workflow_project,
+    import_workflow_project,
+    validate_project_filename,
+)
 
 
 def _read_file(content: bytes, filename: str, sheet: str | int) -> pd.DataFrame:
@@ -51,7 +56,7 @@ def _fingerprint(data: pd.DataFrame, config: PKSettings, modes: tuple[int, ...],
                  weighting: str, regimen: PKRegimen | None = None, source: str = "") -> str:
     # Native Python float JSON serialization preserves 17-digit binary64 precision.
     text = json.dumps({"data": data.to_dict(orient="records"), "settings": asdict(config),
-                       "modes": modes, "weighting": weighting,
+                       "modes": modes, "weighting": weighting, "engine_version": __version__,
                        "regimen": asdict(regimen) if regimen else None,
                        "source": source}, ensure_ascii=False, sort_keys=True, allow_nan=False)
     return hashlib.sha256(text.encode("utf-8")).hexdigest()
@@ -501,7 +506,8 @@ def independent_pk_page(project_controls=None) -> None:
                                    weighting, regimen, source)
         if st.session_state.pop("pk_restore_pending", False):
             restored = st.session_state.get("pk_current_snapshot")
-            if (restored and restored["settings"] == asdict(config) and
+            if (restored and restored.get("engine_version") == __version__ and
+                    restored["settings"] == asdict(config) and
                     restored.get("regimen") == (asdict(regimen) if regimen else None) and
                     validate_profiles(pd.DataFrame(restored["data"])).reset_index(drop=True).equals(
                         current_data.reset_index(drop=True)) and
@@ -561,7 +567,7 @@ def independent_pk_page(project_controls=None) -> None:
     current_snapshot = st.session_state.get("pk_current_snapshot")
     if current_snapshot is not None:
         if fingerprint != st.session_state.get("pk_current_fingerprint"):
-            st.warning("Đầu vào hoặc cấu hình đã thay đổi. Cần chạy lại PK để lưu/xuất kết quả mới.")
+            st.warning("Đầu vào, cấu hình hoặc phiên bản tính toán đã thay đổi. Cần chạy lại PK để lưu/xuất kết quả mới.")
         else:
             st.subheader("4. Kết quả phân tích")
             _render_snapshot(current_snapshot, "pk_current")

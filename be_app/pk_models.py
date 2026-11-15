@@ -257,8 +257,11 @@ def fit_compartment(frame: pd.DataFrame, settings: PKSettings, *, compartments: 
     weighted_rss = float(np.dot(best.fun, best.fun))
     rss_for_ic = weighted_rss if weighting != "equal" else rss
     ll_term = n * math.log(max(rss_for_ic / n, 1e-300))
-    aic = ll_term + 2 * p
-    aicc = aic + 2 * p * (p + 1) / (n - p - 1) if n > p + 1 else None
+    # Gaussian residual scale is estimated for all fixed observation weights.
+    # Weighted criteria retain their diagnostic interpretation.
+    k = p + 1
+    aic = ll_term + 2 * k
+    aicc = aic + 2 * k * (k + 1) / (n - k - 1) if n > k + 1 else None
     jacobian = best.jac
     rank = int(np.linalg.matrix_rank(jacobian))
     singular = np.linalg.svd(jacobian, compute_uv=False)
@@ -298,7 +301,7 @@ def fit_compartment(frame: pd.DataFrame, settings: PKSettings, *, compartments: 
                                if compartments == 3 else {}),
         "rmse_ng_ml": math.sqrt(rss / n),
         "rss": rss, "weighted_rss": weighted_rss, "aic": aic,
-        "aicc": aicc, "bic": ll_term + p * math.log(n),
+        "aicc": aicc, "bic": ll_term + k * math.log(n),
         "r2": float(1 - rss / np.sum((y - y.mean()) ** 2)) if np.ptp(y) else None,
         "jacobian_rank": rank, "jacobian_condition": condition,
         "converged": bool(best.success), "warnings": warnings,

@@ -12,9 +12,11 @@ from pathlib import Path
 
 import pandas as pd
 
+from be_app import __version__
+
 NCA_VI_COLUMNS = {
     "profile_id": "Mã hồ sơ", "route": "Đường dùng", "status": "Trạng thái",
-    "n": "Số mẫu", "cmax_ng_ml": "Cmax (ng/mL)", "tmax_h": "Tmax (giờ)",
+    "n": "Số mẫu", "cmax_ng_ml": "Cmax quan sát (ng/mL)", "tmax_h": "Tmax quan sát (giờ)",
     "t_first_h": "Thời điểm đầu (giờ)", "tlast_h": "Tlast (giờ)",
     "clast_ng_ml": "Clast (ng/mL)", "auc_first_last": "AUC đầu–cuối (ng·giờ/mL)",
     "aumc_first_last": "AUMC đầu–cuối (ng·giờ²/mL)",
@@ -85,6 +87,7 @@ def create_snapshot(data: pd.DataFrame, settings: dict, nca: list[dict],
     snapshot = {
         "schema_version": 2 if regimen is not None else 1,
         "created_utc": datetime.now(timezone.utc).isoformat(),
+        "engine_version": __version__,
         "source": source, "settings": settings, "data": data.to_dict("records"),
         "nca": nca, "models": models, "errors": errors,
         "scope": "Phân tích Dược động học (PK) độc lập.",

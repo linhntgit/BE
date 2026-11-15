@@ -400,12 +400,12 @@ EQUATIONS_10: tuple[tuple[str, str], ...] = (
         ),
     ),
     (
-        r"AICc = N \cdot \ln\left(\frac{WSSR}{N}\right) + 2p + \frac{2p(p+1)}{N - p - 1} \quad (N > p + 1), \qquad BIC = N \cdot \ln\left(\frac{WSSR}{N}\right) + p \cdot \ln(N)",
+        r"AICc = N \cdot \ln\left(\frac{WSSR}{N}\right) + 2K + \frac{2K(K+1)}{N - K - 1} \quad (N > K + 1), \qquad BIC = N \cdot \ln\left(\frac{WSSR}{N}\right) + K \cdot \ln(N)",
         (
             "**Chuẩn thông tin Akaike hiệu chỉnh (AICc) và Bayes (BIC) chọn số ngăn (`pk_models.py`):**\n"
-            "- $WSSR$: Tổng bình phương phần dư có trọng số $WSSR = \\sum_{i=1}^N \\left(\\frac{C_{i,\\text{pred}} - C_{i,\\text{obs}}}{d_i}\\right)^2$, trong đó mẫu số chuẩn hóa $d_i$ là $1$ (bằng nhau), $\\sqrt{\\text{scale}_i}$ (trọng số $1/C$), hoặc $\\text{scale}_i$ (trọng số $1/C^2$) với $\\text{scale}_i = \\max(C_{i,\\text{obs}}, 10^{-3} C_{\\max})$.\n"
-            "- $N$: Số điểm nồng độ đưa vào khớp (lưu ý `IV bolus` loại bỏ điểm $t=0$ có $C=0$); $p$: Số tham số mô hình.\n"
-            "- Điều kiện $AICc$: Chỉ xác định khi $N > p + 1$ (nếu $N \\le p + 1$, trường `AICc` để trống).\n"
+            "- $WSSR$: Tổng bình phương phần dư có trọng số $WSSR = \\sum_{i=1}^N \\left(\\frac{C_{i,\\text{pred}} - C_{i,\\text{obs}}}{d_i}\\right)^2$, trong đó mẫu số chuẩn hóa $d_i$ là $1$ (bằng nhau), $\\sqrt{\\text{scale}_i}$ (trọng số $1/C$), hoặc $\\text{scale}_i$ (trọng số $1/C^2$) với $\\text{scale}_i = \\max(C_{i,\\text{obs}}, \\max(C_{\\min,+}/2, 10^{-8}))$; $C_{\\min,+}$ là nồng độ dương nhỏ nhất. Các mẫu số được chia cho trung vị của chúng trước khi tính $WSSR$.\n"
+            "- $N$: Số điểm nồng độ đưa vào khớp (lưu ý `IV bolus` loại bỏ điểm $t=0$ có $C=0$); $p$: Số tham số PK; $K=p+1$ gồm thêm phương sai sai số được ước lượng.\n"
+            "- Điều kiện $AICc$: Chỉ xác định khi $N > K + 1$ (nếu $N \\le K + 1$, trường `AICc` để trống).\n"
             "- **Giới hạn so sánh trọng số:** Chỉ dùng `AICc`/`BIC` để so sánh các mô hình ngăn **trên cùng một sơ đồ trọng số** (`equal`, `1/C`, hoặc `1/C²`); khi trọng số $\\neq$ `equal`, `AICc`/`BIC` chỉ mang tính chẩn đoán."
         ),
     ),

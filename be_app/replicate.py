@@ -8,7 +8,7 @@ from scipy.stats import chi2, f, t
 
 from be_app.domain import BeConfig, BeResult, Study
 from be_app.mixed import ols, ols_test
-from be_app.statistics import _result, analyze_abe, ema_abel_limits
+from be_app.statistics import _result, analyze_abe, ci_within_limits, ema_abel_limits
 
 SEQUENCES = {"partial3": ("TRR", "RTR", "RRT"), "full4": ("TRTR", "RTRT")}
 
@@ -388,6 +388,7 @@ def analyze_replicate(data, endpoint, study: Study, config=None):
             base_cfg,
             diagnostics,
             None if fda else math.sqrt(math.expm1(method_a["mse"])),
+            round_ci=True,
         )
         if result.estimate is None:
             return result
@@ -476,8 +477,7 @@ def analyze_replicate(data, endpoint, study: Study, config=None):
             ci_passed = bool(
                 result.ci_lower is not None
                 and result.ci_upper is not None
-                and result.ci_lower >= 0.8
-                and result.ci_upper <= 1.25
+                and ci_within_limits(result.ci_lower, result.ci_upper, 0.8, 1.25, round_percent=True)
             )
             criteria[0] = dict(
                 criterion="Conventional replicate ABE 90% CI [80.00% – 125.00%]",
@@ -553,7 +553,7 @@ def analyze_regulatory_be(data, endpoint, study: Study, config=None):
             endpoint_cfg = cfg.model_copy(
                 update=dict(lower=0.9 if narrow else 0.8, upper=1.1111 if narrow else 1.25)
             )
-        result = analyze_abe(data, endpoint, study.design, endpoint_cfg)
+        result = analyze_abe(data, endpoint, study.design, endpoint_cfg, round_ci=True)
         if study.rule_set_id == "EMA_NTI":
             result = result.model_copy(update={"method": "EMA NTI / narrowed ABE"})
         if study.rule_set_id.startswith("EMA") and cfg.missing_policy == "available_observations":
@@ -573,11 +573,14 @@ def analyze_regulatory_be(data, endpoint, study: Study, config=None):
             requirements.append("Scaling cần định trước và căn cứ độ tin cậy biến thiên/ý nghĩa lâm sàng.")
     if study.rule_set_id in ("EMA_NTI", "FDA_NTI") and not study.nti:
         requirements.append("Cần xác nhận phân loại NTI dựa trên yêu cầu sản phẩm.")
-    from be_app.regulations import RULES
+    from be_app.regulations import RULES, sample_count_requirements
 
     rule = RULES.get(study.rule_set_id)
     if rule is None or study.design not in rule.designs:
         requirements.append("Thiết kế không phù hợp profile đã chọn.")
+    if rule is not None and study.design in rule.designs:
+        requirements.extend(sample_count_requirements(data, endpoint, study))
     if requirements:
-        result = result.model_copy(update={"decision": "NOT EVALUABLE", "reason": "; ".join(requirements)})
+        reasons = [result.reason, *requirements]
+        result = result.model_copy(update={"decision": "NOT EVALUABLE", "reason": "; ".join(r for r in reasons if r)})
     return result

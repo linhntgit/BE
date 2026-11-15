@@ -3,6 +3,9 @@
 import json
 from dataclasses import asdict, dataclass
 
+import numpy as np
+import pandas as pd
+
 from be_app import __version__
 from be_app.domain import Study, canonical
 
@@ -205,3 +208,36 @@ def scope_blockers(study: Study) -> list[str]:
     if not study.active_ingredient.strip():
         errors.append("Thiếu tên hoạt chất để xác định phạm vi sản phẩm.")
     return errors
+
+
+def sample_count_requirements(data, endpoint, study):
+    """Count evaluable subjects for this endpoint using the selected rule's minima."""
+    rule = RULES.get(study.rule_set_id)
+    required = {"subject_id", "period", "treatment", endpoint}
+    if rule is None or not required <= set(data):
+        return []
+    values = pd.to_numeric(data[endpoint], errors="coerce")
+    valid = np.isfinite(values) & values.gt(0)
+    if "status" in data:
+        valid &= data.status.eq("EVALUABLE")
+    observed = data.loc[valid]
+    if study.design == "parallel":
+        sizes = observed.groupby("treatment").subject_id.nunique()
+        counts = [int(sizes.get(arm, 0)) for arm in ("T", "R")]
+        if min(counts) < rule.minimum_parallel_per_arm:
+            return [
+                f"{endpoint}: parallel có T={counts[0]}, R={counts[1]} người đánh giá được; "
+                f"cần ít nhất {rule.minimum_parallel_per_arm} mỗi nhánh."
+            ]
+    else:
+        expected = {"2x2": 2, "partial3": 3, "full4": 4}[study.design]
+        sizes = observed.groupby("subject_id").agg(
+            n_periods=("period", "nunique"), n_treatments=("treatment", "nunique")
+        )
+        count = int(((sizes.n_periods == expected) & (sizes.n_treatments == 2)).sum())
+        if count < rule.minimum_crossover:
+            return [
+                f"{endpoint}: crossover có {count} người đủ dữ liệu; "
+                f"cần ít nhất {rule.minimum_crossover}."
+            ]
+    return []

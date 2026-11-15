@@ -1,6 +1,7 @@
 """ABE contrasts for complete 2x2 and independent parallel observations."""
 
 import math
+from decimal import ROUND_HALF_UP, Decimal
 
 import numpy as np
 import pandas as pd
@@ -10,7 +11,21 @@ from be_app.be_diagnostics import crossover_tables
 from be_app.domain import BeConfig, BeResult
 
 
-def _result(endpoint, data, estimate, se, df, cfg, diagnostics, cv=None):
+def ci_within_limits(low, high, lower, upper, *, round_percent=False):
+    """Compare CI bounds; regulatory rounding is decimal half-up in percent.
+
+    EMA Rev.1 section 4.1.8 and FDA PK-endpoint BE guidance (May 2026),
+    Appendix A, specify two decimal places on the percentage scale.
+    """
+    if round_percent:
+        def percent(value):
+            return (Decimal(str(value)) * 100).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
+
+        return percent(low) >= percent(lower) and percent(high) <= percent(upper)
+    return low >= lower and high <= upper
+
+
+def _result(endpoint, data, estimate, se, df, cfg, diagnostics, cv=None, *, round_ci=False):
     if not all(math.isfinite(x) for x in (estimate, se, df)) or se <= 1e-14 or df <= 0:
         return BeResult(endpoint=endpoint, reason="Phương sai suy biến hoặc không đủ bậc tự do.")
     q = t.ppf(1 - cfg.alpha, df)
@@ -18,6 +33,11 @@ def _result(endpoint, data, estimate, se, df, cfg, diagnostics, cv=None):
     if max(abs(low_log), abs(high_log)) > 700:
         return BeResult(endpoint=endpoint, reason="Khoảng tin cậy vượt miền tính số ổn định.")
     low, high = math.exp(low_log), math.exp(high_log)
+    passed = ci_within_limits(low, high, cfg.lower, cfg.upper, round_percent=round_ci)
+    diagnostics = {
+        **diagnostics,
+        "ci_decision_rounding": "percent_2dp_half_up" if round_ci else "full_precision",
+    }
     return BeResult(
         endpoint=endpoint,
         n=int(data.subject_id.nunique()),
@@ -44,15 +64,15 @@ def _result(endpoint, data, estimate, se, df, cfg, diagnostics, cv=None):
                 criterion=f"CI {(1 - 2 * cfg.alpha) * 100:g}% within acceptance limits",
                 value=[low, high],
                 limits=[cfg.lower, cfg.upper],
-                passed=bool(low >= cfg.lower and high <= cfg.upper),
+                passed=bool(passed),
             )
         ],
-        decision="PASS" if low >= cfg.lower and high <= cfg.upper else "FAIL",
+        decision="PASS" if passed else "FAIL",
         diagnostics=diagnostics,
     )
 
 
-def analyze_abe(data: pd.DataFrame, endpoint: str, design: str, config: BeConfig | None = None) -> BeResult:
+def analyze_abe(data: pd.DataFrame, endpoint: str, design: str, config: BeConfig | None = None, *, round_ci=False) -> BeResult:
     cfg = config or BeConfig()
 
     def ne(reason):
@@ -64,7 +84,7 @@ def analyze_abe(data: pd.DataFrame, endpoint: str, design: str, config: BeConfig
     if not columns <= set(data.columns) or data.empty:
         return ne("Thiếu dữ liệu hoặc cột endpoint/thiết kế.")
     if design == "2x2" and cfg.missing_policy == "available_observations":
-        return analyze_mixed_abe(data, endpoint, cfg)
+        return analyze_mixed_abe(data, endpoint, cfg, round_ci=round_ci)
     d = data.copy()
     values = pd.to_numeric(d[endpoint], errors="coerce")
     if (
@@ -120,6 +140,7 @@ def analyze_abe(data: pd.DataFrame, endpoint: str, design: str, config: BeConfig
             cfg,
             diagnostics,
             math.sqrt(math.expm1(mse)) if mse < 700 else None,
+            round_ci=round_ci,
         )
         if result.estimate is not None:
             result = attach_crossover_tables(result, d, endpoint, cfg)
@@ -158,6 +179,7 @@ def analyze_abe(data: pd.DataFrame, endpoint: str, design: str, config: BeConfig
             residuals=[*(a - a.mean()).tolist(), *(b - b.mean()).tolist()],
             geometric_means="descriptive, unadjusted",
         ),
+        round_ci=round_ci,
     )
 
 
@@ -176,7 +198,7 @@ def attach_crossover_tables(result, data, endpoint, cfg, tables=None):
     )
 
 
-def analyze_mixed_abe(data, endpoint, cfg):
+def analyze_mixed_abe(data, endpoint, cfg, *, round_ci=False):
     """Explicit SAP-authorized available-observation REML; never silently complete-case."""
     try:
         d = data.copy()
@@ -216,6 +238,7 @@ def analyze_mixed_abe(data, endpoint, cfg):
             cfg,
             tables,
             tables["variance_parameters"]["cv_within"],
+            round_ci=round_ci,
         )
         result = attach_crossover_tables(result, d, endpoint, cfg, tables)
         return result.model_copy(update={"n_excluded": len(excluded), "method": "ABE/REML/Satterthwaite"})

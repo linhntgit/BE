@@ -85,7 +85,7 @@ def _cycle_auc(t: np.ndarray, c: np.ndarray, blq: np.ndarray, start: float,
     end = start + tau
     selected = (t >= start - 1e-8) & (t <= end + 1e-8)
     ts, cs, bs = t[selected], c[selected], blq[selected]
-    if len(ts) < 2 or not np.isclose(ts[0], start, atol=1e-8) or not np.isclose(ts[-1], end, atol=1e-8) or bs.any():
+    if len(ts) < 2 or not np.isclose(ts[0], start, atol=1e-8, rtol=0.0) or not np.isclose(ts[-1], end, atol=1e-8, rtol=0.0) or bs.any():
         return None
     if exclude_second_bolus:
         return None  # At the next dose, C(tau+) is not C(tau-).
@@ -115,9 +115,9 @@ def analyze_interval_nca(frame: pd.DataFrame, settings: PKSettings, regimen: PKR
         warnings.append("Chưa xác nhận steady-state; không tính CLss hoặc CL/Fss.")
     if regimen.mode == "steady_state" and regimen.steady_state_confirmed:
         warnings.append("Steady-state do người dùng xác nhận từ bằng chứng ngoài dữ liệu chu kỳ này; phần mềm không tự xác minh.")
-    complete = (len(ts) >= 2 and np.isclose(ts[0], start, atol=1e-8)
-                and np.isclose(ts[-1], end, atol=1e-8) and not bs.any())
-    if (settings.route == "iv_bolus" and len(ts) >= 2 and np.isclose(ts[0], start, atol=1e-8)
+    complete = (len(ts) >= 2 and np.isclose(ts[0], start, atol=1e-8, rtol=0.0)
+                and np.isclose(ts[-1], end, atol=1e-8, rtol=0.0) and not bs.any())
+    if (settings.route == "iv_bolus" and len(ts) >= 2 and np.isclose(ts[0], start, atol=1e-8, rtol=0.0)
             and (bs[0] or cs[0] <= 0 or cs[1] > cs[0] * 1.05)):
         complete = False
         warnings.append("C(0+) của IV bolus không phù hợp với mẫu ngay sau tiêm; "
@@ -148,7 +148,7 @@ def analyze_interval_nca(frame: pd.DataFrame, settings: PKSettings, regimen: PKR
         "n": len(ts), "tau_h": regimen.tau_h, "last_dose_h": start,
         "cmax_tau_ng_ml": float(measured[peak]), "tmax_tau_h": float(valid_ts[peak] - start),
         "cmin_tau_ng_ml": float(measured.min()),
-        "ctrough_ng_ml": float(cs[-1]) if len(ts) and np.isclose(ts[-1], end, atol=1e-8) and not bs[-1] else None,
+        "ctrough_ng_ml": float(cs[-1]) if len(ts) and np.isclose(ts[-1], end, atol=1e-8, rtol=0.0) and not bs[-1] else None,
         "auc_tau_ng_h_ml": auc, "cavg_tau_ng_ml": auc / regimen.tau_h if auc is not None else None,
         "fluctuation_pct": (100 * (measured.max() - measured.min()) / (auc / regimen.tau_h)
                             if auc is not None else None),

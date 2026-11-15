@@ -202,6 +202,9 @@ def analyze_nca(frame: pd.DataFrame, settings: PKSettings) -> dict:
         measured_t0 = False
         if len(t) < 2:
             raise ValueError("IV bolus có C0 không hợp lệ cần thêm ít nhất hai thời điểm sau tiêm.")
+    observed_peak = int(np.argmax(c))
+    observed_cmax = float(c[observed_peak])
+    observed_tmax = float(t[observed_peak])
     if not measured_t0:
         if settings.zero_policy == "assume_zero":
             inferred_c0 = 0.0
@@ -231,7 +234,7 @@ def analyze_nca(frame: pd.DataFrame, settings: PKSettings) -> dict:
     result = {
         "profile_id": str(data.profile_id.iloc[0]), "route": settings.route,
         "status": "Đủ điều kiện NCA" if full_start else "NCA một phần — thiếu/không hợp lệ mẫu nền",
-        "n": len(data), "cmax_ng_ml": float(c.max()), "tmax_h": float(t[np.flatnonzero(c == c.max())[0]]),
+        "n": len(data), "cmax_ng_ml": observed_cmax, "tmax_h": observed_tmax,
         "t_first_h": float(t[0]), "tlast_h": float(t[last]), "clast_ng_ml": float(c[last]),
         "auc_first_last": float(auc[-1]), "aumc_first_last": float(aumc[-1]),
         "auc_0_last": float(auc[-1]) if full_start else None,
