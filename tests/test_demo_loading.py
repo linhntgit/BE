@@ -3,14 +3,16 @@
 from __future__ import annotations
 
 import base64
+import io
 from pathlib import Path
 
 import pandas as pd
 import pytest
+from docx import Document
 from streamlit.testing.v1 import AppTest
 
-from tests.conftest import open_be_page
 from be_app.demo_scenarios import (
+    DEMO_SAMPLING_TIMES,
     ENDPOINT_CASES,
     FULL_RAW_CASES,
     PK_CASES,
@@ -26,7 +28,32 @@ from be_app.design import randomize
 from be_app.domain import Study
 from be_app.import_review import review_import
 from be_app.imports import REQUIRED, csv_bytes
-from be_app.persistence import ProjectStore
+from be_app.persistence import Project, ProjectStore
+from be_app.protocol import PROTOCOL_FIELDS
+from be_app.regulations import scope_blockers
+from tests.conftest import open_be_page
+
+
+def _demo_study(case: str) -> Study:
+    """Model the values submitted by the ordinary create-study form."""
+    values = study_values(case)
+    fields = {name: values[name] for name in Study.model_fields if name in values}
+    fields.update(
+        rule_set_id=values["rule"],
+        data_purpose=values["purpose"],
+        data_provenance=values["provenance"],
+        active_ingredient=values["ingredient"],
+        scope_reviewed=values["reviewed"],
+        scope_evidence=values["evidence"],
+        scaled_be_prespecified=values["scaled"],
+        hvd_justification=values["hvd_reason"],
+        nti_cmax_narrow=values["nti_cmax"],
+        scope_record={
+            key: values[f"scope_{key}"]
+            for key in ("reference_market", "guidance", "applicability", "deviations")
+        },
+    )
+    return Study.model_validate(fields)
 
 
 @pytest.mark.parametrize("case", STUDY_CASES)
@@ -37,6 +64,81 @@ def test_demo_study_scenarios_fill_descriptions(case):
     assert values["protocol"] and values["sap"]
     assert values["rule"] and values["design"]
     assert "Synthetic" in values["provenance"]
+    study = _demo_study(case)
+    assert not scope_blockers(study)
+    assert all(study.protocol_details.get(key) for key, _ in PROTOCOL_FIELDS)
+    assert set(study.scope_record) == {"reference_market", "guidance", "applicability", "deviations"}
+    assert DEMO_SAMPLING_TIMES in study.protocol_details["sampling"]
+    assert all(study.protocol_details.get(key) for key in (
+        "clinical_period_2", "clinical_physician", "test_mfg_date", "irb_approval_no",
+        "pharmacology", "mean_age", "mean_bmi",
+    ))
+
+
+def test_demo_2x2_can_complete_import_qc_freeze_and_analysis_without_manual_values():
+    from be_app.pipeline import run_analysis
+
+    study = _demo_study("2x2")
+    allocation, metadata = randomize("2x2", 24, 241029)
+    project = Project(study=study).with_allocation(allocation.to_dict("records"), metadata)
+    frame = full_concentrations(study, project.allocation, "normal")
+    assert len(frame) == 24 * 2 * len(DEMO_SAMPLING_TIMES.split(","))
+
+    project = project.import_raw(csv_bytes(frame), "synthetic_normal.csv")
+    assert project.qc().valid
+    project = project.freeze()
+    assert project.freeze_hash
+    project = run_analysis(project)
+    assert project.runs and project.runs[-1]["nca"]
+    assert project.runs[-1]["be"]
+    assert project.runs[-1]["snapshot_hash"]
+
+
+@pytest.mark.parametrize("case", ["parallel", "partial3", "full4", "nti", "hvd"])
+def test_demo_all_designs_export_standard_reports_without_manual_values(case):
+    from be_app.pipeline import run_analysis
+    from be_app.report_vknt_template import build_vknt_report_data
+    from be_app.reporting import docx_report, pdf_report
+
+    study = _demo_study(case)
+    allocation, metadata = randomize(study.design, 24, 241029)
+    project = Project(study=study).with_allocation(allocation.to_dict("records"), metadata)
+    raw = full_concentrations(study, project.allocation, "normal")
+    project = run_analysis(project.import_raw(csv_bytes(raw), "synthetic_normal.csv").freeze())
+
+    report = build_vknt_report_data(project)
+    assert report["is_demo"]
+    assert report["n_enrolled"] == 24
+    assert report["n_analyzed"] == 24
+    assert "GIẢ LẬP" in report["clin_p2"]
+    assert "GIẢ LẬP" in report["clin_physician"]
+    assert len(report["pk_subject_table"]) == 24
+    assert bool(report["pk_replicate_note"]) == (case in {"partial3", "full4", "nti", "hvd"})
+
+    word = docx_report(project, language="vi", template="standard")
+    pdf = pdf_report(project, language="vi", template="standard")
+    assert pdf.startswith(b"%PDF") and len(pdf) > 10_000
+    assert len(word) > 20_000
+    doc = Document(io.BytesIO(word))
+    assert any("DỮ LIỆU GIẢ LẬP HỌC THỬ" in p.text for p in doc.paragraphs)
+    assert any("KẾT LUẬN BÀI THỰC HÀNH" in p.text for p in doc.paragraphs)
+    if report["pk_replicate_note"]:
+        assert any("trung bình cộng các kỳ" in p.text for p in doc.paragraphs)
+
+
+@pytest.mark.parametrize("case", FULL_RAW_CASES)
+def test_demo_raw_cases_provide_preflight_and_a_click_only_recovery(case):
+    study = _demo_study(case if case in {"nti", "hvd"} else "2x2")
+    allocation, _ = randomize(study.design, 12, 241029)
+    rows = allocation.to_dict("records")
+    source = csv_bytes(full_concentrations(study, rows, case))
+    reviewed = review_import(source, f"synthetic_{case}.csv", "{}", study, rows, case == "units")
+
+    assert reviewed.ready == (case not in {"missing_period", "duplicate"})
+    if not reviewed.ready:
+        # The recovery button stages the same valid dataset as the normal scenario.
+        restored = csv_bytes(full_concentrations(study, rows, "normal"))
+        assert review_import(restored, "synthetic_normal.csv", "{}", study, rows, False).ready
 
 
 @pytest.mark.parametrize("case", FULL_RAW_CASES)

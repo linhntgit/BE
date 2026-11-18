@@ -154,12 +154,12 @@ class Capability:
 CAPABILITIES: dict[str, Capability] = {
     "EMA_IR_NONREPLICATE_M13A": Capability(True, "available", True, True, "Power TOST 2×2/parallel theo hướng dẫn ICH M13A và EMA."),
     "FDA_ABE_2026": Capability(True, "available", True, True, "Power TOST 2×2/parallel theo hướng dẫn FDA (2021)."),
-    "EMA_REPLICATE_STANDARD": Capability(True, "available", False, True, "Mô hình replicate tiêu chuẩn theo hướng dẫn EMA."),
-    "EMA_HVDP_ABEL": Capability(True, "available", False, True, "ABEL cho thuốc biến thiên cao (CVwR > 30%) theo hướng dẫn EMA."),
-    "FDA_HVD_RSABE_2026": Capability(True, "available", False, True, "RSABE cho HVD khi sWR >= 0.294; áp dụng ABE chuẩn khi sWR < 0.294 theo hướng dẫn FDA."),
-    "FDA_NTI": Capability(True, "available", False, True, "Phân tích NTI theo FDA: RSABE, 90% CI và so sánh biến thiên sWT/sWR."),
-    "EMA_NTI": Capability(True, "available", False, True, "Phân tích NTI theo EMA: khoảng chấp nhận thu hẹp 90.00–111.11%."),
-    "FDA_REPLICATE_STANDARD": Capability(True, "available", False, True, "Mô hình replicate ABE theo hướng dẫn FDA."),
+    "EMA_REPLICATE_STANDARD": Capability(True, "available", True, True, "Power TOST replicate theo mô hình EMA Method A."),
+    "EMA_HVDP_ABEL": Capability(True, "available", True, True, "Power EMA ABEL bằng mô phỏng tham số có seed, giới hạn Cmax theo CVwR đo được."),
+    "FDA_HVD_RSABE_2026": Capability(True, "available", True, True, "Power FDA RSABE theo Howe UCB, GMR gate và nhánh sWR=0.294 bằng mô phỏng."),
+    "FDA_NTI": Capability(True, "available", True, True, "Power FDA NTI full4 theo Howe UCB, ABE 90% CI và tỷ số phương sai bằng mô phỏng."),
+    "EMA_NTI": Capability(True, "available", True, True, "Power TOST biên NTI EMA cho 2×2, parallel, partial3 và full4."),
+    "FDA_REPLICATE_STANDARD": Capability(True, "available", True, True, "Power TOST replicate theo FDA I-contrast."),
 }
 
 

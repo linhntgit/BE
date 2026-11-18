@@ -14,10 +14,23 @@ parallel=sigma sqrt(1/nT+1/nR). CV crossover là CVw; parallel là CV total gi�
 Với q=t(1−alpha,df), tích phân phần dương của
 Phi((log(U)−delta)/SE−q sqrt(V/df))−Phi((log(L)−delta)/SE+q sqrt(V/df)).
 Chỉ tích phân đến hai giới hạn chạm nhau; sai số tích phân phải ≤1e-7.
-Giả định lognormal, phương sai bằng nhau, dữ liệu đầy đủ; không dùng cho Welch/replicate.
+Giả định lognormal, phương sai bằng nhau, dữ liệu đầy đủ; không dùng công thức 2×2/parallel trực tiếp cho replicate hoặc Welch.
 Cỡ mẫu tìm tăng dần từng cặp, tuyển thêm làm tròn theo từng nhóm sau chia (1−dropout).
 Golden PowerTOST: CV=.20, GMR=.95, n=20 2×2 → .834680 (làm tròn 6 chữ số);
 parallel CV=.35, GMR=.95, nT=52,nR=49 → .8011186.
+
+### Replicate 3/4 kỳ và các quy tắc EMA/FDA
+
+- Thiết kế cân bằng `partial3` (TRR/RTR/RRT) và `full4` (TRTR/RTRT), mỗi đối tượng đủ tất cả kỳ, log(PK) tuân theo mô hình chuẩn với độ lệch chuẩn trong đối tượng `sWR` và `sWT` được khai báo riêng. Không mô hình hóa carryover, mất kỳ hoặc hiệu ứng tương tác subject×formulation. CV được chuyển đổi qua `s² = ln(1+CV²)`.
+- Replicate ABE tiêu chuẩn của EMA dùng Method A (subject, period, treatment cố định, khử subject). FDA dùng tương phản từng đối tượng `I = mean(log T) − mean(log R)` theo sequence. Với `sWT=sWR`, ước lượng hiệu số chuẩn độc lập với MSE chi-square, cho phép tích phân joint TOST chính xác theo bậc tự do từng mô hình. Khi `sWT≠sWR`, dùng mô phỏng tham số có seed cho sai số không đồng nhất.
+- EMA ABEL mở rộng giới hạn **chỉ Cmax**, khi CVwR ước lượng >30% và tối đa CVwR=50%, với `±0.760 min(sWR, sqrt(ln(1+0.5²)))` trên log. Phải đạt đồng thời 90% CI nằm trong giới hạn quan sát được và GMR trong 80–125%. AUC vẫn ABE 80–125%.
+- FDA HVD RSABE dùng nhánh `sWR >= 0.294` trên dữ liệu mô phỏng. Trong nhánh RSABE cần đạt Howe 95% UCB ≤0 và GMR 80–125%. Dưới ngưỡng dùng ABE 90% CI 80–125%.
+- EMA NTI yêu cầu AUC nằm trong 90–111.11%, Cmax trong 90–111.11% khi được yêu cầu trong SAP, còn lại dùng 80–125%. Áp dụng cho 2×2, parallel và replicate.
+- FDA NTI yêu cầu `full4` với 3 tiêu chí đồng thời là ABE 90% CI 80–125%, Howe 95% UCB theo `sigma_w0=0.10` ≤0, và giới hạn trên khoảng tin cậy 90% cho `sWT/sWR` ≤2.5. FDA HVD/NTI dùng các tương phản `I`, `D_R`, `D_T` theo sequence như phần phân tích thực tế.
+- Scaled BE và replicate có phương sai T/R khác nhau sử dụng Monte Carlo tham số với seed xác định. Kết quả có số lượt mô phỏng, sai số chuẩn Monte Carlo `sqrt(p(1-p)/nsims)` và phương pháp được lưu cùng giả định. Cỡ mẫu tìm trên các bội số số sequence, phần tuyển có hiệu chỉnh dropout từng sequence. Power tính cho từng endpoint, không phải xác suất cùng lúc đạt AUC và Cmax.
+- Power/cỡ mẫu theo các giả định thiết kế và các tiêu chí trong BE_app. Đối chiếu chuyên môn, hướng dẫn sản phẩm đặc hiệu (PSG), nguồn CV, SAP và kiểm tra độc lập vẫn cần thiết khi dùng cho hồ sơ đăng ký.
+
+Nguồn chính: [EMA Investigation of Bioequivalence](https://www.ema.europa.eu/en/scientific-guidelines/investigation-bioequivalence), [FDA Statistical Approaches to Establishing Bioequivalence (May 2026)](https://www.fda.gov/regulatory-information/search-fda-guidance-documents/statistical-approaches-establishing-bioequivalence), [PowerTOST RSABE vignette](https://cran.wustl.edu/web/packages/PowerTOST/vignettes/RSABE.html).
 
 ## ABE
 

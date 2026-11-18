@@ -206,6 +206,12 @@ def _calculate_power_tost(se: float, estimate: float, df: int, lower: float = 0.
 def build_vknt_report_data(project: Project, run_index: int = -1) -> dict:
     """Extract and compute all study, clinical, bioanalytical, PK, and statistical data."""
     study = project.study
+    design_description = {
+        "2x2": "chéo đôi ngẫu nhiên 2 kỳ, 2 trình tự (2×2)",
+        "parallel": "song song, hai nhánh T/R",
+        "partial3": "chéo lặp 3 kỳ (partial replicate)",
+        "full4": "chéo lặp 4 kỳ (full replicate)",
+    }.get(study.design, str(study.design))
     today_str = datetime.now().strftime("%d/%m/%Y")
     current_year = datetime.now().strftime("%Y")
 
@@ -264,7 +270,12 @@ def build_vknt_report_data(project: Project, run_index: int = -1) -> dict:
     ref_mfr = _field(getattr(study, "reference_manufacturer", None) or p_details.get("ref_manufacturer"), "Nhà sản xuất thuốc đối chứng", "Tên và địa chỉ nhà sản xuất thuốc đối chứng")
 
     # Sample size and subjects count
-    n_enrolled = getattr(study, "sample_size", None) or 30
+    allocated_subjects = {
+        str(row["subject_id"])
+        for row in project.allocation
+        if row.get("subject_id") is not None
+    }
+    n_enrolled = len(allocated_subjects) or getattr(study, "sample_size", None) or 30
     n_analyzed = n_enrolled
     n_withdrawn = 0
     withdraw_text = "Không có NTN nào rút khỏi nghiên cứu."
@@ -274,6 +285,7 @@ def build_vknt_report_data(project: Project, run_index: int = -1) -> dict:
     pk_subject_table = []
     pk_ln_table = []
     pk_summary_s1 = []
+    pk_replicate_note = ""
     auc_ratio_t = 0.0
     auc_ratio_r = 0.0
     tmax_wilcoxon_table = []
@@ -286,15 +298,33 @@ def build_vknt_report_data(project: Project, run_index: int = -1) -> dict:
         subjects = sorted(df_nca["subject_id"].unique(), key=lambda s: str(s))
         n_analyzed = len(subjects)
 
-        # Subject-level NCA Table 6
-        piv_cmax = df_nca.pivot(index="subject_id", columns="treatment", values="cmax")
-        piv_tmax = df_nca.pivot(index="subject_id", columns="treatment", values="tmax")
-        piv_auct = df_nca.pivot(index="subject_id", columns="treatment", values="auc_last")
-        piv_aucinf = df_nca.pivot(index="subject_id", columns="treatment", values="auc_inf")
-        if "auc_inf" not in df_nca.columns or piv_aucinf.isna().all().all():
-            piv_aucinf = df_nca.pivot(index="subject_id", columns="treatment", values="auc_inf_pred")
-        piv_thalf = df_nca.pivot(index="subject_id", columns="treatment", values="half_life")
-        piv_kel = df_nca.pivot(index="subject_id", columns="treatment", values="lambda_z")
+        # Replicate designs have more than one NCA profile for a subject/treatment.
+        # Aggregate only the descriptive subject tables; BE statistics use the
+        # original per-period profiles saved in the analysis run.
+        is_replicate = df_nca.duplicated(["subject_id", "treatment"]).any()
+        if is_replicate:
+            pk_replicate_note = (
+                "Thiết kế replicate: trong Bảng 6 và 7, mỗi giá trị T/R của từng NTN "
+                "là trung bình cộng các kỳ dùng cùng thuốc; giá trị ln là ln của "
+                "trung bình đó. Đây là thống kê mô tả, không dùng thay cho phân tích "
+                "BE theo từng kỳ. Bảng 13 so sánh Tmax trung bình từng NTN chỉ có "
+                "tính chất thăm dò."
+            )
+
+        def subject_treatment_table(parameter: str) -> pd.DataFrame:
+            return df_nca.pivot_table(
+                index="subject_id", columns="treatment", values=parameter, aggfunc="mean"
+            )
+
+        piv_cmax = subject_treatment_table("cmax")
+        piv_tmax = subject_treatment_table("tmax")
+        piv_auct = subject_treatment_table("auc_last")
+        auc_inf_column = "auc_inf"
+        if "auc_inf" not in df_nca or df_nca["auc_inf"].isna().all():
+            auc_inf_column = "auc_inf_pred"
+        piv_aucinf = subject_treatment_table(auc_inf_column)
+        piv_thalf = subject_treatment_table("half_life")
+        piv_kel = subject_treatment_table("lambda_z")
 
         for idx, sid in enumerate(subjects, 1):
             t_cmax = piv_cmax.loc[sid, "T"] if "T" in piv_cmax.columns and sid in piv_cmax.index else np.nan
@@ -526,6 +556,8 @@ def build_vknt_report_data(project: Project, run_index: int = -1) -> dict:
 
     return dict(
         study=study,
+        is_demo=bool(getattr(study, "is_demo", False)),
+        design_description=design_description,
         run=run,
         has_run=has_run,
         today_str=today_str,
@@ -565,6 +597,7 @@ def build_vknt_report_data(project: Project, run_index: int = -1) -> dict:
         pk_subject_table=pk_subject_table,
         pk_ln_table=pk_ln_table,
         pk_summary_s1=pk_summary_s1,
+        pk_replicate_note=pk_replicate_note,
         auc_ratio_t=auc_ratio_t,
         auc_ratio_r=auc_ratio_r,
         tmax_wilcoxon_table=tmax_wilcoxon_table,
@@ -760,6 +793,8 @@ def docx_report_vknt(project: Project, run_index: int = -1, language: str = "vi"
     _add_p(doc, c["lab_accreditation"], bold=True, align=WD_ALIGN_PARAGRAPH.CENTER, font_size=Pt(11), space_after=Pt(36))
 
     _add_p(doc, "BÁO CÁO KẾT QUẢ NGHIÊN CỨU", bold=True, align=WD_ALIGN_PARAGRAPH.CENTER, font_size=Pt(18), space_after=Pt(28), color=RGBColor(26, 54, 93))
+    if c["is_demo"]:
+        _add_p(doc, "DỮ LIỆU GIẢ LẬP HỌC THỬ — CHỈ DÙNG ĐÀO TẠO, KHÔNG CÓ KẾT LUẬN NGHIÊN CỨU THỰC", bold=True, align=WD_ALIGN_PARAGRAPH.CENTER, font_size=Pt(10))
 
     _add_p(doc, f"Đề tài:", bold=True, align=WD_ALIGN_PARAGRAPH.CENTER, font_size=Pt(12), space_after=Pt(6))
     _add_p(doc, c["study_title"].upper(), bold=True, align=WD_ALIGN_PARAGRAPH.CENTER, font_size=Pt(13), space_after=Pt(40), color=RGBColor(16, 42, 77))
@@ -897,7 +932,7 @@ def docx_report_vknt(project: Project, run_index: int = -1, language: str = "vi"
     _add_p(doc, f"• Thuốc đối chứng: {c['ref_product']} ({c['substance']} {c['dose']}), số lô: {c['ref_batch']}, NSX: {c['ref_mfg']}, HD: {c['ref_exp']} do {c['ref_mfr']} sản xuất.", space_after=Pt(6))
 
     _add_p(doc, "Phương pháp nghiên cứu:", bold=True, font_size=Pt(10), space_before=Pt(4), space_after=Pt(2))
-    _add_p(doc, f"Thiết kế nghiên cứu chéo đôi ngẫu nhiên 2 giai đoạn, 2 trình tự (2×2 crossover), đơn liều, có thời gian rửa giải phù hợp. Tổng số {c['n_enrolled']} người tình nguyện khỏe mạnh được tuyển chọn và tham gia nghiên cứu theo đúng hướng dẫn của Bộ Y tế và ASEAN.", space_after=Pt(6))
+    _add_p(doc, f"Thiết kế {c['design_description']}, đơn liều. Cỡ mẫu khai báo là {c['n_enrolled']} người.", space_after=Pt(6))
 
     _add_p(doc, "Kết quả:", bold=True, font_size=Pt(10), space_before=Pt(4), space_after=Pt(2))
     _add_p(doc, f"Phân tích dược động học dựa trên dữ liệu của {c['n_analyzed']} người tình nguyện hoàn tất nghiên cứu. Các giá trị thông số PK trung bình và khoảng tin cậy 90% được trình bày tại Bảng S1, S2, S3 dưới đây:", space_after=Pt(6))
@@ -1085,8 +1120,8 @@ def docx_report_vknt(project: Project, run_index: int = -1, language: str = "vi"
     _add_p(doc, "5.1. Thiết kế nghiên cứu", bold=True, font_size=Pt(10.5), space_before=Pt(4), space_after=Pt(2))
     _add_p(
         doc,
-        f"Nghiên cứu được thiết kế theo mô hình thử nghiệm chéo đôi ngẫu nhiên 2 giai đoạn, 2 trình tự (2×2 crossover), đơn liều, nhịn đói, "
-        f"mở, có đối chứng. Thời gian rửa giải (washout) giữa hai giai đoạn là phù hợp (> 5 lần thời gian bán thải t1/2 của hoạt chất).",
+        f"Nghiên cứu được thiết kế {c['design_description']}, đơn liều, nhịn đói, mở, có đối chứng. "
+        f"Thời gian rửa giải áp dụng theo thiết kế và đề cương nghiên cứu đã khai báo.",
         space_after=Pt(4),
     )
 
@@ -1243,6 +1278,8 @@ def docx_report_vknt(project: Project, run_index: int = -1, language: str = "vi"
 
     # Bảng 6
     _add_p(doc, "Bảng 6. Các thông số dược động học của từng cá thể", bold=True, font_size=Pt(9.5), space_before=Pt(4), space_after=Pt(2))
+    if c["pk_replicate_note"]:
+        _add_p(doc, c["pk_replicate_note"], italic=True, font_size=Pt(8.5))
     if c["pk_subject_table"]:
         tbl_b6 = doc.add_table(rows=min(len(c["pk_subject_table"]) + 1, 31), cols=12)
         tbl_b6.alignment = WD_TABLE_ALIGNMENT.CENTER
@@ -1416,23 +1453,28 @@ def docx_report_vknt(project: Project, run_index: int = -1, language: str = "vi"
             _add_cell_text(r.cells[5], row_data["pos_rank"], align=WD_ALIGN_PARAGRAPH.CENTER, font_size=Pt(7.5))
             _add_cell_text(r.cells[6], row_data["neg_rank"], align=WD_ALIGN_PARAGRAPH.CENTER, font_size=Pt(7.5))
 
-        _add_p(doc, f"Kết quả kiểm định Wilcoxon: W = {c['wilcoxon_stat']:.1f}, p-value = {c['wilcoxon_p']:.4f}. Vì p > 0.05, giá trị Tmax của thuốc thử và thuốc đối chứng khác nhau không có ý nghĩa thống kê.", italic=True, font_size=Pt(9), space_before=Pt(2), space_after=Pt(6))
+        tmax_interpretation = (
+            "Chưa ghi nhận khác biệt có ý nghĩa thống kê ở mức 0,05."
+            if c["wilcoxon_p"] > 0.05
+            else "Có khác biệt có ý nghĩa thống kê ở mức 0,05."
+        )
+        if c["pk_replicate_note"]:
+            tmax_interpretation += " Phép so sánh trung bình Tmax theo NTN mang tính thăm dò."
+        _add_p(doc, f"Kết quả kiểm định Wilcoxon: W = {c['wilcoxon_stat']:.1f}, p-value = {c['wilcoxon_p']:.4f}. {tmax_interpretation}", italic=True, font_size=Pt(9), space_before=Pt(2), space_after=Pt(6))
     else:
         _add_p(doc, "[YÊU CẦU NGƯỜI DÙNG BỔ SUNG: Dữ liệu Bảng 13 sẽ tự động điền khi chạy so sánh Tmax Wilcoxon trong ứng dụng]", bold=True)
 
     _add_p(doc, "8.5. Bàn luận", bold=True, font_size=Pt(10.5), space_before=Pt(6), space_after=Pt(2))
-    _add_p(
-        doc,
-        f"Các thông số dược động học quan sát được trong nghiên cứu (Cmax, Tmax, AUC, t1/2) của cả hai chế phẩm "
-        f"hoàn toàn phù hợp với các dữ liệu đã công bố trong y văn quốc tế đối với {c['substance']}. "
-        f"Mức độ biến thiên giữa các cá thể và trong cùng cá thể (CV) nằm trong khoảng dự kiến của nghiên cứu tương đương sinh học. "
-        f"Khoảng tin cậy 90% của tất cả các thông số đánh giá chính (Cmax, AUC0-t, AUC0-inf) đều nằm gọn trong giới hạn 80.00% – 125.00%.",
-        space_after=Pt(6),
-    )
+    if c["is_demo"]:
+        _add_p(doc, "Các thông số PK, khoảng tin cậy và quyết định trong báo cáo được tính từ dữ liệu giả lập. Chỉ sử dụng để thực hành đọc kết quả, kiểm tra giả định và giới hạn của phương pháp.", space_after=Pt(6))
+    else:
+        _add_p(doc, "[YÊU CẦU NGƯỜI DÙNG BỔ SUNG: Bàn luận kết quả PK/BE đối chiếu tài liệu khoa học, sai lệch đề cương và dữ liệu an toàn thực tế]", space_after=Pt(6))
 
     # Section 9
     _add_p(doc, "9. KẾT LUẬN", bold=True, font_size=Pt(12), space_before=Pt(8), space_after=Pt(4), color=RGBColor(26, 54, 93))
-    if not c["has_run"]:
+    if c["is_demo"]:
+        _add_p(doc, "KẾT LUẬN BÀI THỰC HÀNH: Kết quả phân tích trong các bảng là kết quả mô phỏng dùng để học các bước QC, NCA và BE. Không được dùng làm bằng chứng về tương đương sinh học hoặc an toàn của một sản phẩm thực tế.", space_after=Pt(12))
+    elif not c["has_run"]:
         _add_p(
             doc,
             f"Thử nghiệm đánh giá tương đương sinh học in vivo của {c['dosage_form']} {c['test_product']} ({c['substance']} {c['dose']}) do {c['sponsor']} sản xuất:\n"
@@ -1528,12 +1570,14 @@ def pdf_report_vknt(project: Project, run_index: int = -1, language: str = "vi")
     elements.append(Paragraph("<b>BÁO CÁO KẾT QUẢ NGHIÊN CỨU TƯƠNG ĐƯƠNG SINH HỌC</b>", styles["Heading1"]))
     elements.append(Paragraph(f"<b>Đề tài: {escape(c['study_title'])}</b>", styles["Normal"]))
     elements.append(Paragraph(f"Mã số đề tài: {c['study_id']} · Đơn vị yêu cầu: {escape(c['sponsor'])}", styles["Normal"]))
+    if c["is_demo"]:
+        elements.append(p_text("DỮ LIỆU GIẢ LẬP HỌC THỬ — CHỈ DÙNG ĐÀO TẠO, KHÔNG CÓ KẾT LUẬN NGHIÊN CỨU THỰC"))
     elements.append(Spacer(1, 0.4 * cm))
 
     # Tóm tắt kết quả
     elements.append(Paragraph("<b>TÓM TẮT KẾT QUẢ NGHIÊN CỨU (SYNOPSIS)</b>", styles["Heading2"]))
     elements.append(p_text(
-        f"Nghiên cứu chéo đôi ngẫu nhiên 2 giai đoạn, 2 trình tự (2×2), đơn liều trên {c['n_enrolled']} người tình nguyện khỏe mạnh. "
+        f"Nghiên cứu thiết kế {c['design_description']}, đơn liều, cỡ mẫu {c['n_enrolled']}. "
         f"Thuốc thử: {c['test_product']} ({c['substance']} {c['dose']}) — Lô: {c['test_batch']}. "
         f"Thuốc đối chứng: {c['ref_product']} ({c['substance']} {c['dose']}) — Lô: {c['ref_batch']}."
     ))
@@ -1542,6 +1586,8 @@ def pdf_report_vknt(project: Project, run_index: int = -1, language: str = "vi")
     # Bảng S1
     if c["pk_summary_s1"]:
         elements.append(Paragraph("<b>Bảng S1. Thông số dược động học trung bình</b>", styles["Heading2"]))
+        if c["pk_replicate_note"]:
+            elements.append(p_text(c["pk_replicate_note"]))
         s1_data = [["Thông số", "Thuốc", "TB cộng", "TB nhân", "SD", "CV (%)", "Min – Max"]]
         for r in c["pk_summary_s1"]:
             s1_data.append([
@@ -1619,7 +1665,12 @@ def pdf_report_vknt(project: Project, run_index: int = -1, language: str = "vi")
 
     # Kết luận chung
     elements.append(Paragraph("<b>KẾT LUẬN</b>", styles["Heading1"]))
-    if not c["has_run"]:
+    if c["is_demo"]:
+        elements.append(p_text(
+            "KẾT LUẬN BÀI THỰC HÀNH: Các bảng PK/BE là kết quả tính từ dữ liệu giả lập. "
+            "Chỉ dùng cho đào tạo, không xác nhận tương đương sinh học hoặc an toàn của sản phẩm thực tế."
+        ))
+    elif not c["has_run"]:
         elements.append(p_text(
             f"Hai chế phẩm {c['dosage_form']} {c['test_product']} do {c['sponsor']} sản xuất và {c['ref_product']} "
             f"do {c['ref_mfr']} sản xuất: [YÊU CẦU NGƯỜI DÙNG BỔ SUNG: Kết luận sẽ được tự động trích xuất theo số liệu phân tích BE thực tế]."

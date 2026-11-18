@@ -22,8 +22,9 @@ from be_app.be_reporting import (
 from be_app.branding import software_attribution
 from be_app.compartment_help import render_compartment_model_details
 from be_app.context_help import QUICK_TASKS, RESEARCH_TASKS, integrity_terms_for, lesson_for, profile_help
-from be_app.field_help import field_help_for, render_table_legend, table_column_config
 from be_app.demo_scenarios import (
+    DEMO_PLANNING_SOURCE,
+    DEMO_SAMPLING_TIMES,
     ENDPOINT_CASES,
     FULL_RAW_CASES,
     STUDY_CASES,
@@ -31,8 +32,9 @@ from be_app.demo_scenarios import (
     full_concentrations,
     study_values,
 )
-from be_app.design import randomize, sample_schedule, sample_size, secure_seed, tost_power
+from be_app.design import SEQUENCES, randomize, sample_schedule, sample_size, secure_seed, tost_power
 from be_app.domain import BeConfig, NcaConfig, Study, TerminalOverride, digest
+from be_app.field_help import field_help_for, render_table_legend, table_column_config
 from be_app.import_review import filtered_concentrations, review_import
 from be_app.imports import REQUIRED, csv_bytes, excel_bytes, parse_file
 from be_app.nca import (
@@ -51,6 +53,7 @@ from be_app.protocol import PROTOCOL_FIELDS, blank_protocol_template, docx_proto
 from be_app.quick_be_ui import quick_be_page
 from be_app.regulations import RULES, capability_for, planning_limits, scope_blockers
 from be_app.replicate import analyze_regulatory_be
+from be_app.replicate_planning import replicate_power
 from be_app.reporting import analysis_exports, blank_report_template, docx_report, pdf_report
 from be_app.review import criterion_figures, forest_figure, residual_figures, terminal_figure, workflow_table
 from be_app.state import EDIT_COLUMNS, ProjectState, initialize_project_state, result_status
@@ -411,6 +414,7 @@ def overview():
         evidence = w.area("evidence", "Bằng chứng rà soát guideline / PSG và phạm vi sản phẩm")
         reviewed = w.check("reviewed", "Đã rà soát phạm vi và yêu cầu riêng của sản phẩm")
         if st.button("Tạo nghiên cứu", type="primary"):
+            is_demo = bool(create_state.draft("create", "is_demo", False))
             try:
                 study = Study.model_validate(dict(
                     study_id=sid,
@@ -433,12 +437,16 @@ def overview():
                     scope_reviewed=reviewed,
                     scope_evidence=evidence,
                     scope_record=scope_record,
-                    is_demo=bool(create_state.draft("create", "is_demo", False)),
+                    protocol_details=create_state.draft("create", "protocol_details", {}) if is_demo else {},
+                    is_demo=is_demo,
                 ))
             except ValidationError as exc:
                 st.error(f"Thông tin nghiên cứu không hợp lệ: {exc.errors()[0]['msg']}")
             else:
-                save_project(Project(study=study).record("create", {}, "Khởi tạo nghiên cứu"))
+                save_project(Project(
+                    study=study,
+                    planning_inputs={"source": DEMO_PLANNING_SOURCE} if is_demo else {},
+                ).record("create", {}, "Khởi tạo nghiên cứu"))
                 create_state.clear_drafts("create")
                 create_state.mount_id += "_blank"
                 st.rerun()
@@ -577,49 +585,64 @@ def power_plan(inputs_json: str, context_json: str, engine_version: str):
     if not capability_for(context["rule_set_id"]).planning:
         raise ValueError("Profile chưa được phép lập kế hoạch cỡ mẫu.")
     design = context["design"]
-    results = [
-        dict(
-            endpoint=ep,
-            lower=lower,
-            upper=upper,
-            alpha=context["alpha"],
-            **asdict(
-                sample_size(
-                    inputs[cv] / 100,
-                    inputs[gmr],
-                    inputs["target"] / 100,
-                    design,
-                    inputs["dropout"] / 100,
-                    alpha=context["alpha"],
-                    lower=lower,
-                    upper=upper,
-                )
-            ),
-        )
-        for ep, cv, gmr, (lower, upper) in (
+    replicate = design in ("partial3", "full4")
+    results = []
+    for ep, cv, gmr, (lower, upper) in (
             ("AUC", "cv_auc", "gmr_auc", context["bounds"]["AUC"]),
             ("Cmax", "cv_cmax", "gmr_cmax", context["bounds"]["Cmax"]),
+        ):
+        result = sample_size(
+            inputs[cv] / 100, inputs[gmr], inputs["target"] / 100,
+            design, inputs["dropout"] / 100,
+            alpha=context["alpha"], lower=lower, upper=upper,
+            **({
+                "rule_set_id": context["rule_set_id"],
+                "cv_wt": inputs["cv_wt_auc" if ep == "AUC" else "cv_wt_cmax"] / 100,
+                "endpoint": ep,
+                "simulations": inputs["simulations"],
+                "seed": inputs["seed"],
+            } if replicate else {}),
         )
-    ]
+        row = dict(endpoint=ep, lower=lower, upper=upper, alpha=context["alpha"], **asdict(result))
+        if replicate:
+            achieved = replicate_power(
+                inputs[cv] / 100, inputs[gmr], result.evaluable,
+                design=design, rule_set_id=context["rule_set_id"],
+                cv_wt=inputs["cv_wt_auc" if ep == "AUC" else "cv_wt_cmax"] / 100,
+                endpoint=ep, alpha=context["alpha"], lower=lower, upper=upper,
+                simulations=inputs["simulations"], seed=inputs["seed"] + result.evaluable,
+            )
+            row.update(method=achieved.method, mc_se=achieved.mc_se, simulations=achieved.simulations)
+        results.append(row)
     controlling = max(results, key=lambda result: result["evaluable"])
     chosen = controlling["evaluable"]
     cv_key, gmr_key = ("cv_auc", "gmr_auc") if controlling["endpoint"] == "AUC" else ("cv_cmax", "gmr_cmax")
-    curve = [
-        dict(
-            n=n,
-            Power=tost_power(
-                inputs[cv_key] / 100,
-                inputs[gmr_key],
-                n // 2,
-                n // 2,
-                design,
-                context["alpha"],
-                controlling["lower"],
-                controlling["upper"],
-            ),
-        )
-        for n in range(max(4, chosen - 12), chosen + 14, 2)
-    ]
+    if replicate:
+        groups = len({"partial3": ("TRR", "RTR", "RRT"), "full4": ("TRTR", "RTRT")}[design])
+        neighborhood = range(max(2, chosen // groups - 3), chosen // groups + 4)
+        curve = [
+            dict(
+                n=groups * per_group,
+                Power=replicate_power(
+                    inputs[cv_key] / 100, inputs[gmr_key], groups * per_group,
+                    design=design, rule_set_id=context["rule_set_id"],
+                    cv_wt=inputs["cv_wt_auc" if controlling["endpoint"] == "AUC" else "cv_wt_cmax"] / 100,
+                    endpoint=controlling["endpoint"], alpha=context["alpha"],
+                    lower=controlling["lower"], upper=controlling["upper"],
+                    simulations=inputs["simulations"], seed=inputs["seed"] + groups * per_group,
+                ).power,
+            ) for per_group in neighborhood
+        ]
+    else:
+        curve = [
+            dict(
+                n=n,
+                Power=tost_power(
+                    inputs[cv_key] / 100, inputs[gmr_key], n // 2, n // 2,
+                    design, context["alpha"], controlling["lower"], controlling["upper"],
+                ),
+            ) for n in range(max(4, chosen - 12), chosen + 14, 2)
+        ]
     return dict(
         results=results,
         curve=curve,
@@ -642,7 +665,8 @@ def planning_context(study: Study, be_config: BeConfig) -> dict:
         bounds=planning_limits(study),
         alpha=be_config.alpha,
         nti_cmax_narrow=study.nti_cmax_narrow,
-        method="exact_joint_TOST_v1",
+        method=("replicate_exact_TOST_or_seeded_MC_v1" if study.design in ("partial3", "full4")
+                else "exact_joint_TOST_v1"),
     )
 
 
@@ -660,25 +684,30 @@ def design_page(state):
     if not capability.planning:
         st.warning("Chưa có cỡ mẫu đủ điều kiện sử dụng cho profile này. Không dùng kết quả planning cũ.")
         return
-    if project.study.design not in ("2x2", "parallel"):
-        st.warning(
-            "Chưa hỗ trợ tính cỡ mẫu cho thiết kế replicate hoặc phương pháp mở rộng giới hạn ABEL/RSABE: "
-            "lực thống kê phụ thuộc vào giả định độ lệch chuẩn nội cá thể của thuốc đối chứng ($s_{WR}$ / $CV_{wR}$) "
-            "và nhánh chuyển ngưỡng co giãn (US FDA $s_{WR} \\ge 0{,}294$ hoặc EMA $CV_{wR} > 30\\%$), cần mô phỏng Monte Carlo theo SAP."
-        )
-        return
     if project.study.design not in RULES[project.study.rule_set_id].designs or project.be_config.alpha != 0.05:
         st.warning("Thiết kế hoặc alpha ngoài phạm vi công cụ planning; không hiển thị cỡ mẫu.")
         return
-    st.info("2×2 dùng CVw; parallel dùng CV tổng giữa người. Các giả định được tự lưu; chỉ tính khi bấm nút.")
+    replicate = project.study.design in ("partial3", "full4")
+    st.info(
+        "Replicate dùng CVwR và CVwT riêng cho từng endpoint. ABE thông thường tính TOST giải tích, "
+        "ABEL/RSABE và NTI đặc thù mô phỏng Monte Carlo với seed cố định, giả định đủ kỳ và phân bố lognormal. "
+        "Power là xác suất đạt toàn bộ tiêu chí của endpoint; độ chính xác mô phỏng phụ thuộc số lượt."
+        if replicate else "2×2 dùng CVw; parallel dùng CV tổng giữa người. Các giả định được tự lưu; chỉ tính khi bấm nút."
+    )
     st.caption(f"Giới hạn AUC: {context['bounds']['AUC']}; Cmax: {context['bounds']['Cmax']}; alpha={context['alpha']}.")
     w = Widgets(state, "planning", "planning")
-    w.number("cv_auc", "CV AUC (%)", 20.0, min_value=0.1, max_value=200.0)
-    w.number("cv_cmax", "CV Cmax (%)", 30.0, min_value=0.1, max_value=200.0)
+    w.number("cv_auc", "CVwR AUC (%)" if replicate else "CV AUC (%)", 20.0, min_value=0.1, max_value=200.0)
+    w.number("cv_cmax", "CVwR Cmax (%)" if replicate else "CV Cmax (%)", 30.0, min_value=0.1, max_value=200.0)
+    if replicate:
+        w.number("cv_wt_auc", "CVwT AUC (%)", 20.0, min_value=0.1, max_value=200.0)
+        w.number("cv_wt_cmax", "CVwT Cmax (%)", 30.0, min_value=0.1, max_value=200.0)
     w.number("gmr_auc", "GMR dự kiến AUC (T/R)", 0.95, min_value=0.801, max_value=1.249)
     w.number("gmr_cmax", "GMR dự kiến Cmax (T/R)", 0.95, min_value=0.801, max_value=1.249)
     w.number("target", "Power mục tiêu (%)", 80, min_value=70, max_value=99, step=1)
     w.number("dropout", "Dropout dự kiến (%)", 10, min_value=0, max_value=80, step=1)
+    if replicate:
+        w.number("simulations", "Số lượt mô phỏng mỗi N", 20000, min_value=1000, max_value=100000, step=1000)
+        w.number("seed", "Seed mô phỏng", 20261118, min_value=0, max_value=2147483647, step=1)
     w.text("source", "Nguồn CV và giả định thiết kế")
     if st.button("Tính cỡ mẫu và power"):
         inputs = state.planning()
@@ -706,6 +735,8 @@ def design_page(state):
             return
         st.success(f"N đánh giá: {plan['evaluable']} · N tuyển: {plan['recruit']} · Endpoint chi phối: {plan['curve_endpoint']}")
         st.caption("Power tính riêng cho từng endpoint, chưa phải xác suất đồng thời tất cả endpoint đạt BE.")
+        if replicate:
+            st.caption("Kết quả Monte Carlo là ước lượng. mc_se là sai số chuẩn mô phỏng, hãy tăng số lượt khi power gần mục tiêu. Cỡ mẫu tuyển được làm tròn trên mỗi sequence.")
         plan_rows = plan.get("results", [])
         plan_cols = list(plan_rows[0].keys()) if plan_rows else []
         st.dataframe(pd.DataFrame(plan_rows), hide_index=True, column_config=table_column_config(plan_cols))
@@ -718,7 +749,11 @@ def randomization_page(state):
     project = state.project
     w = Widgets(state, "randomization")
     draft_notice()
-    n = w.number("n", "Số người tuyển", 24, min_value=2, max_value=10000, step=2)
+    sequence_count = len(SEQUENCES[project.study.design])
+    n = w.number(
+        "n", "Số người tuyển", 24,
+        min_value=sequence_count, max_value=10000, step=sequence_count,
+    )
     seed = w.text("seed", "Seed lưu trong hồ sơ", "241029")
     block = w.number(
         "block",
@@ -735,7 +770,10 @@ def randomization_page(state):
         # New mount intentionally reconstructs widgets from the confirmed draft.
         state.mount_id += "s"
         st.rerun()
-    times = w.text("times", "Lịch lấy mẫu dự kiến (giờ, phân cách dấu phẩy)", "0,0.5,1,2,3,4,6,8,12,24,36")
+    times = w.text(
+        "times", "Lịch lấy mẫu dự kiến (giờ, phân cách dấu phẩy)",
+        DEMO_SAMPLING_TIMES if project.study.is_demo else "0,0.5,1,2,3,4,6,8,12,24,36",
+    )
     if project.allocation:
         alloc_cols = list(project.allocation[0].keys()) if project.allocation else []
         st.dataframe(pd.DataFrame(project.allocation), hide_index=True, column_config=table_column_config(alloc_cols))
@@ -824,15 +862,29 @@ def import_page(state):
         st.caption("Tạo nghiên cứu học thử trước để tránh đưa dữ liệu tổng hợp vào dự án thật.")
     elif not project.allocation:
         st.caption("Hãy lập và lưu phân nhóm tại trang Ngẫu nhiên hóa trước.")
-    if st.button("Điền dữ liệu mẫu vào bảng nồng độ", disabled=not available,
-                 key=f"raw_demo_load::{project.project_id}"):
-        frame = full_concentrations(project.study, project.allocation, case)
+    load_demo = st.button(
+        "Điền dữ liệu mẫu vào bảng nồng độ", disabled=not available or bool(project.raw_base64),
+        key=f"raw_demo_load::{project.project_id}",
+    )
+    restore_demo = False
+    if case != "normal" and available and not project.raw_base64:
+        restore_demo = st.button(
+            "Khôi phục bảng hợp lệ để tiếp tục bài thực hành",
+            key=f"raw_demo_restore::{project.project_id}",
+            help="Tạo bảng nồng độ bình thường cùng phân nhóm để thực hành tiếp QC, NCA, BE và báo cáo.",
+        )
+    if load_demo or restore_demo:
+        selected_case = "normal" if restore_demo else case
+        frame = full_concentrations(project.study, project.allocation, selected_case)
         content = csv_bytes(frame)
-        state.set_draft("import", "file", dict(
-            name=f"synthetic_{case}.csv",
-            base64=base64.b64encode(content).decode("ascii"),
-            sha256=hashlib.sha256(content).hexdigest(),
-        ))
+        state.set_drafts("import", {
+            "file": dict(
+                name=f"synthetic_{selected_case}.csv",
+                base64=base64.b64encode(content).decode("ascii"),
+                sha256=hashlib.sha256(content).hexdigest(),
+            ),
+            "convert": selected_case == "units",
+        })
         state.render_cache.pop("import_review", None)
         state.mount_id += "_demo"
         st.rerun()
@@ -1226,9 +1278,9 @@ def qc_page(state):
         )
         st.json(state.project.pending_edits, expanded=False)
     w = Widgets(state, "correction")
-    reason = w.text("reason", "Lý do correction")
-    reviewer = w.text("reviewer", "Người rà soát độc lập")
-    evidence = w.text("evidence", "Tham chiếu bằng chứng correction")
+    reason = w.text("reason", "Lý do correction", "GIẢ LẬP: sửa dữ liệu sau QC, giữ đầy đủ dấu vết." if project.study.is_demo else "")
+    reviewer = w.text("reviewer", "Người rà soát độc lập", "training-reviewer" if project.study.is_demo else "")
+    evidence = w.text("evidence", "Tham chiếu bằng chứng correction", "SYNTH-QC-001" if project.study.is_demo else "")
     if st.button(
         "Áp dụng các sửa đổi", disabled=bool(project.freeze_hash or not state.project.pending_edits)
     ):
@@ -1264,6 +1316,7 @@ def qc_page(state):
             replace_reason = st.text_input(
                 "Lý do thay đổi số dòng hoặc thay thế bảng raw",
                 key=f"qc_replace_reason::{project.project_id}",
+                value="GIẢ LẬP: thực hành thay bảng raw có lưu vết." if project.study.is_demo else "",
             )
             if st.button(
                 "Kiểm tra QC và lưu revision bảng",
@@ -1421,8 +1474,16 @@ def terminal_review_panel(state):
         options=displayed_options,
         disabled=mode == "auto",
     )
-    reason = w.area("reason", "Lý do lựa chọn terminal", existing.reason if existing else "")
-    reviewer = w.text("reviewer", "Người rà soát terminal", existing.reviewer if existing else "")
+    reason = w.area(
+        "reason", "Lý do lựa chọn terminal",
+        existing.reason if existing else (
+            "GIẢ LẬP: rà soát pha cuối dựa trên đồ thị và các chỉ số phù hợp." if project.study.is_demo else ""
+        ),
+    )
+    reviewer = w.text(
+        "reviewer", "Người rà soát terminal",
+        existing.reviewer if existing else ("training-reviewer" if project.study.is_demo else ""),
+    )
     if existing and existing.profile_data_hash != profile_data_hash(group):
         st.warning("Dữ liệu profile đã đổi; lựa chọn đã lưu chưa được xác nhận lại.")
     global_manual = bool(project.nca_config.manual_terminal_times)
@@ -2223,7 +2284,7 @@ Dữ liệu không thỏa mãn điều kiện để kết luận tương đươn
 
     if shown and current:
         metric_cols = st.columns(min(3, len(shown)))
-        for col, r in zip(metric_cols, shown[:3]):
+        for col, r in zip(metric_cols, shown[:3], strict=False):
             with col:
                 with st.container(border=True):
                     st.metric(
@@ -2549,9 +2610,16 @@ def reports_page(state):
         st.write("Rà soát gần nhất", prior)
     if not stale:
         with st.form(f"review_{run['snapshot_hash']}"):
-            reviewer = st.text_input("Người rà soát độc lập")
-            evidence = st.text_area("Bằng chứng rà soát, sai lệch và người phụ trách xử lý")
+            reviewer = st.text_input(
+                "Người rà soát độc lập", value="training-reviewer" if project.study.is_demo else "",
+            )
+            evidence = st.text_area(
+                "Bằng chứng rà soát, sai lệch và người phụ trách xử lý",
+                value=("GIẢ LẬP: đã xem snapshot, bảng QC, NCA, BE và cảnh báo. "
+                       "Bằng chứng SYNTH-REVIEW-001, không phải thẩm định thực tế.") if project.study.is_demo else "",
+            )
             outcome = st.radio("Kết quả rà soát", ("follow_up", "reviewed"),
+                               index=1 if project.study.is_demo else 0,
                                format_func=lambda x: "Cần xử lý thêm" if x == "follow_up" else "Đã rà soát")
             if st.form_submit_button("Ghi nhận rà soát snapshot"):
                 save_project(project.record_review(run["snapshot_hash"], reviewer, evidence, outcome))
@@ -2686,7 +2754,7 @@ def render_live_diagnostic_banner(page: str, state: ProjectState | None, quick_s
                 elif project.study.design == "parallel":
                     design_note = "Dùng $CV_{\\text{total}}$ giữa cá thể trên hai nhánh độc lập (`design.tost_power`); không tách $CV_w$."
                 else:
-                    design_note = "Planning cỡ mẫu trong BE_app đang khóa cho thiết kế replicate (cần mô phỏng Monte Carlo theo SAP)."
+                    design_note = "Replicate: TOST giải tích cho ABE thông thường và Monte Carlo có seed cho EMA ABEL / FDA RSABE / FDA NTI."
                 st.caption(
                     f"📌 **Bước 1:** Thiết kế `{project.study.design}` | "
                     f"Chỉ tiêu chính: `{', '.join(project.study.primary_endpoints)}`. {design_note}"
@@ -3281,7 +3349,7 @@ def main():
             with st.container(border=True):
                 st.caption("TIẾN TRÌNH 6 CHẶNG NGHIÊN CỨU BE")
                 scols = st.columns(6)
-                for s_i, (s_name, sc) in enumerate(zip(STAGE_NAMES, scols)):
+                for s_i, (s_name, sc) in enumerate(zip(STAGE_NAMES, scols, strict=False)):
                     is_active = (s_i == curr_stage)
                     s_target = PAGES[STAGE_PAGES[s_i][0]]
                     s_label = f"📍 {s_name}" if is_active else f"{s_i + 1}. {s_name}"

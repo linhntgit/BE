@@ -1,3 +1,16 @@
+"""Teaching-oriented, read-only contextual help for the BE workflow.
+
+Provides comprehensive graduate-level pedagogical modules (Master/PhD) covering:
+1. Hướng dẫn thao tác (Interface elements & sequential action guide).
+2. Tóm tắt lý thuyết (kèm sơ đồ minh họa) và tiêu chuẩn pháp quy (Theory, diagrams & regulations).
+3. Phương trình toán học và giải thích biến số (KaTeX equations & detailed variable nomenclature).
+4. Thuật ngữ (Terminology & Data Integrity ALCOA+ principles).
+5. Câu hỏi gợi ý và chủ đề tự học (Guiding seminar questions & critical reflection).
+6. Tài liệu tham khảo (Authoritative guidelines & seminal literature).
+"""
+
+from dataclasses import dataclass
+
 from be_app.context_equations import (
     EQUATIONS_0,
     EQUATIONS_1,
@@ -13,19 +26,6 @@ from be_app.context_equations import (
     EQUATIONS_11,
 )
 from be_app.diagram_svg import DIAGRAM_SVGS
-"""Teaching-oriented, read-only contextual help for the BE workflow.
-
-Provides comprehensive graduate-level pedagogical modules (Master/PhD) covering:
-1. Hướng dẫn thao tác (Interface elements & sequential action guide).
-2. Tóm tắt lý thuyết (kèm sơ đồ minh họa) và tiêu chuẩn pháp quy (Theory, diagrams & regulations).
-3. Phương trình toán học và giải thích biến số (KaTeX equations & detailed variable nomenclature).
-4. Thuật ngữ (Terminology & Data Integrity ALCOA+ principles).
-5. Câu hỏi gợi ý và chủ đề tự học (Guiding seminar questions & critical reflection).
-6. Tài liệu tham khảo (Authoritative guidelines & seminal literature).
-"""
-
-from dataclasses import dataclass
-
 from be_app.regulations import RULES, capability_for
 
 
@@ -149,7 +149,7 @@ LESSONS: tuple[Lesson, ...] = (
         ),
         theory=(
             "Lực thống kê (Power, 1-β) là xác suất bác bỏ đúng giả thuyết vô hiệu H0 (không tương đương) khi hai thuốc thực sự tương đương sinh học. Thủ tục kiểm định hai phía đồng thời (Two One-Sided Tests - TOST, Schuirmann) tương đương việc xác định khoảng tin cậy 90% nằm gọn trong biên BE.",
-            "Hệ thống hỗ trợ tính toán cỡ mẫu cho thiết kế chéo đôi 2×2 và thiết kế song song; quy trình tính cỡ mẫu cho thiết kế lặp (Replicate/ABEL/RSABE) hoặc thuốc NTI đòi hỏi mô phỏng Monte Carlo nâng cao.",
+            "Hệ thống tính cỡ mẫu cho thiết kế chéo đôi 2×2, song song và replicate 3–4 kỳ. Replicate ABE với giả định CVwT = CVwR được tính bằng tích phân TOST; các tiêu chí EMA ABEL, FDA RSABE/NTI và trường hợp CVwT khác CVwR được ước lượng bằng mô phỏng Monte Carlo có seed.",
             "Theo nguyên lý hợp các giao (Intersection-Union Principle), nghiên cứu chỉ đạt khi cả AUC và Cmax cùng đạt; cỡ mẫu chính thức của thử nghiệm phải chọn theo chỉ tiêu đòi hỏi số lượng đối tượng lớn hơn.",
         ),
         terms=(
@@ -182,7 +182,7 @@ LESSONS: tuple[Lesson, ...] = (
             "- Khi $CV_W$ tăng lên $30\\%$: cần `N_evaluable = 40` đối tượng ($20$ mỗi chuỗi; power $= 81.58\\%$); với dropout $15\\%$ phải tuyển `48` đối tượng (tăng gấp đôi quy mô!).",
         ),
         interpretation=(
-            "**Chức năng không áp dụng theo ngữ cảnh:** Mô-đun tính cỡ mẫu (`design.tost_power`) chỉ mở cho thiết kế **2×2 ABE** (dùng `CV_intra`) và **Song song ABE** (dùng `CV_total`). Khi chọn thiết kế **replicate** (`partial3` / `full4`) hoặc **NTI / ABEL / RSABE**, nút hoạch định cỡ mẫu bị khóa theo nguyên tắc an toàn (`planning = False`) vì đòi hỏi mô phỏng Monte Carlo chuyên biệt cho phương sai của R và quy tắc mở rộng.",
+            "**Phạm vi hoạch định:** `design.tost_power` tính TOST cho **2×2**, **song song** và **replicate 3–4 kỳ**. EMA ABEL, FDA RSABE, FDA NTI và các trường hợp `CVwT ≠ CVwR` dùng mô phỏng tham số có seed (`replicate_planning.replicate_power`) để áp dụng đồng thời các tiêu chí tương ứng. Trình bày `mc_se` để đánh giá độ chính xác Monte Carlo và chỉ tính cho chuỗi cân bằng, đủ kỳ.",
             "**Lưu ý STALE:** Bất kỳ thay đổi nào ở `CV`, `GMR`, `Power` hoặc `Dropout` sau khi tính đều đánh dấu bảng kết quả cỡ mẫu là lỗi thời cho tới khi bạn bấm tính lại.",
         ),
         self_study=(

@@ -21,10 +21,14 @@ from be_app.persistence import Project, ProjectStore, verify_project
 class PlanningInputs(StrictModel):
     cv_auc: float = Field(default=20, gt=0, le=200)
     cv_cmax: float = Field(default=30, gt=0, le=200)
+    cv_wt_auc: float = Field(default=20, gt=0, le=200)
+    cv_wt_cmax: float = Field(default=30, gt=0, le=200)
     gmr_auc: float = Field(default=0.95, gt=0.8, lt=1.25)
     gmr_cmax: float = Field(default=0.95, gt=0.8, lt=1.25)
     target: int = Field(default=80, ge=70, le=99)
     dropout: int = Field(default=10, ge=0, le=80)
+    simulations: int = Field(default=20000, ge=1000, le=100000)
+    seed: int = Field(default=20261118, ge=0, le=2147483647)
     source: str = ""
 
 

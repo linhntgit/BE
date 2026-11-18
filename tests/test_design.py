@@ -44,11 +44,11 @@ def test_sample_size_public_reference():
     assert tost_power(0.2, 0.95, 9, 9) < 0.8
 
 
-def test_nti_bounds_differ_from_standard_abe_and_planning_is_gated(demo):
+def test_nti_bounds_differ_from_standard_abe_and_planning_is_enabled(demo):
     study = demo.study.model_copy(update={"rule_set_id": "EMA_NTI", "nti": True})
     bounds = planning_limits(study)
     assert bounds == {"AUC": (0.9, 1.1111), "Cmax": (0.8, 1.25)}
-    assert not capability_for("EMA_NTI").planning
+    assert capability_for("EMA_NTI").planning
     standard = sample_size(0.2, 0.95, 0.8, dropout=0.1)
     narrower = sample_size(0.2, 0.95, 0.8, dropout=0.1, lower=0.9, upper=1.1111)
     assert narrower.evaluable > standard.evaluable
@@ -88,7 +88,7 @@ def test_parallel_is_not_crossover():
         (30, 0.95, 10, 10, "2x2"),
         (0.2, 0, 10, 10, "2x2"),
         (0.2, 0.95, 1, 10, "2x2"),
-        (0.2, 0.95, 10, 10, "full4"),
+        (0.2, 0.95, 10, 9, "full4"),
         (float("nan"), 0.95, 10, 10, "2x2"),
         (0.2, 0.95, 10.5, 10, "2x2"),
     ],

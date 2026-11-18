@@ -81,6 +81,13 @@ def tost_power(
     alpha: float = 0.05,
     lower: float = 0.8,
     upper: float = 1.25,
+    *,
+    rule_set_id: str | None = None,
+    cv_wt: float | None = None,
+    endpoint: str = "Cmax",
+    simulations: int = 20000,
+    seed: int = 20261118,
+    n3: int | None = None,
 ) -> float:
     """Exact joint rejection probability, not the difference of marginal t powers.
 
@@ -88,8 +95,21 @@ def tost_power(
     Equal log variances and complete observations; parallel counts are arm counts,
     crossover counts are sequence counts. CV is a fraction (0.20 = 20%).
     """
+    if design in ("partial3", "full4"):
+        from be_app.replicate_planning import replicate_power
+
+        # Legacy n1/n2 signature represents the first two sequence counts;
+        # partial3 additionally accepts n3. Planning uses balanced sequences.
+        if n1 != n2 or (design == "partial3" and n3 is not None and n3 != n1):
+            raise ValueError("Power replicate yêu cầu số đối tượng cân bằng trên mỗi sequence.")
+        return replicate_power(
+            cv, gmr, n1 * (3 if design == "partial3" else 2),
+            design=design, rule_set_id=rule_set_id or "EMA_REPLICATE_STANDARD",
+            cv_wt=cv_wt, endpoint=endpoint, alpha=alpha, lower=lower,
+            upper=upper, simulations=simulations, seed=seed,
+        ).power
     if design not in ("2x2", "parallel"):
-        raise ValueError("Power replicate chưa hỗ trợ khi chưa có benchmark.")
+        raise ValueError("Thiết kế power chưa hỗ trợ.")
     if not all(math.isfinite(x) for x in (cv, gmr, alpha, lower, upper)):
         raise ValueError("Tham số phải hữu hạn.")
     if not 0 < cv <= 5 or gmr <= 0 or not 0 < alpha < 0.5 or not 0 < lower < upper:
@@ -100,8 +120,13 @@ def tost_power(
     sigma = math.sqrt(math.log1p(cv * cv))
     factor = 0.5 if design == "2x2" else 1.0
     se = sigma * math.sqrt(factor * (1 / n1 + 1 / n2))
+    return _joint_tost_probability(math.log(gmr), se, df, alpha, lower, upper)
+
+
+def _joint_tost_probability(delta, se, df, alpha, lower, upper):
+    """Joint TOST probability for normal treatment contrast and independent chi-square MSE."""
     critical = t.ppf(1 - alpha, df)
-    lo, hi, delta = math.log(lower), math.log(upper), math.log(gmr)
+    lo, hi = math.log(lower), math.log(upper)
     vmax = min(df * ((hi - lo) / (2 * critical * se)) ** 2, chi2.ppf(1 - 1e-13, df))
 
     def integrand(v):
@@ -138,6 +163,11 @@ def sample_size(
     alpha: float = 0.05,
     lower: float = 0.8,
     upper: float = 1.25,
+    rule_set_id: str | None = None,
+    cv_wt: float | None = None,
+    endpoint: str = "Cmax",
+    simulations: int = 20000,
+    seed: int = 20261118,
 ) -> SampleSize:
     if not all(math.isfinite(x) for x in (cv, gmr, target, dropout, alpha, lower, upper)):
         raise ValueError("Các tham số cỡ mẫu phải hữu hạn.")
@@ -145,6 +175,18 @@ def sample_size(
         raise ValueError("Power/dropout phải hợp lệ; GMR phải nằm trong giới hạn của endpoint đang tính.")
     if not 0 < alpha < 0.5:
         raise ValueError("Alpha phải nằm trong (0, 0.5).")
+    if design in ("partial3", "full4"):
+        from be_app.replicate_planning import replicate_sample_size
+
+        result, _ = replicate_sample_size(
+            cv, gmr, target, design=design,
+            rule_set_id=rule_set_id or "EMA_REPLICATE_STANDARD", cv_wt=cv_wt,
+            endpoint=endpoint, dropout=dropout,
+            minimum_per_group=minimum_per_group if minimum_per_group is not None else 6,
+            max_n=max_n, alpha=alpha, lower=lower, upper=upper,
+            simulations=simulations, seed=seed,
+        )
+        return result
     if design not in ("2x2", "parallel"):
         raise ValueError("Cỡ mẫu replicate chưa hỗ trợ.")
     minimum = minimum_per_group if minimum_per_group is not None else (6 if design == "2x2" else 12)

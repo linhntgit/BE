@@ -14,6 +14,58 @@ import pandas as pd
 
 from be_app.design import SEQUENCES
 
+DEMO_SAMPLING_TIMES = "0,0.25,0.5,1,1.5,2,3,4,6,8,12,16,24,36"
+DEMO_PLANNING_SOURCE = (
+    "GIẢ LẬP để học phần mềm: CV AUC 20%, CV Cmax 30%, GMR T/R dự kiến 0,95; "
+    "power mục tiêu 80%, dropout 10%. Không phải bằng chứng từ nghiên cứu thực."
+)
+
+
+def demo_protocol_details(design: str) -> dict[str, str]:
+    """Illustrative, explicitly synthetic protocol inputs for every export field."""
+    sequences = {"2x2": "TR/RT", "parallel": "T/R", "partial3": "TRR/RTR/RRT", "full4": "TRTR/RTRT"}
+    period_dates = {
+        "2x2": "GIẢ LẬP: kỳ 2 ngày 08/09/2026",
+        "parallel": "GIẢ LẬP: thiết kế song song, không có kỳ 2",
+        "partial3": "GIẢ LẬP: kỳ 2 ngày 08/09/2026 và kỳ 3 ngày 15/09/2026",
+        "full4": "GIẢ LẬP: kỳ 2 ngày 08/09/2026, kỳ 3 ngày 15/09/2026, kỳ 4 ngày 22/09/2026",
+    }
+    return {
+        "rationale": f"GIẢ LẬP: so sánh sinh khả dụng T/R bằng thiết kế {design}, phân nhóm {sequences[design]}, thuốc IR đường uống đơn liều, lúc đói.",
+        "population": "GIẢ LẬP: 24 tình nguyện viên, 18–55 tuổi, khỏe mạnh; sàng lọc bệnh, thuốc dùng đồng thời, dị ứng và thai kỳ theo protocol minh họa.",
+        "sample_size": f"GIẢ LẬP: tuyển 24 người để tạo dữ liệu học tập. {DEMO_PLANNING_SOURCE} Với replicate, tính cỡ mẫu thực tế cần phương pháp phù hợp riêng.",
+        "washout": "GIẢ LẬP: khoảng cách 7 ngày giữa các kỳ, cần kiểm chứng theo t1/2 thực và nồng độ trước liều nếu triển khai thực tế.",
+        "sampling": f"GIẢ LẬP: lấy mẫu tại {DEMO_SAMPLING_TIMES} giờ sau liều, 14 thời điểm mỗi kỳ. Lịch này khớp dữ liệu nồng độ demo.",
+        "administration": "GIẢ LẬP: T/R mỗi lần một viên 100 mg uống với nước sau nhịn đói qua đêm; giám sát giờ dùng thuốc và bữa ăn.",
+        "bioanalysis": "GIẢ LẬP: định lượng nồng độ trong huyết tương theo phương pháp mô phỏng, đơn vị ng/mL và LLOQ 0,2 ng/mL. Không có hồ sơ thẩm định phương pháp thực.",
+        "safety": "GIẢ LẬP: ghi nhận AE/SAE, dấu hiệu sinh tồn, đánh giá an toàn và quy trình báo cáo theo SOP giả định.",
+        "ethics": "GIẢ LẬP: biểu mẫu đồng thuận, bảo mật và rà soát đạo đức dùng cho bài tập; chưa có phê duyệt hội đồng đạo đức thực tế.",
+        "statistics": "GIẢ LẬP: thực hành NCA và log-ANOVA/TOST hoặc phương pháp replicate tương ứng profile đã chọn; AUC và Cmax, alpha=0,05. Kiểm tra giả định trước khi kết luận.",
+        "operations": "GIẢ LẬP: operator training-operator, reviewer training-reviewer; ghi nhận QC, Data Freeze, mã băm snapshot và lưu vết thay đổi trong ứng dụng.",
+        "study_site_address": "GIẢ LẬP: địa điểm nghiên cứu ảo, không có địa chỉ cơ sở thực tế.",
+        "governing_body": "ĐƠN VỊ ĐÀO TẠO GIẢ LẬP",
+        "lab_accreditation": "GIẢ LẬP: không có chứng nhận GCP/GLP hoặc ISO thật.",
+        "study_location": "PHÒNG HỌC GIẢ LẬP",
+        "clinical_period_1": "GIẢ LẬP: kỳ 1 ngày 01/09/2026",
+        "clinical_period_2": period_dates[design],
+        "bioanalytical_period": "GIẢ LẬP: từ 23/09/2026 đến 10/10/2026",
+        "clinical_physician": "BÁC SĨ GIẢ LẬP (không có nhân sự tham gia thực tế)",
+        "clinical_head": "PHỤ TRÁCH LÂM SÀNG GIẢ LẬP",
+        "analytical_head": "PHỤ TRÁCH PHÂN TÍCH GIẢ LẬP",
+        "statistical_head": "PHỤ TRÁCH THỐNG KÊ GIẢ LẬP",
+        "qa_head": "PHỤ TRÁCH QA GIẢ LẬP",
+        "test_mfg_date": "GIẢ LẬP: 01/01/2026",
+        "test_batch_size": "GIẢ LẬP: 10.000 viên",
+        "test_reg_number": "GIẢ LẬP: không có số đăng ký thuốc thật",
+        "ref_mfg_date": "GIẢ LẬP: 01/01/2026",
+        "irb_approval_no": "GIẢ LẬP: không có văn bản chấp thuận đạo đức thật",
+        "pharmacology": "Hoạt chất tổng hợp dùng để học phần mềm, không có cơ chế dược lý đã xác lập.",
+        "pharmacokinetics": "Đường cong nồng độ được mô phỏng để thực hành NCA/BE; không có tài liệu PK in vivo thật.",
+        "dosage_and_adrs": "Liều 100 mg chỉ dùng mô phỏng, không có liều điều trị hoặc dữ liệu ADR ở người.",
+        "mean_age": "Không áp dụng: 24 đối tượng ảo, không có hồ sơ tuổi thực tế",
+        "mean_bmi": "Không áp dụng: 24 đối tượng ảo, không có dữ liệu BMI thực tế",
+    }
+
 
 @dataclass(frozen=True)
 class Scenario:
@@ -32,13 +84,13 @@ STUDY_CASES = {
 }
 
 FULL_RAW_CASES = {
-    "normal": Scenario("Bảng hợp lệ", "Nồng độ giả lập đầy đủ; quan sát preflight và QC.", "Áp dụng bảng → Kiểm tra cấu trúc và QC → Nhập raw."),
+    "normal": Scenario("Bảng hợp lệ", "Nồng độ giả lập đầy đủ; quan sát preflight và QC.", "Điền bảng → Kiểm tra cấu trúc và QC → Nhập raw → QC/Data Freeze → NCA/BE → Báo cáo."),
     "fail": Scenario("Khác biệt T/R lớn", "Khảo sát trường hợp ước lượng T/R lệch đáng kể; kết quả do engine xác định.", "QC, nhập raw rồi đánh giá BE."),
     "blq": Scenario("Các mẫu BLQ", "BLQ được đánh dấu rõ, nồng độ bằng 0 ở mẫu dưới LLOQ.", "Quan sát quy tắc BLQ trong QC và NCA."),
     "missing_sample": Scenario("Thiếu một mẫu", "Thiếu quan sát tại một thời điểm; không tự điền giá trị.", "Quan sát ảnh hưởng lên dữ liệu và QC."),
-    "missing_period": Scenario("Thiếu một kỳ", "Một subject bị thiếu nguyên kỳ; QC cần phát hiện.", "Chạy preflight và đọc báo cáo QC."),
-    "duplicate": Scenario("Mẫu trùng", "Mẫu có định danh/thời điểm trùng để luyện sửa lỗi.", "Chạy QC; sửa trong bảng rồi áp dụng và QC lại."),
-    "units": Scenario("Đơn vị µg/mL", "Cần xác nhận chuyển sang ng/mL có dấu vết.", "Bật xác nhận chuyển đơn vị rồi chạy QC."),
+    "missing_period": Scenario("Thiếu một kỳ", "Một subject bị thiếu nguyên kỳ; QC cần phát hiện.", "Chạy preflight và xem lỗi, sau đó bấm Khôi phục bảng hợp lệ để thực hành tiếp."),
+    "duplicate": Scenario("Mẫu trùng", "Mẫu có định danh/thời điểm trùng để luyện sửa lỗi.", "Chạy preflight xem lỗi; bấm Khôi phục bảng hợp lệ để thực hành tiếp mà không cần sửa ô."),
+    "units": Scenario("Đơn vị µg/mL", "Cần xác nhận chuyển sang ng/mL có dấu vết.", "Chuyển đơn vị được chọn sẵn; bấm Kiểm tra cấu trúc và QC để tiếp tục."),
     "nti": Scenario("NTI: biến thiên thấp", "Chỉ phù hợp nghiên cứu NTI đã khai báo; kết quả phụ thuộc rule.", "Xác nhận rule NTI trước khi phân tích."),
     "hvd": Scenario("Replicate: biến thiên cao", "Tìm hiểu biến thiên trong chủ thể và điều kiện scaling.", "Xác nhận SAP và rà soát CVwR, outlier."),
 }
@@ -95,8 +147,22 @@ def study_values(case: str) -> dict:
         "clinical_start_date": "2026-09-01", "clinical_end_date": "2026-09-30",
         "bioanalytical_start_date": "2026-09-23", "bioanalytical_end_date": "2026-10-10",
         "data_lock_date": "2026-10-15", "nti": case == "nti",
-        "nti_cmax": False, "scaled": False, "hvd_reason": "",
-        "operator": "training-operator", "evidence": "", "reviewed": False,
+        "nti_cmax": False, "scaled": case == "hvd",
+        "hvd_reason": (
+            "GIẢ LẬP: phương pháp scaling được định trước trong SYNTH-PROT/SYNTH-SAP; "
+            "kiểm tra CVwR, outlier và ý nghĩa lâm sàng ở bước phân tích."
+        ) if case == "hvd" else "",
+        "operator": "training-operator",
+        "evidence": (
+            f"GIẢ LẬP — SYNTH-SCOPE-{case.upper()}: rà soát profile {rule} chỉ phục vụ "
+            "thực hành. Không đại diện cho rà soát guideline/PSG của sản phẩm thật."
+        ),
+        "reviewed": True,
+        "scope_reference_market": "GIẢ LẬP: thị trường hướng dẫn lựa chọn trong bộ quy tắc, thuốc đối chứng R tổng hợp.",
+        "scope_guidance": f"GIẢ LẬP: {rule}, thông tin profile hiển thị trong ứng dụng; không có PSG sản phẩm thật.",
+        "scope_applicability": "GIẢ LẬP: hàm lượng 100 mg, dạng IR, uống lúc đói; endpoint AUC và Cmax để học workflow.",
+        "scope_deviations": "GIẢ LẬP: chưa có sai lệch đã xác minh, người phụ trách training-operator.",
+        "protocol_details": demo_protocol_details(design),
         "is_demo": True,
     }
 
@@ -108,7 +174,7 @@ def full_concentrations(study, allocation: list[dict], case: str, *, seed: int =
     if not allocation:
         raise ValueError("Cần tạo phân nhóm trước khi nạp demo nồng độ.")
     rng = np.random.default_rng(seed)
-    times = (0, .25, .5, 1, 1.5, 2, 3, 4, 6, 8, 12, 16, 24, 36)
+    times = tuple(float(value) for value in DEMO_SAMPLING_TIMES.split(","))
     factor_t = 1.42 if case == "fail" else (1.015 if case == "nti" else .96)
     variability = .34 if case == "hvd" else (.045 if case == "nti" else .14)
     first_subject = str(allocation[0]["subject_id"])
